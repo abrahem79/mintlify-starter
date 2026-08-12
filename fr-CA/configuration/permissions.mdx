@@ -1,0 +1,133 @@
+---
+title: "Gérer les permissions des applications Google et l'accès des tiers"
+sidebarTitle: "Permissions"
+description: "Passez en revue et révoquez l'accès des applications tierces, gérez les politiques de partage de Google Workspace et contrôlez les portées d'API des applications connectées."
+---
+
+Lorsque vous vous connectez à des applications et services tiers en utilisant votre compte Google — ou que vous les autorisez à accéder à vos données — ces applications reçoivent des jetons d'autorisation qui leur donnent accès à des parties précises de votre compte. Avec le temps, vous pouvez accumuler des dizaines d'applications connectées, dont plusieurs que vous n'utilisez plus. Réviser et révoquer régulièrement les permissions inutiles est l'une des façons les plus efficaces de protéger la sécurité et la confidentialité de votre compte.
+
+## Voir les applications connectées
+
+Vous pouvez voir chaque application qui a actuellement accès à votre compte Google depuis la section **Sécurité** du tableau de bord de votre compte.
+
+<Steps>
+  <Step title="Ouvrir votre compte Google">
+    Rendez-vous à [myaccount.google.com](https://myaccount.google.com) et connectez-vous.
+  </Step>
+  <Step title="Aller à Sécurité">
+    Cliquez sur **Sécurité** dans la barre latérale gauche.
+  </Step>
+  <Step title="Ouvrir Applications tierces avec accès au compte">
+    Faites défiler jusqu'à la section **Vos connexions aux applications et services tiers** et cliquez sur **Voir toutes les connexions**.
+  </Step>
+  <Step title="Passer en revue la liste">
+    Vous verrez toutes les applications auxquelles l'accès a été accordé, avec la date du dernier accès et les permissions détenues par chaque application.
+  </Step>
+</Steps>
+
+<Note>
+  Les applications auxquelles vous vous êtes connecté en utilisant « Se connecter avec Google » apparaissent ici, aux côtés des applications qui ont reçu un accès API par programmation. Les deux types peuvent être révisés et révoqués depuis la même page.
+</Note>
+
+## Révoquer l'accès
+
+Si vous n'utilisez plus une application, ou si vous ne reconnaissez pas une application connectée, vous devriez révoquer son accès immédiatement.
+
+<Steps>
+  <Step title="Aller aux applications connectées">
+    Depuis [myaccount.google.com](https://myaccount.google.com), allez à **Sécurité** → **Voir toutes les connexions** sous Applications tierces.
+  </Step>
+  <Step title="Sélectionner l'application à retirer">
+    Cliquez sur l'application dont vous voulez révoquer l'accès.
+  </Step>
+  <Step title="Passer en revue les permissions">
+    Lisez la liste des portées accordées à l'application. Cela indique exactement à quelles données l'application peut accéder.
+  </Step>
+  <Step title="Cliquer sur Supprimer toutes les connexions">
+    Cliquez sur **Supprimer toutes les connexions que vous avez avec [Nom de l'application]** et confirmez lorsque demandé.
+  </Step>
+  <Step title="Vérifier la suppression">
+    L'application n'apparaîtra plus dans votre liste d'applications connectées et perdra la capacité d'accéder à votre compte avec le jeton révoqué.
+  </Step>
+</Steps>
+
+<Warning>
+  Révoquer l'accès invalide immédiatement le jeton d'accès de l'application — l'application ne peut plus lire ni écrire vos données Google. Cependant, toute donnée que l'application a déjà téléchargée ou stockée dans ses propres systèmes n'est pas automatiquement supprimée. Vérifiez les paramètres de confidentialité de l'application ou contactez le développeur pour demander la suppression des données.
+</Warning>
+
+## Portées OAuth
+
+Les portées OAuth définissent précisément ce qu'une application est autorisée à faire avec votre compte Google. Lorsqu'une application demande un accès, elle précise une liste de chaînes de portée qui correspondent à des capacités particulières. Vous devriez toujours passer en revue les portées demandées avant d'accorder l'accès à toute application tierce.
+
+Les chaînes de portée suivent ce format :
+
+```text
+https://www.googleapis.com/auth/[service].[permission-level]
+```
+
+Par exemple :
+
+```text
+https://www.googleapis.com/auth/drive.readonly
+```
+
+Cette portée permet à l'application de lire les fichiers de votre Google Drive, mais pas de les créer, de les modifier ni de les supprimer.
+
+### Portées OAuth courantes
+
+| Portée | Niveau d'accès | Ce que l'application peut faire |
+|---|---|---|
+| `https://www.googleapis.com/auth/drive.readonly` | Lecture seule | Voir et télécharger les fichiers de Drive |
+| `https://www.googleapis.com/auth/drive` | Accès complet | Créer, modifier et supprimer tout fichier dans Drive |
+| `https://www.googleapis.com/auth/gmail.readonly` | Lecture seule | Lire tous les messages et paramètres Gmail |
+| `https://www.googleapis.com/auth/gmail.send` | Envoi seulement | Envoyer des courriels en votre nom |
+| `https://www.googleapis.com/auth/gmail.modify` | Lecture/écriture | Lire, envoyer, supprimer et gérer les courriels |
+| `https://www.googleapis.com/auth/calendar.readonly` | Lecture seule | Voir vos événements d'agenda |
+| `https://www.googleapis.com/auth/calendar` | Accès complet | Créer, modifier et supprimer des événements d'agenda |
+| `https://www.googleapis.com/auth/userinfo.email` | Profil | Accéder à votre adresse courriel |
+| `https://www.googleapis.com/auth/userinfo.profile` | Profil | Accéder aux renseignements de base de votre profil |
+| `openid` | Identité | Vérifier votre identité via OpenID Connect |
+
+<Warning>
+  Évitez d'accorder des portées larges — comme `https://www.googleapis.com/auth/drive` ou `https://www.googleapis.com/auth/gmail.modify` — sauf si vous faites entièrement confiance à l'application et que vous avez un besoin clair de ce niveau d'accès. Préférez toujours la portée la plus restrictive qui satisfait la fonctionnalité de l'application. Une application qui n'a qu'à lire des fichiers dans Drive ne devrait jamais demander un accès complet en écriture à Drive.
+</Warning>
+
+<Tip>
+  Lorsque vous construisez vos propres applications avec les API Google, suivez le principe du moindre privilège : ne demandez que les portées dont votre application a véritablement besoin. Cela renforce la confiance des utilisateurs et réduit le risque de sécurité si les identifiants de votre application sont un jour compromis.
+</Tip>
+
+## Permissions d'administrateur Workspace
+
+Si vous gérez une organisation Google Workspace, vous disposez de contrôles supplémentaires pour régir les applications tierces que vos utilisateurs peuvent connecter à leurs comptes professionnels. Ces paramètres se gèrent depuis la **console d'administration Google**.
+
+<Steps>
+  <Step title="Ouvrir la console d'administration">
+    Connectez-vous à [admin.google.com](https://admin.google.com) avec vos identifiants d'administrateur Workspace.
+  </Step>
+  <Step title="Aller à Sécurité → Contrôles d'API">
+    Accédez à **Sécurité** → **Contrôle d'accès et de données** → **Contrôles d'API**.
+  </Step>
+  <Step title="Gérer l'accès des applications à l'échelle du domaine">
+    Cliquez sur **Gérer l'accès des applications tierces** pour voir toutes les applications OAuth que les utilisateurs de votre organisation ont connectées.
+  </Step>
+  <Step title="Configurer les paramètres de confiance des applications">
+    Pour chaque application, vous pouvez définir son niveau de confiance :
+    - **Fiable** — les utilisateurs peuvent accorder toute portée demandée
+    - **Limitée** — les utilisateurs ne peuvent accorder l'accès qu'aux services Google marqués comme non restreints
+    - **Bloquée** — aucun utilisateur de l'organisation ne peut connecter cette application
+  </Step>
+  <Step title="Définir les valeurs par défaut à l'échelle de l'organisation">
+    Sous **Contrôle d'accès aux applications**, configurez si les utilisateurs sont autorisés à accorder l'accès à des applications non fiables par défaut.
+  </Step>
+</Steps>
+
+| Contrôle admin | Description |
+|---|---|
+| **Niveau de confiance par application** | Autoriser ou bloquer de façon granulaire des applications OAuth individuelles pour votre organisation |
+| **Délégation à l'échelle du domaine** | Accorder aux comptes de service un accès à l'échelle de l'organisation pour agir au nom des utilisateurs |
+| **Contrôle d'accès aux applications par défaut** | Définir la politique à l'échelle de l'organisation pour les applications tierces non fiables |
+| **Journaux d'audit** | Passer en revue quels utilisateurs ont autorisé quelles applications et quand |
+
+<Note>
+  La délégation à l'échelle du domaine (DWD) accorde à un compte de service la capacité d'usurper l'identité de tout utilisateur de votre organisation. N'utilisez la DWD que lorsque c'est absolument nécessaire, et vérifiez régulièrement quels comptes de service se sont vu accorder ce niveau d'accès.
+</Note>

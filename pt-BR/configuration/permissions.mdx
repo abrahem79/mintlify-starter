@@ -1,0 +1,133 @@
+---
+title: "Gerenciar Permissões de Apps do Google e Acesso de Terceiros"
+sidebarTitle: "Permissões"
+description: "Revise e revogue o acesso de apps de terceiros, gerencie políticas de compartilhamento do Google Workspace e controle os escopos de API das aplicações conectadas."
+---
+
+Quando você faz login em apps e serviços de terceiros usando sua Conta Google — ou os autoriza a acessar seus dados — esses apps recebem tokens de permissão que concedem acesso a partes específicas da sua conta. Com o tempo, você pode acumular dezenas de apps conectados, muitos dos quais você não usa mais. Revisar e revogar regularmente permissões desnecessárias é uma das formas mais eficazes de proteger a segurança e a privacidade da sua conta.
+
+## Ver Apps Conectados
+
+Você pode ver todos os apps que atualmente têm acesso à sua Conta Google na seção **Segurança** do painel da sua conta.
+
+<Steps>
+  <Step title="Abra sua Conta Google">
+    Navegue até [myaccount.google.com](https://myaccount.google.com) e faça login.
+  </Step>
+  <Step title="Vá para Segurança">
+    Clique em **Segurança** na barra lateral esquerda.
+  </Step>
+  <Step title="Abra Apps de terceiros com acesso à conta">
+    Role até a seção **Suas conexões com apps e serviços de terceiros** e clique em **Ver todas as conexões**.
+  </Step>
+  <Step title="Revise a lista">
+    Você verá todos os apps que receberam acesso, junto com a data do último acesso e as permissões que cada app possui.
+  </Step>
+</Steps>
+
+<Note>
+  Apps nos quais você fez login usando "Fazer login com o Google" aparecem aqui junto com apps que receberam acesso à API programaticamente. Ambos os tipos podem ser revisados e revogados na mesma página.
+</Note>
+
+## Revogar Acesso
+
+Se você não usa mais um app, ou se não reconhece um app conectado, você deve revogar seu acesso imediatamente.
+
+<Steps>
+  <Step title="Navegue até os apps conectados">
+    A partir de [myaccount.google.com](https://myaccount.google.com), vá em **Segurança** → **Ver todas as conexões** em Apps de terceiros.
+  </Step>
+  <Step title="Selecione o app a remover">
+    Clique no app cujo acesso você deseja revogar.
+  </Step>
+  <Step title="Revise as permissões">
+    Leia a lista de escopos que foram concedidos ao app. Isso mostra exatamente quais dados o app pode acessar.
+  </Step>
+  <Step title="Clique em Excluir todas as conexões">
+    Clique em **Excluir todas as conexões que você tem com [Nome do App]** e confirme quando solicitado.
+  </Step>
+  <Step title="Verifique a remoção">
+    O app não aparecerá mais na sua lista de apps conectados e perderá a capacidade de acessar sua conta com o token revogado.
+  </Step>
+</Steps>
+
+<Warning>
+  Revogar o acesso invalida imediatamente o token de acesso do app — ele não pode mais ler ou escrever seus dados do Google. Contudo, quaisquer dados que o app já tenha baixado ou armazenado em seus próprios sistemas não são automaticamente excluídos. Verifique as próprias configurações de privacidade do app ou entre em contato com o desenvolvedor para solicitar a exclusão dos dados.
+</Warning>
+
+## Escopos OAuth
+
+Escopos OAuth definem precisamente o que um app tem permissão para fazer com sua Conta Google. Quando um app solicita acesso, ele especifica uma lista de strings de escopo que mapeiam para capacidades específicas. Você deve sempre revisar os escopos solicitados antes de conceder acesso a qualquer aplicação de terceiros.
+
+As strings de escopo seguem este formato:
+
+```text
+https://www.googleapis.com/auth/[service].[permission-level]
+```
+
+Por exemplo:
+
+```text
+https://www.googleapis.com/auth/drive.readonly
+```
+
+Esse escopo permite que o app leia arquivos no seu Google Drive, mas não crie, modifique ou exclua.
+
+### Escopos OAuth Comuns
+
+| Escopo | Nível de Acesso | O que o App Pode Fazer |
+|---|---|---|
+| `https://www.googleapis.com/auth/drive.readonly` | Somente leitura | Visualizar e baixar arquivos no Drive |
+| `https://www.googleapis.com/auth/drive` | Acesso total | Criar, editar e excluir qualquer arquivo no Drive |
+| `https://www.googleapis.com/auth/gmail.readonly` | Somente leitura | Ler todas as mensagens e configurações do Gmail |
+| `https://www.googleapis.com/auth/gmail.send` | Apenas envio | Enviar e-mail em seu nome |
+| `https://www.googleapis.com/auth/gmail.modify` | Leitura/escrita | Ler, enviar, excluir e gerenciar e-mail |
+| `https://www.googleapis.com/auth/calendar.readonly` | Somente leitura | Visualizar seus eventos de calendário |
+| `https://www.googleapis.com/auth/calendar` | Acesso total | Criar, editar e excluir eventos de calendário |
+| `https://www.googleapis.com/auth/userinfo.email` | Perfil | Acessar seu endereço de e-mail |
+| `https://www.googleapis.com/auth/userinfo.profile` | Perfil | Acessar suas informações básicas de perfil |
+| `openid` | Identidade | Verificar sua identidade via OpenID Connect |
+
+<Warning>
+  Evite conceder escopos amplos — como `https://www.googleapis.com/auth/drive` ou `https://www.googleapis.com/auth/gmail.modify` — a menos que você confie totalmente na aplicação e tenha uma necessidade clara desse nível de acesso. Sempre prefira o escopo mais restritivo que atenda à funcionalidade do app. Um app que só precisa ler arquivos do Drive nunca deve solicitar acesso total de escrita ao Drive.
+</Warning>
+
+<Tip>
+  Ao construir suas próprias aplicações com APIs do Google, siga o princípio do menor privilégio: solicite apenas os escopos que seu app genuinamente precisa. Isso constrói confiança do usuário e reduz o risco de segurança se as credenciais do seu app forem comprometidas.
+</Tip>
+
+## Permissões de Administrador do Workspace
+
+Se você gerencia uma organização do Google Workspace, tem controles adicionais para governar quais apps de terceiros seus usuários podem conectar às suas contas de trabalho. Essas configurações são gerenciadas no **Google Admin Console**.
+
+<Steps>
+  <Step title="Abra o Admin Console">
+    Faça login em [admin.google.com](https://admin.google.com) com suas credenciais de administrador do Workspace.
+  </Step>
+  <Step title="Vá para Segurança → Controles de API">
+    Navegue até **Segurança** → **Controle de acesso e dados** → **Controles de API**.
+  </Step>
+  <Step title="Gerencie o acesso a apps em todo o domínio">
+    Clique em **Gerenciar acesso a apps de terceiros** para ver todos os apps OAuth que os usuários da sua organização conectaram.
+  </Step>
+  <Step title="Configure as configurações de confiança do app">
+    Para cada app, você pode definir seu nível de confiança:
+    - **Confiável** — usuários podem conceder qualquer escopo solicitado
+    - **Limitado** — usuários só podem conceder acesso aos serviços do Google marcados como irrestritos
+    - **Bloqueado** — nenhum usuário na organização pode conectar esse app
+  </Step>
+  <Step title="Defina os padrões para toda a organização">
+    Em **Controle de acesso a apps**, configure se os usuários têm permissão para conceder acesso a apps não confiáveis por padrão.
+  </Step>
+</Steps>
+
+| Controle de Admin | Descrição |
+|---|---|
+| **Nível de confiança por app** | Permita ou bloqueie granularmente apps OAuth individuais para sua organização |
+| **Delegação em todo o domínio** | Conceda a contas de serviço acesso em toda a organização para agir em nome dos usuários |
+| **Padrão de controle de acesso a apps** | Defina a política em toda a organização para apps de terceiros não confiáveis |
+| **Logs de auditoria** | Revise quais usuários autorizaram quais apps e quando |
+
+<Note>
+  A delegação em todo o domínio (DWD) concede a uma conta de serviço a capacidade de se passar por qualquer usuário na sua organização. Use DWD apenas quando absolutamente necessário e audite regularmente quais contas de serviço receberam esse nível de acesso.
+</Note>

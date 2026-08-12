@@ -1,47 +1,77 @@
 ---
-title: "Inici ràpid"
-description: "Comenceu amb una guia sobre el camí més ràpid cap a un resultat satisfactori"
+title: "Inici ràpid: inicia sessió i fes la teva primera crida a l'API de Google"
+sidebarTitle: "Inici ràpid"
+description: "Inicia sessió a Google, obtén credencials d'API des de la Cloud Console i fes la teva primera petició en directe a l'API de cerca, tot en menys de 10 minuts."
 ---
 
-Descriviu com algú comença a utilitzar el vostre producte. Quina és la primera cosa que ha de fer? Hi ha algun requisit previ?
-
-Un inici ràpid ha de portar algú de zero a fer servir el vostre producte. Obtindrà una victòria ràpida i una idea del que pot aconseguir.
+Aquest inici ràpid et guia pel procés d'iniciar sessió a Google, obtenir credencials d'API i fer la teva primera petició a l'API, tot en menys de 10 minuts. Al final tindràs una crida a l'API funcional que retorna resultats de cerca en directe sobre la qual pots construir la teva pròpia aplicació.
 
 ## Requisits previs
 
-Abans de començar, heu de tenir:
+Abans de començar, assegura't de disposar del següent:
 
-- Requisit u (per exemple, Node.js 18+, un compte gratuït, una clau d'API)
-- Requisit dos (per exemple, un dispositiu compatible, un navegador compatible, un sistema operatiu compatible)
+- Un **compte de Google** — [crea'n un gratuïtament](https://accounts.google.com/signup) si encara no en tens cap.
+- **Coneixements bàsics d'HTTP** — familiaritat amb fer peticions GET/POST i llegir respostes JSON.
+- Un terminal de línia d'ordres o un client HTTP com [curl](https://curl.se/) o [Postman](https://www.postman.com/).
 
-## Comenceu
+## Passos
 
 <Steps>
-  <Step title="Instal·lació">
-    Descriviu com instal·lar el vostre producte o registrar-se.
+  <Step title="Inicia sessió">
+    Vés a [accounts.google.com](https://accounts.google.com) i inicia sessió amb el teu compte de Google. Si és la primera vegada, completa el flux de creació de compte abans de continuar.
+  </Step>
+  <Step title="Obtén les credencials d'API">
+    1. Obre la [Google Cloud Console](https://console.cloud.google.com).
+    2. Crea un nou projecte (o selecciona'n un d'existent).
+    3. Vés a **APIs & Services → Library** i activa la **Custom Search API**.
+    4. Vés a **APIs & Services → Credentials** i fes clic a **Create Credentials → API key**.
+    5. Copia la teva nova clau d'API i desa-la en un lloc segur.
+    6. Crea un Programmable Search Engine a [programmablesearchengine.google.com](https://programmablesearchengine.google.com) i copia el teu **Search Engine ID** (`cx`).
+  </Step>
+  <Step title="Fes la teva primera petició">
+    Substitueix `YOUR_API_KEY` i `YOUR_SEARCH_ENGINE_ID` a l'ordre següent pels valors que has copiat i executa-la al teu terminal:
 
     ```bash
-    npm install your-package
+    curl -X GET "https://www.googleapis.com/customsearch/v1?q=hello+world&key=YOUR_API_KEY&cx=YOUR_SEARCH_ENGINE_ID"
     ```
   </Step>
-  <Step title="Configuració">
-    Descriviu qualsevol preparació o configuració necessària abans del primer ús.
+  <Step title="Comprova la resposta">
+    Una petició correcta retorna un objecte JSON que conté metadades de cerca i una matriu de resultats. Hauries de veure una resposta semblant a aquesta:
 
-    ```bash
-    your-cli init
+    ```json
+    {
+      "kind": "customsearch#search",
+      "url": {
+        "type": "application/json",
+        "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&..."
+      },
+      "queries": {
+        "request": [
+          {
+            "title": "Google Custom Search - hello world",
+            "totalResults": "4970000000",
+            "searchTerms": "hello world",
+            "count": 10,
+            "startIndex": 1
+          }
+        ]
+      },
+      "items": [
+        {
+          "kind": "customsearch#result",
+          "title": "Hello, World! – Wikipedia",
+          "htmlTitle": "\u003cb\u003eHello, World!\u003c/b\u003e – Wikipedia",
+          "link": "https://en.wikipedia.org/wiki/%22Hello,_World!%22_program",
+          "snippet": "A \"Hello, World!\" program is generally a simple computer program that outputs the phrase \"Hello, World!\" to a display device."
+        }
+      ]
+    }
     ```
-  </Step>
-  <Step title="Executeu-lo">
-    Mostreu la primera cosa que fa una persona usuària per veure'l funcionar.
 
-    ```bash
-    your-cli start
-    ```
+    La matriu `items` conté els teus resultats de cerca. Cada objecte inclou el títol de la pàgina, l'URL (`link`) i un `snippet` breu que pots mostrar directament a la teva interfície d'usuari.
   </Step>
 </Steps>
 
 <Tip>
-  Oferiu a les persones una manera d'obtenir ajuda. Podria ser un enllaç a una pàgina d'assistència, una conversa amb un agent d'atenció al client o un fòrum del vostre producte.
-
-  Exemple: Necessiteu ajuda? Contacteu amb nosaltres a [support@yourcompany.com](mailto:support@yourcompany.com).
+  L'exemple anterior utilitza una simple clau d'API per a l'autenticació. Les API de Google també admeten OAuth 2.0 per a peticions que accedeixen a dades de l'usuari. Consulta la [Guia d'autenticació](/api/authentication) per veure un desglossament complet de tots els mètodes d'autenticació admesos.
 </Tip>

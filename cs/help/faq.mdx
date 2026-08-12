@@ -1,0 +1,45 @@
+---
+title: "FAQ ke službám Google: Účty, API, fakturace a soukromí"
+sidebarTitle: "FAQ"
+description: "Odpovědi na časté otázky týkající se účtů Google, kvót úložiště, Workspace, klíčů API, fakturace, ochrany dat a limitů rychlosti pro vývojáře."
+---
+
+Ať už jste nový uživatel Googlu, nebo zkušený vývojář pracující s Google API, pravděpodobně narazíte na otázky ohledně toho, jak fungují účty, úložiště, fakturace a ovládání přístupu. Tato stránka shromažďuje odpovědi na nejčastěji kladené otázky napříč spotřebitelskými produkty Googlu, aplikacemi Workspace a vývojářskou platformou — abyste získali rychlé odpovědi, aniž byste museli procházet více center nápovědy.
+
+<AccordionGroup>
+  <Accordion title="Jak resetuji své heslo Google?">
+    Heslo Google můžete resetovat na stránce obnovy účtu na [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery). Zadejte e-mailovou adresu spojenou s vaším účtem a postupujte podle výzev — Google odešle ověřovací kód na váš záložní e-mail nebo telefonní číslo. Po ověření budete moci vytvořit nové heslo. Pokud jste přišli o přístup ke všem obnovovacím možnostem, Google poskytuje proces ověření identity, kde vám budou položeny otázky pro potvrzení vaší identity na základě historie účtu.
+  </Accordion>
+
+  <Accordion title="Proč můj klíč API nefunguje?">
+    Nejčastějšími důvody, proč klíč API přestane fungovat, jsou: klíč byl omezen na konkrétní IP adresy nebo referrery, které neodpovídají vašemu aktuálnímu prostředí; klíč nemá aktivované potřebné API ve vašem projektu Google Cloud; nebo byl klíč smazán či znovu vygenerován. Otevřete [Google Cloud Console](https://console.cloud.google.com), přejděte na **APIs & Services → Credentials** a ověřte omezení a stav klíče. Také se ujistěte, že cílové API (např. Maps JavaScript API, Sheets API) je aktivováno pod **APIs & Services → Enabled APIs & services**.
+  </Accordion>
+
+  <Accordion title="Co se počítá do mé kvóty úložiště Google?">
+    Vašich 15 GB bezplatného úložiště Google je sdíleno mezi Gmailem (e-maily a přílohy), Diskem Google (nahrané soubory) a Fotkami Google (zálohované obrázky a videa). Google Dokumenty, Tabulky, Prezentace, Formuláře a Nákresy vytvořené nativně ve formátech Googlu se do vaší kvóty **nepočítají**. Soubory nahrané na Disk v jiných formátech — jako je `.docx`, `.xlsx` nebo `.pdf` — však úložiště spotřebovávají. Aktuální využití a rozpis můžete zkontrolovat na [one.google.com/storage](https://one.google.com/storage).
+  </Accordion>
+
+  <Accordion title="Jak smažu svůj účet Google?">
+    Účet Google můžete trvale smazat v sekci **Data a soukromí** nastavení účtu. Přejděte na [myaccount.google.com](https://myaccount.google.com), klikněte na **Data a soukromí**, přejděte dolů na **Další možnosti** a klikněte na **Smazat účet Google**. Google vás nejprve požádá o stažení kopie vašich dat pomocí služby Google Takeout. Uvědomte si, že smazání je trvalé — váš Gmail, soubory na Disku a všechna související data budou ztracena a po vypršení odkladné lhůty je nebude možné obnovit.
+  </Accordion>
+
+  <Accordion title="Mohu Google API používat zdarma?">
+    Mnoho Google API nabízí bezplatnou úroveň se štědrými limity použití — například Maps JavaScript API zahrnuje 200 USD měsíčně jako bezplatný kredit a volání Google Sheets API jsou zdarma až do limitů použití nastavených pro projekt. Vysokoobjemové použití, některá prémiová API (jako Google Maps Routes Preferred) a funkce podnikové úrovně však vyžadují nastavení fakturačního účtu v Google Cloud. Ceny pro jakékoli konkrétní API si můžete prohlédnout na [cloud.google.com/pricing](https://cloud.google.com/pricing) nebo na stránce dokumentace daného API.
+  </Accordion>
+
+  <Accordion title="Jak převedu vlastnictví Google Dokumentu?">
+    Chcete-li převést vlastnictví Google Dokumentu, Tabulky nebo Prezentace, otevřete soubor a klikněte v pravém horním rohu na **Sdílet**. Najděte osobu, na kterou chcete vlastnictví převést (musí již mít přístup), klikněte na rozevírací nabídku vedle jejího jména a vyberte **Převést vlastnictví**. Příjemce obdrží e-mailovou notifikaci a musí převod přijmout. Uvědomte si, že vlastnictví můžete převést pouze na jiného uživatele ve stejné organizaci Google Workspace, nebo (u osobních účtů) na jiného držitele účtu Google.
+  </Accordion>
+
+  <Accordion title="Jak nahlásím spam nebo phishingový e-mail v Gmailu?">
+    Chcete-li nahlásit spam v Gmailu, otevřete zprávu, klikněte na **nabídku tří teček** (⋮) v pravém horním rohu e-mailu a vyberte **Nahlásit spam** nebo **Nahlásit phishing**. Nahlášení phishingu odešle e-mail Googlu k přezkoumání a pomáhá chránit ostatní uživatele před podobnými útoky. Gmail také e-mail automaticky přesune ze schránky. Pokud dostáváte phishingové e-maily, které se vydávají za společnost nebo instituci, můžete je navíc nahlásit [týmu Google Safe Browsing](https://safebrowsing.google.com/safebrowsing/report_phish/).
+  </Accordion>
+
+  <Accordion title="Jaké jsou limity rychlosti pro Google Search API?">
+    Google Custom Search JSON API umožňuje až **100 vyhledávacích dotazů za den** zdarma, s dalšími dotazy dostupnými za 5 USD za 1 000 dotazů (až 10 000 za den). Toto se týká Programmable Search Engine API — pokud používáte Google Search Console API nebo jiná API související s vyhledáváním, limity se liší a jsou dokumentovány samostatně. Své využití můžete sledovat a nakonfigurovat kvóty požadavků v [Google Cloud Console](https://console.cloud.google.com) pod **APIs & Services → Quotas**. Pro velmi vysokoobjemové potřeby vyhledávání Google nabízí možnosti na úrovni podniku prostřednictvím Google Cloud.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Nenašli jste odpověď, kterou hledáte? Navštivte [Centrum nápovědy Google](https://support.google.com) pro dokumentaci k podpoře konkrétních produktů, nebo kontaktujte podporu Google přímo ze svého účtu Google v části **Podpora** v navigační nabídce.
+</Note>

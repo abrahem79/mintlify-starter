@@ -1,0 +1,45 @@
+---
+title: "Google pakalpojumu BUJ: konti, API, rēķini un konfidencialitāte"
+sidebarTitle: "BUJ"
+description: "Atbildes uz izplatītiem jautājumiem par Google kontiem, krātuves kvotām, Workspace, API atslēgām, rēķinu izrakstīšanu, datu konfidencialitāti un izstrādātāju ātruma ierobežojumiem."
+---
+
+Neatkarīgi no tā, vai esat jauns Google lietotājs vai pieredzējis izstrādātājs, kas strādā ar Google API, iespējams, saskarsities ar jautājumiem par to, kā darbojas konti, krātuve, rēķinu izrakstīšana un piekļuves kontroles. Šajā lapā apkopotas atbildes uz visbiežāk uzdotajiem jautājumiem Google patērētāju produktos, Workspace lietotnēs un izstrādātāju platformā, lai jūs varētu ātri iegūt atbildes, neraksot cauri vairākiem palīdzības centriem.
+
+<AccordionGroup>
+  <Accordion title="Kā atiestatīt savu Google paroli?">
+    Savu Google paroli varat atiestatīt no konta atkopšanas lapas [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery). Ievadiet ar savu kontu saistīto e-pasta adresi un sekojiet norādēm — Google nosūtīs verifikācijas kodu uz jūsu atkopšanas e-pastu vai tālruņa numuru. Kad esat verificēts, varēsit izveidot jaunu paroli. Ja esat zaudējis piekļuvi visām atkopšanas opcijām, Google nodrošina identitātes verifikācijas procesu, kurā jums tiks uzdoti jautājumi, lai apstiprinātu jūsu identitāti, pamatojoties uz jūsu konta vēsturi.
+  </Accordion>
+
+  <Accordion title="Kāpēc mana API atslēga nedarbojas?">
+    Visbiežākie iemesli, kāpēc API atslēga pārstāj darboties, ir tas, ka atslēga ir ierobežota līdz konkrētām IP adresēm vai atsauces avotiem, kas neatbilst jūsu pašreizējai videi, atslēgai nav iespējota nepieciešamā API jūsu Google Cloud projektā, vai arī atslēga ir dzēsta vai ģenerēta no jauna. Atveriet [Google Cloud konsoli](https://console.cloud.google.com), pārejiet uz **APIs & Services → Credentials** un pārbaudiet atslēgas ierobežojumus un statusu. Apstipriniet arī, ka mērķa API (piemēram, Maps JavaScript API, Sheets API) ir iespējota sadaļā **APIs & Services → Enabled APIs & services**.
+  </Accordion>
+
+  <Accordion title="Kas skaitās manā Google krātuves kvotā?">
+    Jūsu 15 GB bezmaksas Google krātuves ir koplietota starp Gmail (e-pastiem un pielikumiem), Google Drive (augšupielādētiem failiem) un Google Photos (dublētajiem attēliem un videoklipiem). Google Docs, Sheets, Slides, Forms un Drawings, kas izveidoti dzimtā Google formātā, **neskaitās** jūsu kvotā. Tomēr failus, kas augšupielādēti Drive citos formātos — piemēram, `.docx`, `.xlsx` vai `.pdf` —, patērē krātuvi. Savu pašreizējo lietojumu un sadalījumu varat pārbaudīt vietnē [one.google.com/storage](https://one.google.com/storage).
+  </Accordion>
+
+  <Accordion title="Kā izdzēst savu Google kontu?">
+    Savu Google kontu varat pastāvīgi izdzēst no sadaļas **Data & privacy** savos konta iestatījumos. Dodieties uz [myaccount.google.com](https://myaccount.google.com), noklikšķiniet uz **Data & privacy**, ritiniet līdz **More options** un noklikšķiniet uz **Delete your Google Account**. Google jums lūgs vispirms lejupielādēt savu datu kopiju, izmantojot Google Takeout. Ņemiet vērā, ka dzēšana ir pastāvīga — jūsu Gmail, Drive faili un visi saistītie dati tiks zaudēti un nevar tikt atgūti pēc labvēlības perioda beigām.
+  </Accordion>
+
+  <Accordion title="Vai es varu izmantot Google API bez maksas?">
+    Daudzas Google API piedāvā bezmaksas līmeni ar dāsniem lietojuma ierobežojumiem — piemēram, Maps JavaScript API ietver 200 ASV dolāru bezmaksas kredītus mēnesī, un Google Sheets API izsaukumi ir bez maksas līdz lietojuma ierobežojumiem, kas iestatīti katram projektam. Tomēr liela apjoma lietošanai, noteiktām premium API (piemēram, Google Maps Routes Preferred) un uzņēmuma līmeņa funkcijām Google Cloud jāiestata rēķinu izrakstīšanas konts. Konkrētas API cenu varat pārskatīt vietnē [cloud.google.com/pricing](https://cloud.google.com/pricing) vai atsevišķas API dokumentācijas lapā.
+  </Accordion>
+
+  <Accordion title="Kā nodot Google dokumenta īpašumu?">
+    Lai nodotu Google Doc, Sheet vai Slide īpašumu, atveriet failu un augšējā labajā stūrī noklikšķiniet uz **Share**. Atrodiet personu, kurai vēlaties nodot īpašumu (viņai jau jābūt piekļuvei), noklikšķiniet uz nolaižamās izvēlnes blakus viņas vārdam un atlasiet **Transfer ownership**. Saņēmējs saņems e-pasta paziņojumu un pieņems nodošanu. Ņemiet vērā, ka īpašumu var nodot tikai citam lietotājam tajā pašā Google Workspace organizācijā vai — personiskiem kontiem — citam Google konta īpašniekam.
+  </Accordion>
+
+  <Accordion title="Kā ziņot par surogātpasta vai pikšķerēšanas e-pastu Gmail?">
+    Lai ziņotu par surogātpasta e-pastu Gmail, atveriet ziņojumu, e-pasta augšējā labajā stūrī noklikšķiniet uz **trīspunktu izvēlnes** (⋮) un atlasiet **Report spam** vai **Report phishing**. Ziņošana par pikšķerēšanu nosūta e-pastu Google pārskatīšanai un palīdz aizsargāt citus lietotājus no līdzīgiem uzbrukumiem. Gmail arī automātiski pārvietos e-pastu no jūsu iesūtnes. Ja saņemat pikšķerēšanas e-pastus, kas uzdodas par uzņēmumu vai iestādi, varat papildus ziņot par tiem [Google Safe Browsing komandai](https://safebrowsing.google.com/safebrowsing/report_phish/).
+  </Accordion>
+
+  <Accordion title="Kādi ir Google Search API ātruma ierobežojumi?">
+    Google Custom Search JSON API atļauj līdz **100 meklēšanas vaicājumiem dienā** bez maksas, ar papildu vaicājumiem, kas pieejami par 5 ASV dolāriem uz 1000 vaicājumiem (līdz 10 000 dienā). Tas attiecas uz Programmable Search Engine API — ja izmantojat Google Search Console API vai citas ar meklēšanu saistītas API, ierobežojumi atšķiras un ir dokumentēti atsevišķi. Savu lietojumu varat uzraudzīt un konfigurēt pieprasījumu kvotas [Google Cloud konsolē](https://console.cloud.google.com) sadaļā **APIs & Services → Quotas**. Ļoti liela apjoma meklēšanas vajadzībām Google piedāvā uzņēmuma līmeņa opcijas caur Google Cloud.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Neatrodat atbildi, ko meklējat? Apmeklējiet [Google palīdzības centru](https://support.google.com), lai iegūtu produktam specifisku atbalsta dokumentāciju, vai sazinieties tieši ar Google atbalstu no sava Google konta sadaļā **Support** navigācijas izvēlnē.
+</Note>

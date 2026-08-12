@@ -1,0 +1,58 @@
+---
+title: "Configuração da Conta Google: Habilitar APIs e Obter Credenciais"
+sidebarTitle: "Configuração da Conta"
+description: "Crie uma Conta Google, configure um projeto no Cloud Console, habilite as APIs escolhidas e gere credenciais para autenticar sua aplicação."
+---
+
+Antes de usar as APIs para desenvolvedores do Google, você precisa de uma Conta Google, um projeto na Cloud para hospedar seus recursos e um conjunto de credenciais que sua aplicação usará para autenticar. Este guia orienta você em cada uma dessas etapas para que esteja pronto para fazer sua primeira chamada de API.
+
+## Passos de Configuração
+
+<Steps>
+  <Step title="Crie uma Conta Google">
+    Se você ainda não tem uma Conta Google, acesse [accounts.google.com/signup](https://accounts.google.com/signup) e complete o formulário de cadastro. Sua Conta Google dá acesso a todos os serviços do Google, incluindo o Cloud Console, Gmail, Drive e todas as APIs para desenvolvedores.
+  </Step>
+  <Step title="Acesse o Google Cloud Console">
+    Navegue até o [Google Cloud Console](https://console.cloud.google.com) e faça login com sua Conta Google. O Console é seu hub central para gerenciar projetos do Google Cloud, habilitar APIs e criar credenciais.
+  </Step>
+  <Step title="Crie um Projeto">
+    1. Clique no seletor de projeto no topo da página do Console.
+    2. Clique em **New Project**.
+    3. Insira um **Project name** descritivo (por exemplo, `my-search-app`).
+    4. Selecione uma **Billing account** se solicitado, então clique em **Create**.
+
+    Todas as APIs e credenciais que você criar terão escopo para esse projeto, tornando fácil gerenciar uso e cobrança separadamente para cada aplicação.
+  </Step>
+  <Step title="Habilite as APIs">
+    1. Na navegação à esquerda, vá em **APIs & Services → Library**.
+    2. Pesquise a API que deseja usar (por exemplo, **Custom Search API**, **Maps JavaScript API** ou **Gmail API**).
+    3. Clique no nome da API, então clique em **Enable**.
+
+    Repita esse passo para cada API do Google que sua aplicação precisa. Apenas APIs habilitadas podem receber requisições de suas credenciais.
+  </Step>
+  <Step title="Crie Credenciais (Chave de API)">
+    1. Vá em **APIs & Services → Credentials**.
+    2. Clique em **Create Credentials** e selecione **API key**.
+    3. O Google gera uma nova chave de API imediatamente. Clique em **Copy** para copiá-la para a área de transferência.
+    4. Opcionalmente, clique em **Edit API key** para restringir a chave a APIs específicas ou a referrers HTTP e endereços IP — isso é fortemente recomendado para uso em produção.
+
+    Armazene sua chave de API em um local seguro, como uma variável de ambiente ou um gerenciador de segredos.
+  </Step>
+</Steps>
+
+<Note>
+  **Mantenha sua chave de API em segredo.** Nunca commite sua chave de API no controle de versão nem a exponha em código do lado do cliente. Se sua chave for comprometida, vá em **APIs & Services → Credentials** no Cloud Console, exclua a chave afetada e gere uma nova imediatamente.
+</Note>
+
+## Próximos Passos
+
+Agora que sua conta e credenciais estão configuradas, você está pronto para começar a construir.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Faça sua primeira chamada de API e veja resultados de pesquisa ao vivo em minutos
+  </Card>
+  <Card title="Autenticação" icon="lock" href="/api/authentication">
+    Saiba mais sobre chaves de API, OAuth 2.0 e contas de serviço
+  </Card>
+</CardGroup>

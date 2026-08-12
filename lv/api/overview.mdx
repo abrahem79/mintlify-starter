@@ -1,0 +1,109 @@
+---
+title: "Google REST API: pārskats un darba sākšanas ceļvedis"
+sidebarTitle: "Pārskats"
+description: "Ievads Google REST API: bāzes URL, versionēšana, pieprasījumu un atbilžu formāts, ātruma ierobežojumi un kļūdu apstrāde visiem pakalpojumiem."
+---
+
+Google piedāvā plašu REST API komplektu, kas nodrošina visu, sākot no meklēšanas un produktivitātes līdz mākoņa infrastruktūrai un mašīnmācībai. Neatkarīgi no tā, vai veidojat tīmekļa lietotni, mobilo klientu vai aizmugures pakalpojumu, šīs API sniedz programmatisku piekļuvi Google platformai, izmantojot standarta HTTP pieprasījumus un JSON. Šis ceļvedis aptver pamatjēdzienus, kas nepieciešami pirms pirmā izsaukuma veikšanas.
+
+## Bāzes URL
+
+Visas Google REST API tiek piegādātas no kopīga bāzes URL:
+
+```text
+https://www.googleapis.com
+```
+
+Dažām API ir īpaši resursdatoru nosaukumi (piemēram, `https://people.googleapis.com`), bet vairums seko modelim `https://www.googleapis.com/{api}/{version}/{resource}`.
+
+## API versionēšana
+
+Google API izmanto **uz ceļu balstītu versionēšanu**. Versijas segments URL ceļā parādās uzreiz pēc API nosaukuma, piemēram:
+
+| API | Versionētais galapunkta prefikss |
+|-----|-----------------------------|
+| Custom Search | `https://www.googleapis.com/customsearch/v1` |
+| Drive | `https://www.googleapis.com/drive/v3` |
+| OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |
+
+Kad Google izlaiž jaunu galveno versiju, iepriekšējā versija paliek pieejama savā sākotnējā ceļā līdz oficiāli izziņotam nolietošanas termiņam. Jauniem integrācijām vienmēr izvēlieties jaunāko stabilo versiju.
+
+## Pieprasījuma formāts
+
+Katram API izsaukumam jāievēro šīs konvencijas:
+
+- **Metode** — izmantojiet HTTP darbības vārdu, kas piemērots operācijai (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`).
+- **Satura tips** — pieprasījumos, kas nes ķermeni, iekļaujiet `Content-Type: application/json`.
+- **Autorizācija** — nododiet akreditācijas datus galvenē `Authorization` kā Bearer marķieri vai izmantojot vaicājuma parametru `key` pieprasījumiem, kas autentificēti ar API atslēgu:
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+```
+
+- **Ķermenis** — pieprasījuma ķermeņiem jābūt derīgam JSON. Būla vērtībām jābūt `true`/`false` (ne virknēm), un laikspiedoliem jāatbilst RFC 3339 formātam.
+
+## Atbildes formāts
+
+Veiksmīgas atbildes atgriež HTTP `2xx` statusa kodus un JSON ķermeni. Vairums kolekcijas galapunktu seko standarta aploksnei:
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "items": [
+    { "id": "1BxiM...", "name": "Report.pdf" }
+  ]
+}
+```
+
+- **`kind`** — nosauktās telpas virkne, kas identificē resursa tipu (piemēram, `customsearch#search`, `drive#file`).
+- **`items`** — resursu objektu masīvs, ko atgriež saraksta operācijas.
+- **`nextPageToken`** — klāt, ja pastāv vairāk rezultātu lapu; nododiet to kā `pageToken` nākamajā pieprasījumā.
+
+## Ātruma ierobežojumi
+
+Ātruma ierobežojumi atšķiras atkarībā no API un tiek piemēroti par katru projektu un lietotāju. Ja pārsniedzat ierobežojumu, API atgriež HTTP `429 Too Many Requests`. Savā klientā jums jāievieš eksponenciāla atkāpe un atkārtošanas loģika.
+
+<Tip>
+  Skatiet [problēmu novēršanas ceļvedi](/help/troubleshooting), lai iegūtu ieteicamās atkārtošanas stratēģijas un norādījumus par kvotu palielinājumu pieprasīšanu liela apjoma darba slodzēm.
+</Tip>
+
+## Kļūdu atbildes
+
+Visas API kļūdas seko konsekventai JSON struktūrai, tāpēc tās ir vienkārši parsēt un apstrādāt programmatiski:
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+| Lauks | Apraksts |
+|-------|-------------|
+| `error.code` | Kļūdas HTTP statusa kods. |
+| `error.message` | Cilvēkam lasāms apraksts par to, kas noticis. |
+| `error.status` | Mašīnlasāma kļūdas koda virkne. |
+
+Izplatītas statusa vērtības ir `PERMISSION_DENIED`, `NOT_FOUND`, `INVALID_ARGUMENT`, `UNAUTHENTICATED` un `RESOURCE_EXHAUSTED`.
+
+## Izpētiet API
+
+<CardGroup cols={2}>
+  <Card title="Autentifikācija" icon="key" href="/api/authentication">
+    Uzziniet, kā autentificēties ar API atslēgām, OAuth 2.0 marķieriem un pakalpojumu kontiem.
+  </Card>
+  <Card title="Meklēšanas API" icon="magnifying-glass" href="/api/search">
+    Veiciet vaicājumus savā Programmable Search Engine un iegūstiet strukturētus tīmekļa rezultātus.
+  </Card>
+  <Card title="Kontu API" icon="user" href="/api/accounts">
+    Iegūstiet autentificētā lietotāja profilu, e-pastu un identitātes datus.
+  </Card>
+  <Card title="Tīmekļa āķi" icon="webhook" href="/api/webhooks">
+    Abonējiet spiedienpaziņojumus par reāllaika resursu izmaiņu notikumiem.
+  </Card>
+</CardGroup>

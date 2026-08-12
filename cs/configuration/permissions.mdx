@@ -1,0 +1,133 @@
+---
+title: "Správa oprávnění aplikací Google a přístupu třetích stran"
+sidebarTitle: "Oprávnění"
+description: "Prohlédněte si a odvolejte přístup aplikací třetích stran, spravujte zásady sdílení v Google Workspace a ovládejte rozsahy API pro připojené aplikace."
+---
+
+Když se přihlásíte do aplikací a služeb třetích stran pomocí svého účtu Google — nebo je autorizujete pro přístup k vašim datům — obdrží tyto aplikace tokeny oprávnění, které jim udělují přístup ke konkrétním částem vašeho účtu. Postupem času se u vás mohou nahromadit desítky propojených aplikací, z nichž mnohé již nepoužíváte. Pravidelné procházení a odvolávání zbytečných oprávnění je jedním z nejúčinnějších způsobů, jak chránit bezpečnost a soukromí svého účtu.
+
+## Zobrazení propojených aplikací
+
+Všechny aplikace, které mají v tuto chvíli přístup k vašemu účtu Google, uvidíte v sekci **Zabezpečení** panelu svého účtu.
+
+<Steps>
+  <Step title="Otevřete svůj účet Google">
+    Přejděte na [myaccount.google.com](https://myaccount.google.com) a přihlaste se.
+  </Step>
+  <Step title="Přejděte do Zabezpečení">
+    V levém postranním panelu klikněte na **Zabezpečení**.
+  </Step>
+  <Step title="Otevřete Aplikace třetích stran s přístupem k účtu">
+    Přejděte dolů do sekce **Vaše propojení s aplikacemi a službami třetích stran** a klikněte na **Zobrazit všechna propojení**.
+  </Step>
+  <Step title="Prohlédněte si seznam">
+    Uvidíte všechny aplikace, kterým byl udělen přístup, spolu s datem posledního přístupu a oprávněními, která každá aplikace drží.
+  </Step>
+</Steps>
+
+<Note>
+  Aplikace, do kterých jste se přihlásili pomocí „Přihlásit se pomocí Googlu", se zde objevují spolu s aplikacemi, kterým byl přístup k API udělen programově. Oba typy lze prohlížet a odvolávat ze stejné stránky.
+</Note>
+
+## Odvolání přístupu
+
+Pokud aplikaci již nepoužíváte nebo pokud propojenou aplikaci nepoznáváte, měli byste její přístup okamžitě odvolat.
+
+<Steps>
+  <Step title="Přejděte na propojené aplikace">
+    Na [myaccount.google.com](https://myaccount.google.com) přejděte do **Zabezpečení** → **Zobrazit všechna propojení** pod Aplikace třetích stran.
+  </Step>
+  <Step title="Vyberte aplikaci k odebrání">
+    Klikněte na aplikaci, jejíž přístup chcete odvolat.
+  </Step>
+  <Step title="Prohlédněte si oprávnění">
+    Přečtěte si seznam rozsahů, které aplikaci byly uděleny. Ten přesně ukazuje, k jakým datům má aplikace přístup.
+  </Step>
+  <Step title="Klikněte na Smazat všechna propojení">
+    Klikněte na **Smazat všechna propojení s [Název aplikace]** a při výzvě potvrďte.
+  </Step>
+  <Step title="Ověřte odstranění">
+    Aplikace se již v seznamu propojených aplikací neobjeví a ztratí schopnost přistupovat k vašemu účtu s odvolaným tokenem.
+  </Step>
+</Steps>
+
+<Warning>
+  Odvolání přístupu okamžitě znehodnotí přístupový token aplikace — aplikace již nemůže číst ani zapisovat vaše data Google. Jakákoli data, která si aplikace již stáhla nebo uložila do svých vlastních systémů, se však automaticky nesmažou. Zkontrolujte vlastní nastavení soukromí aplikace nebo kontaktujte vývojáře a požádejte o smazání dat.
+</Warning>
+
+## Rozsahy OAuth
+
+Rozsahy OAuth přesně definují, co je aplikaci dovoleno dělat s vaším účtem Google. Když aplikace žádá o přístup, uvede seznam řetězců rozsahů, které se mapují na konkrétní schopnosti. Před udělením přístupu jakékoli aplikaci třetí strany byste si měli vždy prohlédnout požadované rozsahy.
+
+Řetězce rozsahů mají tento formát:
+
+```text
+https://www.googleapis.com/auth/[service].[permission-level]
+```
+
+Například:
+
+```text
+https://www.googleapis.com/auth/drive.readonly
+```
+
+Tento rozsah umožňuje aplikaci číst soubory na vašem Disku Google, ale ne je vytvářet, upravovat ani mazat.
+
+### Běžné rozsahy OAuth
+
+| Rozsah | Úroveň přístupu | Co aplikace může dělat |
+|---|---|---|
+| `https://www.googleapis.com/auth/drive.readonly` | Pouze pro čtení | Zobrazit a stáhnout soubory na Disku |
+| `https://www.googleapis.com/auth/drive` | Úplný přístup | Vytvářet, upravovat a mazat jakýkoli soubor na Disku |
+| `https://www.googleapis.com/auth/gmail.readonly` | Pouze pro čtení | Číst všechny zprávy a nastavení Gmailu |
+| `https://www.googleapis.com/auth/gmail.send` | Pouze odeslání | Odesílat e-maily vaším jménem |
+| `https://www.googleapis.com/auth/gmail.modify` | Čtení/zápis | Číst, odesílat, mazat a spravovat e-maily |
+| `https://www.googleapis.com/auth/calendar.readonly` | Pouze pro čtení | Zobrazit vaše události v kalendáři |
+| `https://www.googleapis.com/auth/calendar` | Úplný přístup | Vytvářet, upravovat a mazat události v kalendáři |
+| `https://www.googleapis.com/auth/userinfo.email` | Profil | Přístup k vaší e-mailové adrese |
+| `https://www.googleapis.com/auth/userinfo.profile` | Profil | Přístup k vašim základním profilovým informacím |
+| `openid` | Identita | Ověření vaší identity prostřednictvím OpenID Connect |
+
+<Warning>
+  Vyvarujte se udělování širokých rozsahů — jako je `https://www.googleapis.com/auth/drive` nebo `https://www.googleapis.com/auth/gmail.modify` — pokud aplikaci plně nedůvěřujete a nemáte jasnou potřebu takové úrovně přístupu. Vždy preferujte nejrestriktivnější rozsah, který uspokojí funkčnost aplikace. Aplikace, která potřebuje pouze číst soubory z Disku, by nikdy neměla žádat o úplný přístup pro zápis na Disk.
+</Warning>
+
+<Tip>
+  Když stavíte vlastní aplikace s rozhraními Google API, řiďte se principem nejmenších oprávnění: žádejte pouze o rozsahy, které vaše aplikace skutečně potřebuje. To buduje důvěru uživatelů a snižuje bezpečnostní riziko, pokud by přihlašovací údaje vaší aplikace byly někdy kompromitovány.
+</Tip>
+
+## Oprávnění administrátora Workspace
+
+Pokud spravujete organizaci Google Workspace, máte další ovládací prvky, jimiž řídíte, které aplikace třetích stran mohou vaši uživatelé propojit se svými pracovními účty. Tato nastavení se spravují z **Google Admin Console**.
+
+<Steps>
+  <Step title="Otevřete Admin Console">
+    Přihlaste se na [admin.google.com](https://admin.google.com) pomocí svých administrátorských přihlašovacích údajů Workspace.
+  </Step>
+  <Step title="Přejděte na Zabezpečení → Ovládání API">
+    Přejděte na **Zabezpečení** → **Ovládání přístupu a dat** → **Ovládání API**.
+  </Step>
+  <Step title="Spravujte přístup k aplikacím napříč doménou">
+    Klikněte na **Spravovat přístup aplikací třetích stran** a zobrazte všechny aplikace OAuth, které uživatelé ve vaší organizaci propojili.
+  </Step>
+  <Step title="Konfigurujte nastavení důvěryhodnosti aplikací">
+    U každé aplikace můžete nastavit úroveň důvěry:
+    - **Důvěryhodná** — uživatelé mohou udělit jakýkoli požadovaný rozsah
+    - **Omezená** — uživatelé mohou udělit přístup pouze ke službám Google označeným jako neomezené
+    - **Blokovaná** — žádný uživatel v organizaci nemůže tuto aplikaci propojit
+  </Step>
+  <Step title="Nastavte výchozí hodnoty pro celou organizaci">
+    Pod **Ovládání přístupu aplikací** nakonfigurujte, zda mají uživatelé ve výchozím nastavení povoleno udělit přístup nedůvěryhodným aplikacím.
+  </Step>
+</Steps>
+
+| Administrátorské ovládání | Popis |
+|---|---|
+| **Úroveň důvěry na aplikaci** | Detailně povolit nebo zablokovat jednotlivé aplikace OAuth pro vaši organizaci |
+| **Delegování napříč doménou** | Udělit servisním účtům přístup napříč organizací pro jednání jménem uživatelů |
+| **Výchozí ovládání přístupu aplikací** | Nastavit celoorganizační zásady pro nedůvěryhodné aplikace třetích stran |
+| **Auditní protokoly** | Prohlédnout, kteří uživatelé kdy autorizovali které aplikace |
+
+<Note>
+  Delegování napříč doménou (DWD) uděluje servisnímu účtu schopnost vystupovat jako jakýkoli uživatel ve vaší organizaci. DWD používejte pouze v naprosto nezbytných případech a pravidelně kontrolujte, kterým servisním účtům byla tato úroveň přístupu udělena.
+</Note>

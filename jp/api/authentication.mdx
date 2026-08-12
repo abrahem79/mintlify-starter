@@ -1,0 +1,134 @@
+---
+title: "Google API 認証: キー、OAuth 2.0、サービスアカウント"
+sidebarTitle: "認証"
+description: "公開データには API キー、ユーザーデータには OAuth 2.0 Bearer トークン、サーバー間アクセスにはサービスアカウントを使い、Google API リクエストを認証します。"
+---
+
+Google の REST API へのすべてのリクエストは認証が必要です。Google は主に 3 つの認証方式をサポートしています。公開データにアクセスするための API キー、ユーザーの代わりに動作するための OAuth 2.0 Bearer トークン、そしてサーバー間連携のためのサービスアカウント認証情報です。適切な方式を選ぶには、アクセスしたいデータの種類と、人間のユーザーがフローに関わるかどうかを考慮します。
+
+## API キー
+
+API キーは最もシンプルな認証方式です。API キーは Google に対してプロジェクトを識別しますが、ユーザーコンテキストは持ちません。そのため、**公開データにアクセスする** API（Programmable Search API など）にのみ適しています。
+
+すべてのリクエストで `key` クエリパラメーターとして API キーを渡します。
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**curl での例:**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  API キーの生成と管理は [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で行います。各キーを特定の API とリファラー URL に制限し、万が一漏えいした場合の被害範囲を限定してください。
+</Tip>
+
+## OAuth 2.0 Bearer トークン
+
+Google ドライブのファイル、Gmail のメッセージ、カレンダーの予定など、**ユーザーが所有するデータ**にアクセスまたは変更する必要がある場合は、OAuth 2.0 を使用する必要があります。ユーザーが OAuth 同意フローを完了すると、アプリケーションはアクセストークンを受け取り、これをすべてのリクエストの `Authorization` ヘッダーに含めます。
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+アクセストークンはデフォルトで **3600 秒（1 時間）**後に期限切れになります。アプリケーションでは付随するリフレッシュトークンを保存し、ユーザーに再度プロンプトを表示することなく新しいアクセストークンを取得できるようにする必要があります。詳細は下の[トークンの更新](#token-refresh)を参照してください。
+
+**curl での例:**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## サービスアカウント認証情報
+
+サービスアカウントは、個々のユーザーではなくアプリケーションに属する特別な Google アカウントです。**サーバー間**のシナリオ（例: ユーザー操作なしにスケジュール実行される Google スプレッドシートを読み取るバックエンドジョブ）向けに設計されています。
+
+サービスアカウントとして認証するには:
+
+1. [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts) でサービスアカウントを作成し、JSON キーファイルをダウンロードします。
+2. サービスアカウントに必要な IAM ロールを付与します（例: `roles/drive.reader`）。
+3. Google のクライアントライブラリまたは署名付き JWT を使って、キーを短命のアクセストークンと交換します。
+
+**例: curl を使ってサービスアカウントキーをアクセストークンと交換する**
+
+```bash
+# 1. google-auth-library をインストールするか、oauth2 トークンエンドポイントを直接使用します。
+# 以下は Python の google-auth ライブラリを使った 2 レッグ JWT フローの最も簡単な例です。
+# インストール: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+アクセストークンを取得したら、OAuth 2.0 の場合とまったく同じように Bearer トークンとして渡します。
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  サービスアカウントの JSON キーファイルは安全に保管し、決してソース管理にコミットしないでください。漏えいの疑いがある場合は、直ちにキーをローテーションしてください。
+</Warning>
+
+## スコープ
+
+OAuth 2.0 スコープは、アクセストークンが付与する権限を正確に定義します。認可ステップでスコープを要求すると、ユーザーは Google の同意画面にそれらが一覧表示されます。アプリケーションが実際に必要とするスコープのみを要求してください — 過度に広いスコープを要求すると、ユーザーの信頼を損ない、アプリ審査で拒否される場合もあります。
+
+| スコープ | 付与されるアクセス |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | ユーザーの Google ドライブ内のすべてのファイルへの読み取り専用アクセス。 |
+| `https://www.googleapis.com/auth/drive` | ユーザーの Google ドライブへのフル読み書きアクセス。 |
+| `https://www.googleapis.com/auth/gmail.readonly` | ユーザーの Gmail メッセージと設定への読み取り専用アクセス。 |
+| `https://www.googleapis.com/auth/calendar` | ユーザーの Google カレンダーへのフル読み書きアクセス。 |
+| `openid` | OpenID Connect でユーザーを認証し、安定したユーザー ID を取得します。 |
+| `email` | ユーザーのプライマリ Google アカウントのメールアドレスにアクセスします。 |
+| `profile` | ユーザーの基本プロフィール情報（名前、写真、ロケール）にアクセスします。 |
+
+## トークンの更新
+
+アクセストークンが期限切れになったら、Google のトークンエンドポイントに `POST` リクエストを送信し、リフレッシュトークンを新しいアクセストークンと交換します。
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+成功時のレスポンスには、新しいアクセストークンとその有効期限が含まれます。
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| フィールド | 説明 |
+|-------|-------------|
+| `access_token` | 以降の API リクエストで使用する新しい Bearer トークン。 |
+| `expires_in` | トークンが期限切れになるまでの秒数（通常は `3600`）。 |
+| `token_type` | 常に `"Bearer"`。 |
+
+新しい `access_token` を保存し、アプリケーション内の以前のものと置き換えてください。リフレッシュトークン自体は、ユーザーがアクセスを取り消すか、Google によって無効化されるまで有効です。
+
+<Warning>
+  OAuth の `client_secret` をクライアント側のコード（JavaScript バンドル、モバイルアプリ、公開リポジトリ）に埋め込まないでください。漏えいすると、攻撃者はアプリケーションになりすまし、OAuth フローを乗っ取り、あなたに代わってユーザーデータにアクセスできます。トークン交換は必ず安全なバックエンドサーバー上で行ってください。
+</Warning>

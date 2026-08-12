@@ -1,0 +1,130 @@
+---
+title: "API de comptes d'usuari: obtenir dades de perfil i identitat"
+sidebarTitle: "API de comptes"
+description: "Obtén el perfil, correu electrònic, nom i foto de l'usuari autenticat mitjançant GET /oauth2/v2/userinfo o la People API amb un token Bearer OAuth 2.0."
+---
+
+Google proporciona dos endpoints complementaris per llegir la identitat i les dades del perfil de l'usuari autenticat. L'endpoint userinfo d'OAuth 2.0 et proporciona un resum lleuger —correu electrònic, nom mostrat, foto de perfil i configuració regional— i és ideal per als fluxos d'inici de sessió. La People API ofereix una vista més rica i estructurada del registre de contactes de l'usuari i és adequada quan necessites un control granular dels camps. Tots dos endpoints requereixen un token d'accés OAuth 2.0 vàlid amb els àmbits adequats.
+
+<Note>
+  Tots dos endpoints descrits en aquesta pàgina requereixen un token Bearer OAuth 2.0 vàlid. **No** s'accepten claus d'API: aquests recursos estan lligats a una identitat d'usuari autenticada. Consulta la [Guia d'autenticació](/api/authentication) per configurar el teu flux OAuth.
+</Note>
+
+---
+
+## Obtenir el perfil de l'usuari actual
+
+Obté un perfil compacte de l'usuari actualment autenticat.
+
+**Endpoint**
+
+```http
+GET https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**Àmbit requerit:** `openid email profile`
+
+### Petició d'exemple
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/oauth2/v2/userinfo"
+```
+
+### Resposta d'exemple
+
+```json
+{
+  "id": "116195079999551234567",
+  "email": "alex@example.com",
+  "name": "Alex Johnson",
+  "given_name": "Alex",
+  "family_name": "Johnson",
+  "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+  "locale": "en"
+}
+```
+
+### Camps de resposta
+
+<ResponseField name="id" type="string">
+  L'ID únic i estable del compte de Google de l'usuari. Aquest valor no canvia encara que l'usuari actualitzi la seva adreça de correu electrònic o el seu nom.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  L'adreça de correu electrònic principal del compte de Google de l'usuari. Requereix l'àmbit `email`.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  El nom complet de l'usuari tal com apareix al seu compte de Google.
+</ResponseField>
+
+<ResponseField name="given_name" type="string">
+  El nom de pila de l'usuari. Requereix l'àmbit `profile`.
+</ResponseField>
+
+<ResponseField name="family_name" type="string">
+  El cognom de l'usuari. Requereix l'àmbit `profile`.
+</ResponseField>
+
+<ResponseField name="picture" type="string">
+  Un URL que apunta a la foto de perfil de l'usuari allotjada als servidors de Google. La imatge és accessible públicament, però pot canviar si l'usuari actualitza la seva foto.
+</ResponseField>
+
+<ResponseField name="locale" type="string">
+  L'etiqueta d'idioma BCP 47 que representa l'idioma preferit de l'usuari (p. ex. `"en"`, `"fr"`, `"ja"`). Requereix l'àmbit `profile`.
+</ResponseField>
+
+---
+
+## Obtenir informació d'usuari via la People API
+
+La People API retorna dades estructurades més riques i et permet demanar exactament els camps que necessites mitjançant el paràmetre `personFields`.
+
+**Endpoint**
+
+```http
+GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
+```
+
+**Àmbit requerit:** `https://www.googleapis.com/auth/contacts.readonly`
+
+### Petició d'exemple
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses"
+```
+
+### Resposta d'exemple
+
+```json
+{
+  "resourceName": "people/116195079999551234567",
+  "etag": "%EgoBAgkLDg8REhMaAQ==",
+  "names": [
+    {
+      "displayName": "Alex Johnson",
+      "givenName": "Alex",
+      "familyName": "Johnson",
+      "metadata": {
+        "primary": true,
+        "source": { "type": "PROFILE" }
+      }
+    }
+  ],
+  "emailAddresses": [
+    {
+      "value": "alex@example.com",
+      "metadata": {
+        "primary": true,
+        "verified": true
+      }
+    }
+  ]
+}
+```
+
+<Tip>
+  Pots demanar `personFields` addicionals com ara `phoneNumbers`, `addresses`, `birthdays` i `photos` afegint-los com a llista separada per comes: `?personFields=names,emailAddresses,phoneNumbers`.
+</Tip>

@@ -1,0 +1,153 @@
+---
+title: "Webhooks لواجهات Google البرمجية: الاشتراك في إشعارات الدفع"
+sidebarTitle: "Webhooks"
+description: "سجّل قنوات إشعارات الدفع لـ Google Drive لتلقي استدعاءات webhook في الوقت الفعلي عند إنشاء الملفات أو الموارد أو تحديثها أو حذفها."
+---
+
+بدلاً من الاستطلاع المتكرر لواجهة API للتحقق مما إذا كان المورد قد تغير، يمكنك استخدام نظام إشعارات الدفع من Google لجعل Google يستدعي خادمك في اللحظة التي يحدث فيها التغيير. تسجّل **قناة مراقبة** تشير إلى نقطة نهاية HTTPS تتحكم فيها؛ ثم يرسل Google طلبات `POST` إلى تلك النقطة كلما تم إنشاء المورد المراقب أو تحديثه أو حذفه. تتوفر إشعارات الدفع لـ Google Drive وGmail وCalendar والعديد من واجهات API الأخرى.
+
+<Warning>
+  **يجب** تقديم نقطة نهاية webhook الخاصة بك عبر HTTPS بشهادة صالحة. لا يقوم Google بتسليم الإشعارات إلى عناوين URL بروتوكول HTTP العادي. بالإضافة إلى ذلك، يجب أن ترد نقطة نهايتك برمز HTTP `200 OK` في غضون **10 ثوانٍ** — تُعامل الاستجابات التي تنتهي مهلتها كإخفاقات وقد تتسبب في توقف Google عن تسليم الإشعارات إلى القناة.
+</Warning>
+
+---
+
+## كيف تعمل إشعارات الدفع
+
+يعمل التدفق في أربع خطوات:
+
+1. **التسجيل** — يستدعي تطبيقك طريقة `watch` على المورد الذي تريد مراقبته، مع توفير عنوان URL لنقطة نهايتك ومعرّف قناة فريد.
+2. **المزامنة** — يؤكد Google القناة بإشعار أولي (`X-Goog-Resource-State: sync`).
+3. **الاستقبال** — يرسل Google طلب `POST` إلى نقطة نهايتك في كل مرة يتغير فيها المورد.
+4. **التجديد أو الإيقاف** — للقنوات وقت انتهاء صلاحية. يجب عليك إعادة التسجيل قبل انتهاء صلاحيتها، أو إيقافها صراحةً عندما لا تكون هناك حاجة إليها.
+
+---
+
+## تسجيل قناة مراقبة
+
+يسجّل المثال أدناه مراقبة على جميع الملفات في Google Drive. تتبع واجهات API الأخرى نفس النمط مع مسارات نقاط نهاية مختلفة.
+
+**نقطة النهاية**
+
+```http
+POST https://www.googleapis.com/drive/v3/files/watch
+```
+
+### معاملات نص الطلب
+
+<ParamField body="id" type="string" required>
+  UUID أو سلسلة فريدة أخرى تنشئها لتحديد هذه القناة. يعيد Google هذه القيمة في كل إشعار حتى تتمكن من توجيهه إلى المعالج الصحيح.
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  آلية تسليم الإشعارات. يجب أن تكون `"web_hook"` لتسليم دفع HTTPS.
+</ParamField>
+
+<ParamField body="address" type="string" required>
+  عنوان URL HTTPS مؤهل بالكامل لنقطة نهاية webhook الخاصة بك. سيقوم Google بإرسال الإشعارات إلى عنوان URL هذا عبر `POST`.
+</ParamField>
+
+<ParamField body="expiration" type="integer">
+  طابع زمني Unix بـ **المللي ثانية** يحدد متى يجب أن تنتهي صلاحية القناة. إذا تم حذفه، يطبق Google انتهاء صلاحية افتراضيًا (عادةً حتى 7 أيام). يجب عليك إعادة تسجيل القناة قبل هذا الوقت لتجنب فقدان الإشعارات.
+</ParamField>
+
+### مثال على الطلب
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1893456000000
+  }'
+```
+
+### مثال على الاستجابة
+
+```json
+{
+  "kind": "api#channel",
+  "id": "my-channel-01",
+  "resourceId": "o3hgv1538sdjfh",
+  "resourceUri": "https://www.googleapis.com/drive/v3/files?...",
+  "expiration": "1893456000000"
+}
+```
+
+خزّن قيمة `resourceId` — ستحتاجها لإيقاف القناة لاحقًا.
+
+---
+
+## رؤوس الطلب الواردة
+
+عندما يقوم Google بتسليم إشعار إلى نقطة نهايتك، يتضمن طلب `POST` الرؤوس المخصصة التالية:
+
+| الرأس | الوصف |
+|--------|-------------|
+| `X-Goog-Channel-ID` | `id` القناة الذي حددته عند التسجيل. استخدم هذا لتحديد أي مراقبة أثارت الإشعار. |
+| `X-Goog-Resource-State` | نوع التغيير الذي حدث. القيم الشائعة: `sync` (تأكيد أولي)، `add`، `update`، `remove`، `trash`، `untrash`، `change`. |
+| `X-Goog-Changed` | قائمة مفصولة بفواصل بالخصائص التي تغيرت (مثل `content,properties`). موجود لإشعارات `update`. |
+| `X-Goog-Resource-ID` | معرّف Google الداخلي للمورد المراقب. |
+| `X-Goog-Resource-URI` | عنوان URL الخاص بـ API للمورد الذي تغير. |
+| `X-Goog-Message-Number` | عدد صحيح متزايد بشكل رتيب لكل رسالة على القناة. رسالة المزامنة تكون دائمًا `1`. |
+
+<Note>
+  نص الإشعار **فارغ** عمدًا — يخبرك Google بأن شيئًا ما قد تغير، لكن ليس ما تغير. يجب عليك استخدام رأس `X-Goog-Resource-URI` لإجراء طلب API متابع وجلب المورد المُحدَّث.
+</Note>
+
+---
+
+## إيقاف قناة
+
+لإيقاف تلقي الإشعارات وتحرير القناة قبل انتهاء صلاحيتها، أرسل طلب `POST` إلى نقطة نهاية الإيقاف:
+
+```http
+POST https://www.googleapis.com/drive/v3/channels/stop
+```
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/channels/stop" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "resourceId": "o3hgv1538sdjfh"
+  }'
+```
+
+تعيد الاستجابة الناجحة الحالة HTTP `204 No Content` مع نص فارغ. بعد إيقاف قناة، يتوقف Google فورًا عن تسليم الإشعارات إلى نقطة نهايتك لتلك القناة.
+
+---
+
+## انتهاء صلاحية القناة والتجديد
+
+تنتهي صلاحية جميع قنوات المراقبة — إما في طابع `expiration` الزمني الذي حددته أو في الحد الأقصى الخاص بـ Google (الذي يختلف حسب API). بمجرد انتهاء صلاحية القناة، يتوقف Google عن إرسال الإشعارات وستفقد التغييرات حتى تسجل قناة جديدة.
+
+**استراتيجية التجديد الموصى بها:**
+
+1. خزّن قيمة `expiration` المعادة عند تسجيل كل قناة.
+2. جدول مهمة لإعادة تسجيل القناة قبل **24 ساعة على الأقل** من انتهاء صلاحيتها.
+3. بعد تسجيل القناة الجديدة بنجاح، أوقف القديمة.
+
+```bash
+# Re-register with a new channel ID and updated expiration
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-02",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1925000000000
+  }'
+```
+
+<Tip>
+  استخدم مولّد UUID (مثل `uuidgen` على macOS/Linux) لإنتاج معرّفات قنوات فريدة. إعادة استخدام معرّف قبل توقف القناة السابقة قد يؤدي إلى تعارضات أو إشعارات مكررة.
+</Tip>

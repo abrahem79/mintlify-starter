@@ -1,47 +1,77 @@
 ---
-title: "Szybki start"
-description: "Zacznij od przewodnika po najszybszej drodze do sukcesu"
+title: "Szybki start: zaloguj się i wykonaj pierwsze wywołanie API Google"
+sidebarTitle: "Szybki start"
+description: "Zaloguj się do Google, uzyskaj poświadczenia API w Cloud Console i wykonaj pierwsze rzeczywiste zapytanie do Search API — wszystko w niecałe 10 minut."
 ---
 
-Opisz, jak ktoś zaczyna korzystać z Twojego produktu. Co jest pierwszą rzeczą, którą musi zrobić? Czy są jakieś wymagania wstępne?
-
-Szybki start powinien przeprowadzić kogoś od zera do korzystania z Twojego produktu. Użytkownik odniesie szybki sukces i zrozumie, co może osiągnąć.
+Ten szybki start przeprowadzi Cię przez logowanie do Google, uzyskanie poświadczeń API oraz wykonanie pierwszego wywołania API — wszystko w niecałe 10 minut. Na koniec będziesz mieć działające wywołanie API zwracające rzeczywiste wyniki wyszukiwania, które możesz rozbudować we własnej aplikacji.
 
 ## Wymagania wstępne
 
-Zanim zaczniesz, musisz mieć:
+Zanim zaczniesz, upewnij się, że masz następujące elementy:
 
-- Wymaganie pierwsze (na przykład Node.js 18+, bezpłatne konto, klucz API)
-- Wymaganie drugie (na przykład kompatybilne urządzenie, kompatybilną przeglądarkę, kompatybilny system operacyjny)
+- **Konto Google** — [utwórz je bezpłatnie](https://accounts.google.com/signup), jeśli jeszcze go nie masz.
+- **Podstawową znajomość HTTP** — obeznanie z wykonywaniem żądań GET/POST i odczytywaniem odpowiedzi JSON.
+- Terminal wiersza poleceń lub klient HTTP, taki jak [curl](https://curl.se/) czy [Postman](https://www.postman.com/).
 
-## Rozpocznij
+## Kroki
 
 <Steps>
-  <Step title="Instalacja">
-    Opisz, jak zainstalować swój produkt lub się zarejestrować.
+  <Step title="Zaloguj się">
+    Wejdź na [accounts.google.com](https://accounts.google.com) i zaloguj się na swoje konto Google. Jeśli robisz to po raz pierwszy, przed dalszymi krokami przejdź proces zakładania konta.
+  </Step>
+  <Step title="Uzyskaj poświadczenia API">
+    1. Otwórz [Google Cloud Console](https://console.cloud.google.com).
+    2. Utwórz nowy projekt (lub wybierz istniejący).
+    3. Przejdź do **APIs & Services → Library** i włącz **Custom Search API**.
+    4. Otwórz **APIs & Services → Credentials** i kliknij **Create Credentials → API key**.
+    5. Skopiuj nowy klucz API i zapisz go w bezpiecznym miejscu.
+    6. Utwórz Programmable Search Engine na [programmablesearchengine.google.com](https://programmablesearchengine.google.com) i skopiuj identyfikator swojego **Search Engine ID** (`cx`).
+  </Step>
+  <Step title="Wykonaj pierwsze żądanie">
+    Zamień `YOUR_API_KEY` i `YOUR_SEARCH_ENGINE_ID` w poniższym poleceniu na skopiowane wartości, a następnie uruchom je w terminalu:
 
     ```bash
-    npm install your-package
+    curl -X GET "https://www.googleapis.com/customsearch/v1?q=hello+world&key=YOUR_API_KEY&cx=YOUR_SEARCH_ENGINE_ID"
     ```
   </Step>
-  <Step title="Konfiguracja">
-    Opisz konfigurację lub ustawienia potrzebne przed pierwszym użyciem.
+  <Step title="Sprawdź odpowiedź">
+    Pomyślne żądanie zwraca obiekt JSON zawierający metadane wyszukiwania i tablicę wyników. Powinieneś zobaczyć odpowiedź podobną do tej:
 
-    ```bash
-    your-cli init
+    ```json
+    {
+      "kind": "customsearch#search",
+      "url": {
+        "type": "application/json",
+        "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&..."
+      },
+      "queries": {
+        "request": [
+          {
+            "title": "Google Custom Search - hello world",
+            "totalResults": "4970000000",
+            "searchTerms": "hello world",
+            "count": 10,
+            "startIndex": 1
+          }
+        ]
+      },
+      "items": [
+        {
+          "kind": "customsearch#result",
+          "title": "Hello, World! – Wikipedia",
+          "htmlTitle": "\u003cb\u003eHello, World!\u003c/b\u003e – Wikipedia",
+          "link": "https://en.wikipedia.org/wiki/%22Hello,_World!%22_program",
+          "snippet": "A \"Hello, World!\" program is generally a simple computer program that outputs the phrase \"Hello, World!\" to a display device."
+        }
+      ]
+    }
     ```
-  </Step>
-  <Step title="Uruchom">
-    Pokaż pierwszą czynność, którą użytkownik wykonuje, aby zobaczyć, jak to działa.
 
-    ```bash
-    your-cli start
-    ```
+    Tablica `items` zawiera wyniki wyszukiwania. Każdy obiekt obejmuje tytuł strony, adres URL (`link`) i krótki fragment (`snippet`), który możesz wyświetlić bezpośrednio w swoim interfejsie.
   </Step>
 </Steps>
 
 <Tip>
-  Zapewnij użytkownikom możliwość uzyskania pomocy. Może to być link do strony wsparcia, czat z agentem obsługi klienta lub forum dla Twojego produktu.
-
-  Przykład: Potrzebujesz pomocy? Skontaktuj się z nami pod adresem [support@yourcompany.com](mailto:support@yourcompany.com).
+  Powyższy przykład używa prostego klucza API do uwierzytelniania. Interfejsy API Google obsługują także OAuth 2.0 dla żądań uzyskujących dostęp do danych użytkownika. Zobacz [Przewodnik po uwierzytelnianiu](/api/authentication), aby zapoznać się z pełnym opisem wszystkich obsługiwanych metod uwierzytelniania.
 </Tip>

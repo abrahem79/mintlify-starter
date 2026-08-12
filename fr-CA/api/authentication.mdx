@@ -1,0 +1,134 @@
+---
+title: "Authentification aux API Google : clés, OAuth 2.0, comptes de service"
+sidebarTitle: "Authentification"
+description: "Authentifiez les requêtes aux API Google à l'aide de clés d'API pour les données publiques, de jetons porteurs OAuth 2.0 pour les données utilisateur, ou d'identifiants de comptes de service pour l'accès serveur à serveur."
+---
+
+Chaque requête que vous adressez à une API REST de Google doit être authentifiée. Google prend en charge trois mécanismes d'authentification principaux : les clés d'API pour accéder aux données publiques, les jetons porteurs OAuth 2.0 pour agir au nom d'un utilisateur, et les identifiants de comptes de service pour les intégrations serveur à serveur. Le bon choix dépend des données auxquelles vous devez accéder et de la présence ou non d'un utilisateur humain dans le flux.
+
+## Clés d'API
+
+Les clés d'API sont la méthode d'authentification la plus simple. Elles identifient votre projet auprès de Google, mais ne portent aucun contexte utilisateur; elles conviennent donc uniquement aux API qui accèdent à des **données accessibles publiquement** (comme l'API Programmable Search).
+
+Passez votre clé d'API comme paramètre de requête `key` à chaque appel :
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**Exemple avec curl :**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  Générez et gérez vos clés d'API dans la [console Google Cloud](https://console.cloud.google.com/apis/credentials). Restreignez chaque clé à des API et à des URL de référent précises pour limiter son rayon d'impact en cas d'exposition.
+</Tip>
+
+## Jetons porteurs OAuth 2.0
+
+Lorsque votre application doit accéder à des **données appartenant à l'utilisateur** — comme des fichiers dans Google Drive, des messages Gmail ou des événements de Calendar — ou les modifier, vous devez utiliser OAuth 2.0. Après que l'utilisateur a terminé le flux de consentement OAuth, votre application reçoit un jeton d'accès à inclure dans l'en-tête `Authorization` de chaque requête.
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Les jetons d'accès expirent par défaut après **3600 secondes (1 heure)**. Votre application doit stocker le jeton de rafraîchissement associé et l'utiliser pour obtenir un nouveau jeton d'accès sans redemander à l'utilisateur. Consultez [Rafraîchissement du jeton](#token-refresh) ci-dessous pour plus de détails.
+
+**Exemple avec curl :**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## Identifiants de comptes de service
+
+Les comptes de service sont des comptes Google spéciaux qui appartiennent à une application plutôt qu'à un utilisateur individuel. Ils sont conçus pour les scénarios **serveur à serveur** — par exemple, une tâche d'arrière-plan qui lit dans Google Sheets selon un calendrier, sans interaction utilisateur.
+
+Pour vous authentifier en tant que compte de service :
+
+1. Dans la [console Google Cloud](https://console.cloud.google.com/iam-admin/serviceaccounts), créez un compte de service et téléchargez son fichier de clé JSON.
+2. Accordez au compte de service les rôles IAM dont il a besoin (p. ex. `roles/drive.reader`).
+3. Utilisez une bibliothèque cliente Google ou un JWT signé pour échanger la clé contre un jeton d'accès de courte durée.
+
+**Exemple : échanger une clé de compte de service contre un jeton d'accès avec curl**
+
+```bash
+# 1. Install the google-auth-library or use the oauth2 token endpoint directly.
+# Below shows the two-legged JWT flow at its simplest using Python's google-auth library.
+# Install: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+Une fois que vous avez le jeton d'accès, transmettez-le comme jeton porteur exactement comme vous le feriez avec OAuth 2.0 :
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  Stockez votre fichier de clé JSON de compte de service en toute sécurité et ne le validez jamais dans un système de contrôle de version. Faites tourner les clés immédiatement si vous soupçonnez qu'elles ont été exposées.
+</Warning>
+
+## Portées
+
+Les portées OAuth 2.0 définissent précisément les permissions accordées par un jeton d'accès. Vous demandez les portées à l'étape d'autorisation, et l'utilisateur les voit listées sur l'écran de consentement de Google. Ne demandez que les portées dont votre application a réellement besoin — demander des portées trop larges érode la confiance des utilisateurs et peut être rejeté lors de la vérification de l'application.
+
+| Portée | Accès accordé |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | Accès en lecture seule à tous les fichiers du Google Drive de l'utilisateur. |
+| `https://www.googleapis.com/auth/drive` | Accès complet en lecture et en écriture au Google Drive de l'utilisateur. |
+| `https://www.googleapis.com/auth/gmail.readonly` | Accès en lecture seule aux messages et paramètres Gmail de l'utilisateur. |
+| `https://www.googleapis.com/auth/calendar` | Accès complet en lecture et en écriture au Google Calendar de l'utilisateur. |
+| `openid` | Authentifier l'utilisateur et récupérer un identifiant utilisateur stable via OpenID Connect. |
+| `email` | Accéder à l'adresse courriel principale du compte Google de l'utilisateur. |
+| `profile` | Accéder aux informations de profil de base de l'utilisateur (nom, photo, paramètres régionaux). |
+
+## Rafraîchissement du jeton
+
+Lorsqu'un jeton d'accès expire, échangez votre jeton de rafraîchissement contre un nouveau en envoyant une requête `POST` au point de terminaison de jeton de Google :
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+Une réponse réussie contient le nouveau jeton d'accès accompagné de son expiration :
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| Champ | Description |
+|-------|-------------|
+| `access_token` | Le nouveau jeton porteur à utiliser dans les requêtes API subséquentes. |
+| `expires_in` | Nombre de secondes avant l'expiration du jeton (généralement `3600`). |
+| `token_type` | Toujours `"Bearer"`. |
+
+Stockez le nouveau `access_token` et remplacez le précédent dans votre application. Le jeton de rafraîchissement lui-même reste valide jusqu'à ce que l'utilisateur révoque l'accès ou qu'il soit autrement invalidé par Google.
+
+<Warning>
+  N'intégrez jamais votre `client_secret` OAuth dans du code côté client (bundles JavaScript, applications mobiles ou dépôts publics). S'il est exposé, un attaquant peut usurper l'identité de votre application, détourner les flux OAuth et accéder aux données utilisateur en votre nom. Effectuez toujours l'échange de jetons sur un serveur d'arrière-plan sécurisé.
+</Warning>

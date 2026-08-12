@@ -1,47 +1,77 @@
 ---
-title: "البدء السريع"
-description: "ابدأ بدليل يرشدك إلى أسرع طريق للوصول إلى نتيجة ناجحة"
+title: "البدء السريع: سجّل الدخول وقم بأول استدعاء لواجهة Google البرمجية"
+sidebarTitle: "البدء السريع"
+description: "سجّل الدخول إلى Google، واحصل على بيانات اعتماد API من Cloud Console، وأجرِ أول طلب مباشر لواجهة البحث البرمجية — كل ذلك في أقل من 10 دقائق."
 ---
 
-اشرح كيف يبدأ الشخص باستخدام منتجك. ما أول شيء عليه فعله؟ وهل هناك أي متطلبات مسبقة؟
+يرشدك دليل البدء السريع هذا خلال تسجيل الدخول إلى Google، والحصول على بيانات اعتماد API، وإجراء أول طلب لواجهة API — كل ذلك في أقل من 10 دقائق. بحلول النهاية، سيكون لديك استدعاء API يعمل ويعيد نتائج بحث مباشرة يمكنك البناء عليها في تطبيقك الخاص.
 
-يجب أن ينقل دليل البدء السريع الشخص من الصفر إلى استخدام منتجك. سيحصل على إنجاز سريع وفكرة عمّا يمكنه تحقيقه.
+## المتطلبات الأساسية
 
-## المتطلبات المسبقة
+قبل أن تبدأ، تأكد من توفر ما يلي:
 
-قبل أن تبدأ، يجب أن يتوفر لديك:
+- **حساب Google** — [أنشئ واحدًا مجانًا](https://accounts.google.com/signup) إذا لم يكن لديك واحد بعد.
+- **معرفة HTTP الأساسية** — الإلمام بإجراء طلبات GET/POST وقراءة استجابات JSON.
+- طرفية سطر أوامر أو عميل HTTP مثل [curl](https://curl.se/) أو [Postman](https://www.postman.com/).
 
-- المتطلب الأول (على سبيل المثال، Node.js 18+، حساب مجاني، مفتاح API)
-- المتطلب الثاني (على سبيل المثال، جهاز متوافق، متصفح متوافق، نظام تشغيل متوافق)
-
-## البدء
+## الخطوات
 
 <Steps>
-  <Step title="التثبيت">
-    اشرح كيفية تثبيت منتجك أو التسجيل فيه.
+  <Step title="تسجيل الدخول">
+    انتقل إلى [accounts.google.com](https://accounts.google.com) وسجّل الدخول باستخدام حساب Google الخاص بك. إذا كانت هذه هي المرة الأولى لك، فأكمل عملية إنشاء الحساب قبل المتابعة.
+  </Step>
+  <Step title="الحصول على بيانات اعتماد API">
+    1. افتح [Google Cloud Console](https://console.cloud.google.com).
+    2. أنشئ مشروعًا جديدًا (أو حدد مشروعًا موجودًا).
+    3. انتقل إلى **APIs & Services → Library** وفعّل **Custom Search API**.
+    4. انتقل إلى **APIs & Services → Credentials** وانقر على **Create Credentials → API key**.
+    5. انسخ مفتاح API الجديد الخاص بك واحفظه في مكان آمن.
+    6. أنشئ محرك بحث قابل للبرمجة على [programmablesearchengine.google.com](https://programmablesearchengine.google.com) وانسخ **معرّف محرك البحث** الخاص بك (`cx`).
+  </Step>
+  <Step title="إجراء أول طلب لك">
+    استبدل `YOUR_API_KEY` و`YOUR_SEARCH_ENGINE_ID` في الأمر أدناه بالقيم التي نسختها، ثم شغّله في الطرفية:
 
     ```bash
-    npm install your-package
+    curl -X GET "https://www.googleapis.com/customsearch/v1?q=hello+world&key=YOUR_API_KEY&cx=YOUR_SEARCH_ENGINE_ID"
     ```
   </Step>
-  <Step title="الإعداد">
-    اشرح أي تهيئة أو إعداد مطلوب قبل الاستخدام الأول.
+  <Step title="فحص الاستجابة">
+    يعيد الطلب الناجح كائن JSON يحتوي على بيانات وصفية للبحث ومصفوفة من النتائج. من المفترض أن ترى استجابة مشابهة لهذه:
 
-    ```bash
-    your-cli init
+    ```json
+    {
+      "kind": "customsearch#search",
+      "url": {
+        "type": "application/json",
+        "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&..."
+      },
+      "queries": {
+        "request": [
+          {
+            "title": "Google Custom Search - hello world",
+            "totalResults": "4970000000",
+            "searchTerms": "hello world",
+            "count": 10,
+            "startIndex": 1
+          }
+        ]
+      },
+      "items": [
+        {
+          "kind": "customsearch#result",
+          "title": "Hello, World! – Wikipedia",
+          "htmlTitle": "\u003cb\u003eHello, World!\u003c/b\u003e – Wikipedia",
+          "link": "https://en.wikipedia.org/wiki/%22Hello,_World!%22_program",
+          "snippet": "A \"Hello, World!\" program is generally a simple computer program that outputs the phrase \"Hello, World!\" to a display device."
+        }
+      ]
+    }
     ```
-  </Step>
-  <Step title="التشغيل">
-    اعرض أول شيء يقوم به المستخدم ليرى المنتج يعمل.
 
-    ```bash
-    your-cli start
-    ```
+    تحتوي مصفوفة `items` على نتائج البحث الخاصة بك. يشمل كل كائن عنوان الصفحة، وعنوان URL (`link`)، ومقتطفًا قصيرًا (`snippet`) يمكنك عرضه مباشرة في واجهة المستخدم لديك.
   </Step>
 </Steps>
 
 <Tip>
-  وفِّر للأشخاص طريقةً للحصول على المساعدة. يمكن أن يكون ذلك رابطًا إلى صفحة الدعم، أو محادثة مع وكيل خدمة العملاء، أو منتدى خاص بمنتجك.
-
-  مثال: هل تحتاج إلى مساعدة؟ تواصل معنا عبر [support@yourcompany.com](mailto:support@yourcompany.com).
+  يستخدم المثال أعلاه مفتاح API بسيطًا للمصادقة. تدعم واجهات Google البرمجية أيضًا OAuth 2.0 للطلبات التي تصل إلى بيانات المستخدم. راجع [دليل المصادقة](/api/authentication) للحصول على شرح كامل لجميع طرق المصادقة المدعومة.
 </Tip>

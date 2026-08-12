@@ -1,0 +1,66 @@
+---
+title: "Com funciona Google Search: indexació i classificació explicades"
+sidebarTitle: "Search"
+description: "Aprèn com Google indexa, classifica i mostra contingut. Entén els operadors de cerca, Custom Search i com integrar la cerca a la teva aplicació."
+---
+
+Google Search processa centenars de milers de milions de pàgines i respon a bilions de consultes cada any, cosa que el converteix en el sistema de recuperació d'informació més utilitzat del món. Tant si estàs perfeccionant la teva pròpia tècnica de cerca, optimitzant contingut perquè Google el faci aflorar correctament, o incrustant capacitats de cerca directament al teu producte, entendre com funciona Search per sota et dona un avantatge significatiu.
+
+## Com funciona Search
+
+Google Search opera en tres etapes generals que s'executen contínuament en segon pla.
+
+**Rastreig** — els rastrejadors automatitzats de Google (coneguts col·lectivament com a Googlebot) segueixen enllaços a través del web per descobrir pàgines noves i actualitzades. Pots guiar els rastrejadors mitjançant un fitxer `robots.txt` i etiquetes `<meta name="robots">` per controlar què s'obté.
+
+**Indexació** — un cop una pàgina és rastrejada, Google n'analitza el contingut (text, imatges, dades estructurades i més) i en desa una representació a l'índex de Search. Les pàgines ben estructurades amb encapçalaments clars, metadades descriptives i marcatge de schema vàlid són més fàcils d'indexar amb precisió.
+
+**Classificació** — quan un usuari envia una consulta, els sistemes de classificació de Google avaluen centenars de senyals (rellevància, qualitat de la pàgina, context, frescor i altres) per ordenar els resultats. Cap factor únic no determina la classificació; l'algoritme pondera els senyals de manera holística per fer aflorar el resultat més útil per a aquesta consulta.
+
+<Note>
+  Google no garanteix la indexació de cada pàgina. Utilitza Google Search Console per monitoritzar la cobertura, identificar errors de rastreig i sol·licitar (re)indexació per a URL importants.
+</Note>
+
+## Operadors de cerca
+
+Els operadors de cerca són ordres especials que escrius directament al quadre de cerca de Google per filtrar i acotar resultats. Són útils per a la recerca, l'anàlisi competitiva, l'auditoria de la presència del teu propi lloc i la depuració de problemes d'indexació.
+
+| Operador | Sintaxi | Què fa |
+|---|---|---|
+| `site:` | `site:example.com` | Restringeix els resultats a pàgines d'un domini o subdomini específic. |
+| `filetype:` | `filetype:pdf` | Retorna resultats d'un tipus de fitxer específic (pdf, docx, xlsx, etc.). |
+| `intitle:` | `intitle:keyword` | Coincideix amb pàgines que contenen la paraula clau a l'etiqueta HTML `<title>`. |
+| Frase exacta | `"machine learning"` | Retorna només resultats que contenen aquesta seqüència exacta de paraules. |
+| Excloure terme | `-keyword` | Elimina els resultats que contenen la paraula o frase especificada. |
+
+Pots combinar operadors en una sola consulta. Per exemple, `site:docs.example.com filetype:pdf -intitle:archive` troba fitxers PDF al teu subdomini de documents que no tenen "archive" al títol.
+
+<Tip>
+  Prefixa un operador amb `OR` (majúscules) per fer coincidir qualsevol de dues condicions: per exemple, `site:example.com OR site:example.io` retorna resultats de tots dos dominis en una sola consulta.
+</Tip>
+
+## Custom Search Engine (CSE)
+
+Un Custom Search Engine et permet crear una experiència de cerca amb marca i abast concret que consulta un conjunt específic de llocs o pàgines en lloc de tot el web. Això és útil per afegir una barra de cerca a la teva documentació, centre d'ajuda o catàleg d'e-commerce.
+
+**Per crear un Custom Search Engine:**
+
+1. Vés al [Panell de control del Programmable Search Engine](https://programmablesearchengine.google.com/controlpanel/all).
+2. Fes clic a **Add** i introdueix els llocs o patrons d'URL que vols cercar.
+3. Dona un nom al teu motor i desa'l: Google genera un **Search Engine ID** únic (paràmetre `cx`) que identifica el teu motor.
+4. Personalitza l'aspecte visual sota **Look and feel** i copia el fragment d'incrustació a la teva pàgina.
+
+<Note>
+  Els resultats del CSE respecten les mateixes regles d'indexació que la cerca normal de Google. Si una pàgina no està indexada, tampoc apareixerà als resultats del teu CSE.
+</Note>
+
+## Programmable Search API
+
+La Programmable Search JSON API et dona accés programàtic als resultats del teu Custom Search Engine, de manera que puguis obtenir, formatar i mostrar resultats de cerca completament dins la teva pròpia aplicació, sense incrustar la interfície d'usuari de Google.
+
+Les capacitats clau inclouen:
+
+- Consulta el teu CSE i rep respostes JSON estructurades que contenen títols, URL, fragments i metadades enriquides.
+- Aplica paràmetres `dateRestrict`, `sort` i `filter` per refinar els resultats en el moment de la petició.
+- Utilitza el paràmetre `searchType=image` per cercar imatges dins l'àmbit definit.
+
+Per veure els esquemes complets de petició/resposta, els requisits d'autenticació i exemples de codi, consulta la [referència de l'API de cerca](/api/search).

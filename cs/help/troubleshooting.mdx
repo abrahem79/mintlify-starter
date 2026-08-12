@@ -1,0 +1,145 @@
+---
+title: "Řešení problémů s přihlášením Google, Diskem a chybami API"
+sidebarTitle: "Řešení problémů"
+description: "Diagnostikujte a opravte běžné problémy se selháním přihlášení Google, problémy se synchronizací Disku, kódy chyb API, limity kvót a zpožděním indexace vyhledávání."
+---
+
+I spolehlivé služby jako Google občas narazí na problémy — ať už je to API vracející neočekávané chybové kódy, synchronizace, která přestala fungovat, nebo přihlášení, které neprojde. Tento průvodce vás provede nejčastějšími problémy napříč produkty Googlu a vývojářskou platformou s jasnými kroky k diagnostice a vyřešení každého z nich.
+
+<Tip>
+  Před řešením jednotlivých problémů zkontrolujte [Google Workspace Status Dashboard](https://www.google.com/appsstatus), abyste zjistili, zda neprobíhá aktivní výpadek zasahující jednu nebo více služeb Google. Mnoho problémů s přihlášením, synchronizací a API je způsobeno dočasnými infrastrukturními incidenty, které se vyřeší samy.
+</Tip>
+
+## Kódy chyb API
+
+Když Google API vrátí chybu, HTTP stavový kód a chybová zpráva společně přesně sdělují, co se pokazilo. Tabulka níže pokrývá nejčastější chybové odpovědi a jak je řešit:
+
+| HTTP stav | Kód chyby | Význam | Jak opravit |
+|---|---|---|---|
+| **400** | `INVALID_ARGUMENT` | Požadavek byl špatně formulován nebo obsahoval neplatný parametr | Zkontrolujte tělo požadavku a parametry dotazu proti referenci API; zkontrolujte chybějící povinná pole nebo nesprávné datové typy |
+| **401** | `UNAUTHENTICATED` | Požadavku chybí platné autentizační přihlašovací údaje | Obnovte svůj OAuth token nebo ověřte, že klíč API je zahrnut v hlavičkách požadavku; ujistěte se, že přihlašovací údaje nevypršely |
+| **403** | `PERMISSION_DENIED` | Autentizovaný účet nemá oprávnění provést tuto akci | Zkontrolujte, že je udělen požadovaný OAuth rozsah a že je API aktivováno ve vašem Cloud projektu; ověřte nastavení sdílení prostředku |
+| **429** | `RESOURCE_EXHAUSTED` | Překročili jste svou kvótu nebo limit rychlosti pro toto API | Implementujte exponenciální odklad a logiku opakování; v případě potřeby požádejte o navýšení kvóty přes Cloud Console |
+| **500** | `INTERNAL` | Na serverech Googlu došlo k neočekávané chybě | Zkuste požadavek znovu s exponenciálním odkladem; pokud chyba přetrvává, zkontrolujte stránku [Google Cloud Status](https://status.cloud.google.com) |
+
+<Note>
+  Všechny chybové odpovědi Google API obsahují tělo JSON s poli `code`, `message` a `status`. Vždy logujte celé tělo chybové odpovědi — ne jen HTTP stavový kód — abyste získali nejužitečnější diagnostické informace.
+</Note>
+
+## Nemohu se přihlásit
+
+Pokud se nemůžete přihlásit ke svému účtu Google, projděte následující kroky v pořadí:
+
+<Steps>
+  <Step title="Zkontrolujte Caps Lock a rozložení klávesnice">
+    Hesla rozlišují velká a malá písmena. Ujistěte se, že je Caps Lock vypnutý a že používáte správné jazykové rozložení klávesnice, než heslo zadáte znovu.
+  </Step>
+  <Step title="Použijte Zapomněli jste heslo">
+    Na přihlašovací stránce klikněte na **Zapomněli jste heslo?**. Google odešle ověřovací kód na vaši záložní e-mailovou adresu nebo telefonní číslo. Zadejte kód pro ověření identity a vytvořte nové heslo.
+  </Step>
+  <Step title="Zkontrolujte svou metodu dvoufázového ověření">
+    Pokud jste povolili dvoufázové ověření (2SV) a nedostáváte svůj autentizační kód, ujistěte se, že váš telefon má signál a že aplikace Google Authenticator (nebo jiná TOTP aplikace) zobrazuje správný časově synchronizovaný kód. Pokud jste přišli o přístup ke svému 2SV zařízení, použijte uložený záložní kód nebo požádejte o obnovu účtu na [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery).
+  </Step>
+  <Step title="Zkontrolujte pozastavení účtu">
+    Pokud Google zjistí neobvyklou aktivitu nebo porušení zásad, může být váš účet dočasně pozastaven. V takovém případě uvidíte na přihlašovací stránce jasnou zprávu. Postupujte podle pokynů na obrazovce, chcete-li se proti pozastavení odvolat nebo ověřit svou identitu.
+  </Step>
+  <Step title="Zkuste jiný prohlížeč nebo zařízení">
+    Rozšíření prohlížeče, uložené přihlašovací údaje nebo poškozené soubory cookie mohou někdy narušit přihlášení. Zkuste se přihlásit z Inkognito/soukromého okna nebo z jiného prohlížeče, abyste vyloučili lokální problém.
+  </Step>
+</Steps>
+
+## Problémy se synchronizací Disku Google
+
+Pokud se soubory nesynchronizují mezi vaším počítačem a Diskem Google, nebo Drive for Desktop přestal fungovat, postupujte podle těchto kroků:
+
+<AccordionGroup>
+  <Accordion title="Zkontrolujte kvótu úložiště">
+    Pokud je úložiště vašeho účtu Google plné, Disk přestane synchronizovat nové soubory a může selhat při nahrávání změn. Přejděte na [one.google.com/storage](https://one.google.com/storage) a zkontrolujte své využití. Pokud jste nad limitem, smažte nepotřebné soubory z Gmailu, koše na Disku nebo Fotek Google, nebo přejděte na plán Google One.
+  </Accordion>
+
+  <Accordion title="Zkontrolujte své internetové připojení">
+    Drive for Desktop vyžaduje ke synchronizaci stabilní internetové připojení. Ověřte, že jste připojeni, otevřením prohlížeče a načtením webové stránky. Pokud je vaše připojení nestálé, synchronizace se pozastaví a obnoví se automaticky, jakmile se připojení stabilizuje.
+  </Accordion>
+
+  <Accordion title="Restartujte Drive for Desktop">
+    Klikněte na ikonu Drive for Desktop v systémové liště (Windows) nebo v horní liště (macOS) a poté vyberte **Quit**. Znovu spusťte aplikaci ze složky Aplikace nebo z nabídky Start. Restart klienta vynutí opětovnou kontrolu stavu synchronizace a řeší mnoho přechodných problémů.
+  </Accordion>
+
+  <Accordion title="Znovu propojte svůj účet Google">
+    Pokud aplikace zobrazuje chybu autentizace, možná budete muset znovu propojit svůj účet. Otevřete předvolby Drive for Desktop, přejděte na **Accounts** a odhlaste se a přihlaste zpět svým účtem Google. Tím se obnoví vaše přihlašovací údaje bez ovlivnění synchronizovaných souborů.
+  </Accordion>
+
+  <Accordion title="Zkontrolujte délku cesty souboru nebo problémy s pojmenováním">
+    Drive for Desktop může odmítnout synchronizovat soubory s cestami přesahujícími systémové limity (260 znaků ve Windows) nebo s názvy obsahujícími znaky nepodporované vaším operačním systémem. Přejmenujte nebo přesuňte problémové soubory na kratší cestu a zkontrolujte log chyb Drive for Desktop pro konkrétní názvy souborů.
+  </Accordion>
+</AccordionGroup>
+
+## Překročena kvóta API (429)
+
+Přijetí chyby `429 RESOURCE_EXHAUSTED` znamená, že vaše aplikace odeslala příliš mnoho požadavků v příliš krátkém čase, nebo dosáhla svého denního limitu kvóty. Zde je návod, jak to řešit:
+
+### Implementujte exponenciální odklad
+
+Namísto okamžitého opakování neúspěšného požadavku počkejte mezi každým opakováním postupně delší interval. To brání vašemu klientovi bombardovat API pod zátěží a dává kvótovým oknům čas na resetování.
+
+```python
+import time
+import random
+
+def api_request_with_backoff(request_func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return request_func()
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limited. Retrying in {wait:.2f} seconds...")
+                time.sleep(wait)
+            else:
+                raise
+```
+
+### Požádejte o navýšení kvóty
+
+Pokud vaše aplikace konzistentně dosahuje limitů kvóty, můžete požádat o navýšení prostřednictvím Google Cloud Console:
+
+<Steps>
+  <Step title="Otevřete Cloud Console">
+    Přejděte na [console.cloud.google.com](https://console.cloud.google.com) a vyberte svůj projekt.
+  </Step>
+  <Step title="Přejděte na APIs & Services → Quotas & System Limits">
+    Přejděte na **APIs & Services** → **Quotas & System Limits** a filtrujte podle API, které je omezováno.
+  </Step>
+  <Step title="Vyberte kvótu k navýšení">
+    Najděte konkrétní kvótu (např. „Queries per day" nebo „Requests per minute"), klikněte na zaškrtávací políčko vedle ní a poté klikněte na **Edit quotas**.
+  </Step>
+  <Step title="Odešlete svůj požadavek">
+    Zadejte požadovanou novou hodnotu kvóty a stručné odůvodnění. Google obvykle přezkoumává žádosti o navýšení kvót do 2–3 pracovních dnů.
+  </Step>
+</Steps>
+
+## Výsledky vyhledávání se neaktualizují
+
+Pokud jste provedli změny na webové stránce a aktualizace se ve výsledcích Vyhledávání Google nezobrazují, zpoždění je téměř vždy způsobeno procházecí a indexovací pipeline Googlu — ne chybou.
+
+<AccordionGroup>
+  <Accordion title="Pochopte zpoždění indexace">
+    Poté, co crawler Googlu (Googlebot) navštíví stránku, trvá další čas, než se aktualizuje index a než se tyto změny objeví ve výsledcích vyhledávání. U většiny webů tento proces trvá od několika dní po několik týdnů. U nových webů nebo stránek s nízkou autoritou může trvat déle, než jsou vůbec procházeny.
+  </Accordion>
+
+  <Accordion title="Zkontrolujte cachovanou verzi Googlu">
+    Můžete vidět, jakou verzi vaší stránky Google naposledy indexoval, vyhledáním `cache:yourdomain.com/page` ve Vyhledávání Google. Pokud je cachovaná verze zastaralá, Google jednoduše stránku ještě znovu neprošel.
+  </Accordion>
+
+  <Accordion title="Požádejte o reindexaci přes Search Console">
+    Pokud potřebujete naléhavě aktualizovat konkrétní stránku, použijte nástroj **URL Inspection** v [Google Search Console](https://search.google.com/search-console). Vložte URL a poté klikněte na **Request Indexing**, abyste Googlebot požádali o co nejrychlejší opětovné procházení. To nezaručuje okamžité výsledky, ale prioritizuje URL v procházecí frontě.
+  </Accordion>
+
+  <Accordion title="Zkontrolujte svůj robots.txt a noindex značky">
+    Ujistěte se, že vaše stránka není náhodou blokována před indexací. Zkontrolujte, že váš soubor `robots.txt` nezakazuje Googlebotu procházet URL, a ověřte, že na stránce není značka `<meta name="robots" content="noindex">`. Kterákoli z těchto věcí zabrání vašemu obsahu, aby se objevoval ve výsledcích vyhledávání.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Časté žádosti o reindexaci téže URL proces neurychlí. Indexovací pipeline Googlu je spravována automaticky a odesílání duplicitních požadavků prioritu procházení dále nezvýší.
+</Warning>

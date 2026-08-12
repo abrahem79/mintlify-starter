@@ -1,0 +1,126 @@
+---
+title: "Programmable Search API: Spør og hent resultater"
+sidebarTitle: "Søke-API"
+description: "Spør en Google Programmable Search Engine via GET /customsearch/v1 og motta strukturerte JSON-resultater med titler, URL-er og utdrag."
+---
+
+Google Programmable Search API lar deg bygge inn tilpasset nettsøk i applikasjonen din. Ved å opprette en søkemotor i [kontrollpanelet for Programmable Search Engine](https://programmablesearchengine.google.com/), definerer du hvilke nettsteder eller hele nettet motoren din dekker. Deretter spør du den motoren via en enkel `GET`-forespørsel og mottar strukturerte JSON-resultater — titler, URL-er og utdrag — som du kan vise hvordan du vil.
+
+## Endepunkt
+
+```http
+GET https://www.googleapis.com/customsearch/v1
+```
+
+Autentisering håndteres via en API-nøkkel sendt som `key`-spørringsparameter. Ingen OAuth-token er nødvendig for dette endepunktet.
+
+## Spørringsparametere
+
+<ParamField query="q" type="string" required>
+  Søkespørringsstrengen. URL-koder mellomrom og spesialtegn (f.eks. `climate+change` eller `climate%20change`).
+</ParamField>
+
+<ParamField query="key" type="string" required>
+  Prosjektets API-nøkkel. Generer en i [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+</ParamField>
+
+<ParamField query="cx" type="string" required>
+  Den unike identifikatoren til din Programmable Search Engine. Finn denne på oppsettssiden til søkemotoren din under "Search engine ID".
+</ParamField>
+
+<ParamField query="num" type="integer">
+  Antall resultater å returnere per side. Aksepterte verdier er `1` til `10`. Standard er `10`.
+</ParamField>
+
+<ParamField query="start" type="integer">
+  Indeksen til det første resultatet som skal returneres, brukt for paginering. Standard er `1`. Maksimal verdi er `91` (som gir resultater 91–100). Se [Paginering](#pagination) for detaljer.
+</ParamField>
+
+<ParamField query="lr" type="string">
+  Begrenser resultater til dokumenter skrevet på et spesifikt språk. Send en språkkode med prefikset `lang_`, for eksempel `lang_en` for engelsk eller `lang_fr` for fransk.
+</ParamField>
+
+<ParamField query="safe" type="string">
+  Aktiverer SafeSearch-filtrering. Send `active` for å filtrere eksplisitt innhold, eller `off` for å deaktivere filtrering. Standard er `off`.
+</ParamField>
+
+## Eksempelforespørsel
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=5"
+```
+
+## Eksempelsvar
+
+```json
+{
+  "kind": "customsearch#search",
+  "searchInformation": {
+    "totalResults": "12400000",
+    "searchTime": 0.248
+  },
+  "items": [
+    {
+      "title": "Climate Change Overview",
+      "link": "https://example.com/climate",
+      "snippet": "An overview of current climate change research and its global implications for ecosystems and economies."
+    },
+    {
+      "title": "What Is Climate Change? — NASA",
+      "link": "https://climate.nasa.gov/what-is-climate-change/",
+      "snippet": "NASA's guide to the science, causes, and projected impacts of climate change."
+    }
+  ]
+}
+```
+
+## Svarfelt
+
+<ResponseField name="kind" type="string">
+  Identifiserer typen ressurs som returneres. For søkesvar er dette alltid `"customsearch#search"`.
+</ResponseField>
+
+<ResponseField name="searchInformation.totalResults" type="string">
+  Anslått totalt antall resultater som samsvarer med spørringen, returnert som en streng. Dette er en tilnærming og kan variere mellom forespørsler.
+</ResponseField>
+
+<ResponseField name="searchInformation.searchTime" type="number">
+  Tiden Google brukte på å behandle spørringen, i sekunder.
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  En matrise med søkeresultatobjekter. Denne matrisen mangler hvis ingen resultater ble funnet.
+</ResponseField>
+
+<ResponseField name="items[].title" type="string">
+  Tittelen på nettsiden slik den vises i søkeresultatene.
+</ResponseField>
+
+<ResponseField name="items[].link" type="string">
+  Den fullstendige URL-en til resultatsiden.
+</ResponseField>
+
+<ResponseField name="items[].snippet" type="string">
+  Et kort utdrag fra sideinnholdet som viser hvordan spørringstermene vises i kontekst.
+</ResponseField>
+
+## Paginering
+
+Programmable Search API returnerer maksimalt **10 resultater per forespørsel** og støtter opptil **100 resultater totalt** per spørring (resultater 1–100). For å bla gjennom resultater, øk `start` med verdien til `num`:
+
+| Side | `start` | `num` |
+|------|---------|-------|
+| 1 | 1 | 10 |
+| 2 | 11 | 10 |
+| 3 | 21 | 10 |
+| … | … | … |
+| 10 | 91 | 10 |
+
+```bash
+# Fetch the second page of results
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=10&start=11"
+```
+
+<Note>
+  Resultater utover posisjon 100 er ikke tilgjengelig via API-et. Hvis brukstilfellet ditt krever dypere paginering, vurder å avgrense spørringen med flere termer eller filtre for å bringe frem de mest relevante resultatene innenfor de første 100.
+</Note>

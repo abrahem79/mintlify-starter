@@ -1,0 +1,66 @@
+---
+title: "Kā darbojas Google meklēšana: skaidrota indeksēšana un klasifikācija"
+sidebarTitle: "Meklēšana"
+description: "Uzziniet, kā Google indeksē, klasificē un parāda saturu. Sapratīsiet meklēšanas operatorus, Custom Search un to, kā integrēt meklēšanu savā lietotnē."
+---
+
+Google meklēšana apstrādā simtiem miljardu lapu un atbild uz triljoniem vaicājumu katru gadu, padarot to par pasaulē visplašāk izmantoto informācijas iegūšanas sistēmu. Neatkarīgi no tā, vai uzlabojat savu meklēšanas paņēmienu, optimizējat saturu, lai Google to parādītu pareizi, vai iegulst meklēšanas iespējas tieši savā produktā, izpratne par to, kā meklēšana darbojas zem virsmas, sniedz nozīmīgu priekšrocību.
+
+## Kā darbojas meklēšana
+
+Google meklēšana darbojas trīs plašos posmos, kas fonā darbojas nepārtraukti.
+
+**Rāpošana** — Google automatizētie rāpotāji (kopīgi pazīstami kā Googlebot) seko saitēm tīmeklī, lai atklātu jaunas un atjauninātas lapas. Rāpotājus varat vadīt, izmantojot failu `robots.txt` un `<meta name="robots">` tagus, lai kontrolētu, kas tiek iegūts.
+
+**Indeksēšana** — kad lapa ir rāpota, Google analizē tās saturu — tekstu, attēlus, strukturētus datus un citus — un saglabā tās attēlojumu meklēšanas indeksā. Labi strukturētas lapas ar skaidriem virsrakstiem, aprakstošiem metadatiem un derīgu shēmas iezīmēšanu ir vieglāk precīzi indeksēt.
+
+**Klasifikācija** — kad lietotājs iesniedz vaicājumu, Google klasifikācijas sistēmas izvērtē simtiem signālu (atbilstība, lapas kvalitāte, konteksts, svaigums un citi), lai sakārtotu rezultātus. Neviens atsevišķs faktors neaprēķina rangu; algoritms izvērtē signālus holistiski, lai parādītu visnoderīgāko rezultātu šim vaicājumam.
+
+<Note>
+  Google negarantē indeksēšanu katrai lapai. Izmantojiet Google Search Console, lai uzraudzītu pārklājumu, identificētu rāpošanas kļūdas un pieprasītu (atkārtotu) indeksēšanu svarīgiem URL.
+</Note>
+
+## Meklēšanas operatori
+
+Meklēšanas operatori ir īpašas komandas, ko ievadāt tieši Google meklēšanas lodziņā, lai filtrētu un sašaurinātu rezultātus. Tie ir noderīgi pētniecībai, konkurentu analīzei, jūsu vietnes klātbūtnes auditam un indeksēšanas problēmu atkļūdošanai.
+
+| Operators | Sintakse | Ko tas dara |
+|---|---|---|
+| `site:` | `site:example.com` | Ierobežo rezultātus līdz lapām konkrētā domēnā vai apakšdomēnā. |
+| `filetype:` | `filetype:pdf` | Atgriež noteikta failu tipa rezultātus (pdf, docx, xlsx utt.). |
+| `intitle:` | `intitle:keyword` | Atbilst lapām, kas satur atslēgvārdu savā HTML tagā `<title>`. |
+| Precīza frāze | `"machine learning"` | Atgriež tikai rezultātus, kas satur šo precīzo vārdu secību. |
+| Izslēgt terminu | `-keyword` | Noņem rezultātus, kas satur norādīto vārdu vai frāzi. |
+
+Vienā vaicājumā varat apvienot operatorus. Piemēram, `site:docs.example.com filetype:pdf -intitle:archive` atrod PDF failus jūsu dokumentu apakšdomēnā, kuriem nosaukumā nav "archive".
+
+<Tip>
+  Pievienojiet operatoram prefiksu `OR` (lielajiem burtiem), lai atbilstu vienam no diviem nosacījumiem — piemēram, `site:example.com OR site:example.io` vienā vaicājumā atgriež rezultātus no abiem domēniem.
+</Tip>
+
+## Pielāgotais meklēšanas dzinējs (CSE)
+
+Pielāgotais meklēšanas dzinējs ļauj izveidot ierobežotu, zīmola meklēšanas pieredzi, kas pārmeklē noteiktu vietņu vai lapu kopumu, nevis visu tīmekli. Tas ir noderīgi, lai pievienotu meklēšanas joslu dokumentācijai, palīdzības centram vai e-komercijas katalogam.
+
+**Lai izveidotu pielāgoto meklēšanas dzinēju:**
+
+1. Dodieties uz [Programmable Search Engine vadības paneli](https://programmablesearchengine.google.com/controlpanel/all).
+2. Noklikšķiniet uz **Add** un ievadiet vietnes vai URL modeļus, kurus vēlaties meklēt.
+3. Piešķiriet dzinējam nosaukumu un saglabājiet to — Google ģenerē unikālu **Search Engine ID** (parametru `cx`), kas identificē jūsu dzinēju.
+4. Pielāgojiet izskatu un sajūtu sadaļā **Look and feel**, pēc tam nokopējiet iegulšanas fragmentu savā lapā.
+
+<Note>
+  CSE rezultāti ievēro tos pašus indeksēšanas noteikumus kā parastā Google meklēšana. Ja lapa nav indeksēta, tā neparādīsies arī jūsu CSE rezultātos.
+</Note>
+
+## Programmable Search API
+
+Programmable Search JSON API sniedz programmatisku piekļuvi jūsu pielāgotā meklēšanas dzinēja rezultātiem, lai varētu iegūt, formatēt un attēlot meklēšanas rezultātus pilnībā savā lietojumprogrammā — bez Google lietotāja saskarnes iegulšanas.
+
+Galvenās iespējas ietver:
+
+- Vaicājiet savam CSE un saņemiet strukturētas JSON atbildes, kas satur nosaukumus, URL, fragmentus un bagātīgus metadatus.
+- Pielietojiet parametrus `dateRestrict`, `sort` un `filter`, lai precizētu rezultātus pieprasījuma laikā.
+- Izmantojiet parametru `searchType=image`, lai meklētu attēlus jūsu definētajā tvērumā.
+
+Pilnas pieprasījumu/atbilžu shēmas, autentifikācijas prasības un koda paraugus skatiet sadaļā [Search API atsauce](/api/search).

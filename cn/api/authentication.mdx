@@ -1,0 +1,134 @@
+---
+title: "Google API 身份验证：密钥、OAuth 2.0 与服务账户"
+sidebarTitle: "身份验证"
+description: "使用 API 密钥（用于公共数据）、OAuth 2.0 Bearer 令牌（用于用户数据）或服务账户（用于服务器间访问）对 Google API 请求进行身份验证。"
+---
+
+你发送到 Google REST API 的每个请求都必须经过身份验证。Google 支持三种主要的身份验证机制：用于访问公共数据的 API 密钥、用于代表用户操作的 OAuth 2.0 Bearer 令牌，以及用于服务器间集成的服务账户凭据。选择正确的机制取决于你需要访问的数据类型，以及是否有真人用户参与流程。
+
+## API 密钥
+
+API 密钥是最简单的身份验证方法。它们向 Google 标识你的项目，但不携带任何用户上下文，因此仅适用于访问 **公开可用数据** 的 API（例如 Programmable Search API）。
+
+在每个请求中以 `key` 查询参数的形式传递你的 API 密钥：
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**使用 curl 的示例：**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  在 [Google Cloud Console](https://console.cloud.google.com/apis/credentials) 中生成和管理你的 API 密钥。将每个密钥限制到特定的 API 和引用来源 URL，以便在密钥泄露时限制其影响范围。
+</Tip>
+
+## OAuth 2.0 Bearer 令牌
+
+当你的应用程序需要访问或修改 **用户拥有的数据**——例如 Google Drive 中的文件、Gmail 邮件或 Calendar 事件——时，你必须使用 OAuth 2.0。用户完成 OAuth 同意流程后，你的应用程序会收到一个访问令牌，你需要将它包含在每个请求的 `Authorization` 头中。
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+访问令牌默认在 **3600 秒（1 小时）** 后过期。你的应用程序应存储相应的刷新令牌，并使用它在不再次提示用户的情况下获取新的访问令牌。详情请参阅下方的 [令牌刷新](#token-refresh)。
+
+**使用 curl 的示例：**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## 服务账户凭据
+
+服务账户是属于应用程序而非个人用户的特殊 Google 账户。它们专为 **服务器间** 场景设计——例如，一个定时从 Google Sheets 读取数据的后端任务，无需任何用户交互。
+
+以服务账户的身份进行身份验证：
+
+1. 在 [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts) 中，创建一个服务账户并下载其 JSON 密钥文件。
+2. 授予该服务账户所需的 IAM 角色（例如 `roles/drive.reader`）。
+3. 使用 Google 客户端库或已签名的 JWT，将密钥换取为短期访问令牌。
+
+**示例：使用 curl 将服务账户密钥换取为访问令牌**
+
+```bash
+# 1. Install the google-auth-library or use the oauth2 token endpoint directly.
+# Below shows the two-legged JWT flow at its simplest using Python's google-auth library.
+# Install: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+获得访问令牌后，像使用 OAuth 2.0 时一样，将其作为 Bearer 令牌传递：
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  安全地存储你的服务账户 JSON 密钥文件，切勿将其提交到源代码管理中。如果你怀疑密钥已泄露，请立即轮换密钥。
+</Warning>
+
+## 作用域
+
+OAuth 2.0 作用域精确定义了访问令牌所授予的权限。你在授权步骤中请求作用域，用户将在 Google 的同意屏幕上看到它们的列表。只请求你的应用程序确实需要的作用域——请求过于宽泛的作用域会削弱用户信任，并且可能在应用验证时被拒绝。
+
+| 作用域 | 授予的访问权限 |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | 对用户 Google Drive 中所有文件的只读访问。 |
+| `https://www.googleapis.com/auth/drive` | 对用户 Google Drive 的完整读写访问。 |
+| `https://www.googleapis.com/auth/gmail.readonly` | 对用户 Gmail 邮件和设置的只读访问。 |
+| `https://www.googleapis.com/auth/calendar` | 对用户 Google Calendar 的完整读写访问。 |
+| `openid` | 通过 OpenID Connect 验证用户身份并获取稳定的用户 ID。 |
+| `email` | 访问用户的主 Google 账户电子邮箱地址。 |
+| `profile` | 访问用户的基本个人资料信息（姓名、头像、语言区域）。 |
+
+## 令牌刷新
+
+当访问令牌过期时，向 Google 令牌端点发送 `POST` 请求，用你的刷新令牌换取一个新的令牌：
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+成功的响应包含新的访问令牌及其过期时间：
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| 字段 | 说明 |
+|-------|-------------|
+| `access_token` | 在后续 API 请求中使用的新 Bearer 令牌。 |
+| `expires_in` | 令牌过期的剩余秒数（通常为 `3600`）。 |
+| `token_type` | 始终为 `"Bearer"`。 |
+
+存储新的 `access_token` 并替换应用程序中之前的令牌。刷新令牌本身在用户撤销访问或被 Google 以其他方式使其失效之前一直有效。
+
+<Warning>
+  切勿在客户端代码（JavaScript 打包文件、移动应用或公共仓库）中嵌入你的 OAuth `client_secret`。一旦泄露，攻击者可以冒充你的应用程序、劫持 OAuth 流程并代表你访问用户数据。始终在安全的后端服务器上进行令牌交换。
+</Warning>

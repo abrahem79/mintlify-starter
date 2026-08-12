@@ -1,0 +1,66 @@
+---
+title: "Jak funguje Vyhledávání Google: Indexování a řazení vysvětleny"
+sidebarTitle: "Vyhledávání"
+description: "Zjistěte, jak Google indexuje, řadí a zobrazuje obsah. Pochopte vyhledávací operátory, Custom Search a jak integrovat vyhledávání do své aplikace."
+---
+
+Vyhledávání Google zpracovává stovky miliard stránek a každý rok odpovídá na biliony dotazů, čímž z něj činí nejrozšířenější systém pro získávání informací na světě. Ať už zdokonalujete vlastní techniku vyhledávání, optimalizujete obsah tak, aby jej Google správně zobrazoval, nebo integrujete vyhledávací schopnosti přímo do svého produktu, pochopení toho, jak Vyhledávání funguje pod kapotou, vám poskytuje smysluplnou výhodu.
+
+## Jak Vyhledávání funguje
+
+Vyhledávání Google pracuje ve třech širokých fázích, které nepřetržitě běží na pozadí.
+
+**Procházení (crawling)** — automatizované prohledávače Googlu (souhrnně známé jako Googlebot) sledují odkazy napříč webem, aby objevovaly nové a aktualizované stránky. Procházení můžete usměrňovat pomocí souboru `robots.txt` a značek `<meta name="robots">`, čímž ovládáte, co se stahuje.
+
+**Indexování** — jakmile je stránka procházena, Google analyzuje její obsah — text, obrázky, strukturovaná data a další — a ukládá jeho reprezentaci v indexu Vyhledávání. Dobře strukturované stránky s jasnými nadpisy, popisnými metadaty a platným schema markupem lze indexovat přesněji.
+
+**Řazení (ranking)** — když uživatel odešle dotaz, systémy řazení Googlu vyhodnocují stovky signálů (relevance, kvalita stránky, kontext, aktuálnost a další), aby seřadily výsledky. Žádný jednotlivý faktor neurčuje pořadí; algoritmus váží signály holisticky, aby zobrazil nejužitečnější výsledek pro daný dotaz.
+
+<Note>
+  Google negarantuje indexování pro každou stránku. Pomocí Google Search Console monitorujte pokrytí, identifikujte chyby procházení a žádejte o (re)indexování důležitých URL.
+</Note>
+
+## Vyhledávací operátory
+
+Vyhledávací operátory jsou speciální příkazy, které zadáváte přímo do vyhledávacího políčka Googlu k filtrování a zúžení výsledků. Jsou užitečné pro výzkum, konkurenční analýzu, audit přítomnosti vašeho webu a ladění problémů s indexováním.
+
+| Operátor | Syntaxe | Co dělá |
+|---|---|---|
+| `site:` | `site:example.com` | Omezuje výsledky na stránky v konkrétní doméně nebo subdoméně. |
+| `filetype:` | `filetype:pdf` | Vrací výsledky konkrétního typu souboru (pdf, docx, xlsx atd.). |
+| `intitle:` | `intitle:keyword` | Odpovídá stránkám, které obsahují klíčové slovo ve značce HTML `<title>`. |
+| Přesná fráze | `"machine learning"` | Vrací pouze výsledky obsahující přesně tuto posloupnost slov. |
+| Vyloučení termínu | `-keyword` | Odstraňuje výsledky, které obsahují zadané slovo nebo frázi. |
+
+V jednom dotazu můžete operátory kombinovat. Například `site:docs.example.com filetype:pdf -intitle:archive` najde PDF soubory v subdoméně vaší dokumentace, které nemají v názvu „archive".
+
+<Tip>
+  Předřaďte operátor slovem `OR` (velkými písmeny), abyste našli výsledky odpovídající jedné ze dvou podmínek — například `site:example.com OR site:example.io` vrátí v jednom dotazu výsledky z obou domén.
+</Tip>
+
+## Vlastní vyhledávač (Custom Search Engine, CSE)
+
+Vlastní vyhledávač vám umožňuje vytvořit cílený a značkový vyhledávací zážitek, který dotazuje konkrétní sadu stránek nebo webů namísto celého webu. To je užitečné pro přidání vyhledávacího políčka do vaší dokumentace, centra nápovědy nebo e-shopu.
+
+**Chcete-li vytvořit Vlastní vyhledávač:**
+
+1. Přejděte na [ovládací panel Programmable Search Engine](https://programmablesearchengine.google.com/controlpanel/all).
+2. Klikněte na **Add** a zadejte weby nebo URL vzory, které chcete prohledávat.
+3. Pojmenujte svůj vyhledávač a uložte jej — Google vygeneruje jedinečné **Search Engine ID** (parametr `cx`), který váš vyhledávač identifikuje.
+4. Přizpůsobte vzhled a chování v části **Look and feel** a poté zkopírujte vložený úryvek do své stránky.
+
+<Note>
+  Výsledky CSE respektují stejná pravidla indexování jako běžné Vyhledávání Google. Pokud stránka není indexována, neobjeví se ani ve výsledcích vašeho CSE.
+</Note>
+
+## Programmable Search API
+
+Programmable Search JSON API vám poskytuje programový přístup k výsledkům vašeho Vlastního vyhledávače, takže můžete výsledky vyhledávání získávat, formátovat a zobrazovat zcela ve své aplikaci — bez vkládání uživatelského rozhraní Googlu.
+
+Klíčové možnosti zahrnují:
+
+- Dotazování vašeho CSE a přijímání strukturovaných JSON odpovědí obsahujících názvy, URL, úryvky a bohatá metadata.
+- Použití parametrů `dateRestrict`, `sort` a `filter` k upřesnění výsledků při požadavku.
+- Použití parametru `searchType=image` pro vyhledávání obrázků v rámci definovaného rozsahu.
+
+Úplná schémata požadavků/odpovědí, požadavky na autentizaci a ukázky kódu najdete v [referenci Search API](/api/search).

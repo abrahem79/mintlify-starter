@@ -1,0 +1,133 @@
+---
+title: "Administrer Google-app-tillatelser og tredjepartstilgang"
+sidebarTitle: "Tillatelser"
+description: "Gjennomgå og tilbakekall tredjeparts app-tilgang, administrer Google Workspace-delingsretningslinjer, og kontroller API-tilgangsområder for tilkoblede applikasjoner."
+---
+
+Når du logger inn på tredjepartsapper og -tjenester med Google-kontoen din — eller autoriserer dem til å få tilgang til dataene dine — mottar disse appene tillatelsestokens som gir dem tilgang til spesifikke deler av kontoen din. Over tid kan du samle opp dusinvis av tilkoblede apper, hvorav mange du ikke lenger bruker. Å regelmessig gjennomgå og tilbakekalle unødvendige tillatelser er en av de mest effektive måtene å beskytte kontosikkerheten og personvernet ditt på.
+
+## Vis tilkoblede apper
+
+Du kan se hver app som for øyeblikket har tilgang til Google-kontoen din fra **Security**-delen av kontodashbordet ditt.
+
+<Steps>
+  <Step title="Åpne Google-kontoen din">
+    Naviger til [myaccount.google.com](https://myaccount.google.com) og logg inn.
+  </Step>
+  <Step title="Gå til Security">
+    Klikk **Security** i sidepanelet til venstre.
+  </Step>
+  <Step title="Åpne Third-party apps with account access">
+    Bla ned til **Your connections to third-party apps & services**-delen og klikk **See all connections**.
+  </Step>
+  <Step title="Gjennomgå listen">
+    Du vil se alle apper som har fått tilgang, sammen med datoen for siste tilgang og tillatelsene hver app har.
+  </Step>
+</Steps>
+
+<Note>
+  Apper som du har logget inn på ved å bruke "Sign in with Google" vises her sammen med apper som har fått API-tilgang programmatisk. Begge typer kan gjennomgås og tilbakekalles fra samme side.
+</Note>
+
+## Tilbakekall tilgang
+
+Hvis du ikke lenger bruker en app, eller hvis du ikke gjenkjenner en tilkoblet app, bør du umiddelbart tilbakekalle tilgangen.
+
+<Steps>
+  <Step title="Naviger til tilkoblede apper">
+    Fra [myaccount.google.com](https://myaccount.google.com), gå til **Security** → **See all connections** under Third-party apps.
+  </Step>
+  <Step title="Velg appen du vil fjerne">
+    Klikk på appen hvis tilgang du vil tilbakekalle.
+  </Step>
+  <Step title="Gjennomgå tillatelsene">
+    Les listen over tilgangsområder appen ble gitt. Dette viser nøyaktig hvilke data appen kan få tilgang til.
+  </Step>
+  <Step title="Klikk Delete all connections">
+    Klikk **Delete all connections you have with [App Name]** og bekreft når du blir bedt om det.
+  </Step>
+  <Step title="Bekreft fjerning">
+    Appen vil ikke lenger vises i listen over tilkoblede apper og vil miste muligheten til å få tilgang til kontoen din med den tilbakekallede tokenen.
+  </Step>
+</Steps>
+
+<Warning>
+  Tilbakekalling av tilgang ugyldiggjør umiddelbart appens tilgangstoken — appen kan ikke lenger lese eller skrive Google-dataene dine. Imidlertid slettes ikke automatisk data som appen allerede har lastet ned eller lagret i sine egne systemer. Sjekk appens egne personverninnstillinger eller kontakt utvikleren for å be om datasletting.
+</Warning>
+
+## OAuth-tilgangsområder
+
+OAuth-tilgangsområder definerer nøyaktig hva en app har lov til å gjøre med Google-kontoen din. Når en app ber om tilgang, spesifiserer den en liste med tilgangsområde-strenger som kartlegger til bestemte muligheter. Du bør alltid gjennomgå de forespurte tilgangsområdene før du gir tilgang til en tredjepartsapplikasjon.
+
+Tilgangsområde-strenger følger dette formatet:
+
+```text
+https://www.googleapis.com/auth/[service].[permission-level]
+```
+
+For eksempel:
+
+```text
+https://www.googleapis.com/auth/drive.readonly
+```
+
+Dette tilgangsområdet lar appen lese filer i Google Drive, men ikke opprette, endre eller slette dem.
+
+### Vanlige OAuth-tilgangsområder
+
+| Tilgangsområde | Tilgangsnivå | Hva appen kan gjøre |
+|---|---|---|
+| `https://www.googleapis.com/auth/drive.readonly` | Skrivebeskyttet | Vise og laste ned filer i Drive |
+| `https://www.googleapis.com/auth/drive` | Full tilgang | Opprette, redigere og slette hvilken som helst fil i Drive |
+| `https://www.googleapis.com/auth/gmail.readonly` | Skrivebeskyttet | Lese alle Gmail-meldinger og innstillinger |
+| `https://www.googleapis.com/auth/gmail.send` | Bare sending | Sende e-post på dine vegne |
+| `https://www.googleapis.com/auth/gmail.modify` | Lese/skrive | Lese, sende, slette og administrere e-post |
+| `https://www.googleapis.com/auth/calendar.readonly` | Skrivebeskyttet | Se kalenderhendelsene dine |
+| `https://www.googleapis.com/auth/calendar` | Full tilgang | Opprette, redigere og slette kalenderhendelser |
+| `https://www.googleapis.com/auth/userinfo.email` | Profil | Få tilgang til e-postadressen din |
+| `https://www.googleapis.com/auth/userinfo.profile` | Profil | Få tilgang til grunnleggende profilinformasjon |
+| `openid` | Identitet | Verifisere identiteten din via OpenID Connect |
+
+<Warning>
+  Unngå å gi brede tilgangsområder — som `https://www.googleapis.com/auth/drive` eller `https://www.googleapis.com/auth/gmail.modify` — med mindre du fullt ut stoler på applikasjonen og har et klart behov for det tilgangsnivået. Foretrekk alltid det mest restriktive tilgangsområdet som tilfredsstiller appens funksjonalitet. En app som bare trenger å lese filer fra Drive, bør aldri be om full skrivetilgang til Drive.
+</Warning>
+
+<Tip>
+  Når du bygger dine egne applikasjoner med Google API-er, følg prinsippet om minst mulig privilegium: be bare om tilgangsområdene appen din virkelig trenger. Dette bygger brukertillit og reduserer sikkerhetsrisikoen hvis appens legitimasjon noen gang blir kompromittert.
+</Tip>
+
+## Workspace-administratortillatelser
+
+Hvis du administrerer en Google Workspace-organisasjon, har du ytterligere kontroller for å styre hvilke tredjepartsapper brukerne dine kan koble til arbeidskontoene sine. Disse innstillingene administreres fra **Google Admin Console**.
+
+<Steps>
+  <Step title="Åpne Admin Console">
+    Logg inn på [admin.google.com](https://admin.google.com) med Workspace-administrator-legitimasjonen din.
+  </Step>
+  <Step title="Gå til Security → API Controls">
+    Naviger til **Security** → **Access and data control** → **API controls**.
+  </Step>
+  <Step title="Administrer domene-omfattende app-tilgang">
+    Klikk **Manage Third-Party App Access** for å se alle OAuth-apper som brukere i organisasjonen din har koblet til.
+  </Step>
+  <Step title="Konfigurer app-tillitsinnstillinger">
+    For hver app kan du angi tillitsnivået:
+    - **Trusted** — brukere kan gi ethvert forespurt tilgangsområde
+    - **Limited** — brukere kan bare gi tilgang til Google-tjenester merket som ubegrensede
+    - **Blocked** — ingen brukere i organisasjonen kan koble til denne appen
+  </Step>
+  <Step title="Angi organisasjons-omfattende standardinnstillinger">
+    Under **App access control**, konfigurer om brukere er tillatt å gi tilgang til ubetrodde apper som standard.
+  </Step>
+</Steps>
+
+| Administratorkontroll | Beskrivelse |
+|---|---|
+| **Tillitsnivå per app** | Detaljert tillate eller blokkere individuelle OAuth-apper for organisasjonen din |
+| **Domene-omfattende delegering** | Gi tjenestekontoer organisasjons-omfattende tilgang til å handle på vegne av brukere |
+| **App access control-standard** | Angi organisasjons-omfattende retningslinje for ubetrodde tredjepartsapper |
+| **Revisjonslogger** | Gjennomgå hvilke brukere som autoriserte hvilke apper og når |
+
+<Note>
+  Domene-omfattende delegering (DWD) gir en tjenestekonto muligheten til å utgi seg for enhver bruker i organisasjonen din. Bruk bare DWD når det er absolutt nødvendig, og revider regelmessig hvilke tjenestekontoer som har fått dette tilgangsnivået.
+</Note>

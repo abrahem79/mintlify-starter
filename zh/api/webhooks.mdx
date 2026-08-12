@@ -1,0 +1,153 @@
+---
+title: "Google API Webhooks：订阅推送通知"
+sidebarTitle: "Webhooks"
+description: "注册 Google Drive 推送通知通道，以便在文件或资源被创建、更新或删除时接收实时 webhook 回调。"
+---
+
+不必反复轮询 API 检查资源是否发生变化，你可以使用 Google 的推送通知系统，让 Google 在变更发生的那一刻调用你的服务器。你需要注册一个指向你控制的 HTTPS 端点的**监视通道（watch channel）**；每当被监视的资源被创建、更新或删除时，Google 会向该端点发送 `POST` 请求。推送通知可用于 Google Drive、Gmail、日历以及其他多个 API。
+
+<Warning>
+  你的 webhook 端点**必须**使用具备有效证书的 HTTPS 提供服务。Google 不会向纯 HTTP URL 投递通知。此外，你的端点必须在 **10 秒**内响应 HTTP `200 OK`——超时的响应会被视为失败，可能导致 Google 停止向该通道投递通知。
+</Warning>
+
+---
+
+## 推送通知的工作方式
+
+流程分为四个步骤：
+
+1. **注册** —— 你的应用在想要监视的资源上调用 `watch` 方法，提供你的端点 URL 和唯一的通道 ID。
+2. **同步** —— Google 通过初始通知（`X-Goog-Resource-State: sync`）确认通道。
+3. **接收** —— 每次资源变化时，Google 都会向你的端点发送 `POST` 请求。
+4. **续订或停止** —— 通道有过期时间。你必须在过期之前重新注册，或在不再需要时显式停止它们。
+
+---
+
+## 注册监视通道
+
+以下示例在 Google Drive 中的所有文件上注册一个监视。其他 API 遵循相同的模式，只是端点路径不同。
+
+**端点**
+
+```http
+POST https://www.googleapis.com/drive/v3/files/watch
+```
+
+### 请求体参数
+
+<ParamField body="id" type="string" required>
+  你生成的 UUID 或其他唯一字符串，用于标识此通道。Google 会在每个通知中回传此值，以便你可以将其路由到正确的处理程序。
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  通知的投递机制。对于 HTTPS 推送投递，必须为 `"web_hook"`。
+</ParamField>
+
+<ParamField body="address" type="string" required>
+  你的 webhook 端点的完整 HTTPS URL。Google 将向此 URL `POST` 通知。
+</ParamField>
+
+<ParamField body="expiration" type="integer">
+  以**毫秒**为单位的 Unix 时间戳，指定通道应过期的时间。如果省略，Google 会应用默认过期时间（通常最多 7 天）。你必须在此时间之前重新注册通道，以避免遗漏通知。
+</ParamField>
+
+### 示例请求
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1893456000000
+  }'
+```
+
+### 示例响应
+
+```json
+{
+  "kind": "api#channel",
+  "id": "my-channel-01",
+  "resourceId": "o3hgv1538sdjfh",
+  "resourceUri": "https://www.googleapis.com/drive/v3/files?...",
+  "expiration": "1893456000000"
+}
+```
+
+存储 `resourceId` 的值——之后你需要用它来停止通道。
+
+---
+
+## 入站请求头
+
+当 Google 向你的端点投递通知时，`POST` 请求包含以下自定义头：
+
+| Header | 描述 |
+|--------|-------------|
+| `X-Goog-Channel-ID` | 你在注册时指定的通道 `id`。用它来识别是哪个监视触发了通知。 |
+| `X-Goog-Resource-State` | 发生的变更类型。常见值：`sync`（初始确认）、`add`、`update`、`remove`、`trash`、`untrash`、`change`。 |
+| `X-Goog-Changed` | 变更属性的逗号分隔列表（例如 `content,properties`）。存在于 `update` 通知中。 |
+| `X-Goog-Resource-ID` | Google 为受监视资源分配的内部标识符。 |
+| `X-Goog-Resource-URI` | 发生变更的资源的 API URL。 |
+| `X-Goog-Message-Number` | 通道中每条消息的单调递增整数。同步消息始终为 `1`。 |
+
+<Note>
+  通知体故意为**空**——Google 告诉你发生了变更，但不告诉你变更内容。你应使用 `X-Goog-Resource-URI` 头发起后续 API 请求，获取更新后的资源。
+</Note>
+
+---
+
+## 停止通道
+
+要停止接收通知并在通道到期前释放它，向停止端点发送 `POST` 请求：
+
+```http
+POST https://www.googleapis.com/drive/v3/channels/stop
+```
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/channels/stop" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "resourceId": "o3hgv1538sdjfh"
+  }'
+```
+
+成功的响应返回带有空响应体的 HTTP `204 No Content`。停止通道后，Google 立即停止向你的端点投递该通道的通知。
+
+---
+
+## 通道过期与续订
+
+所有监视通道都会过期——要么在你指定的 `expiration` 时间戳，要么在 Google 自身的最大值（因 API 而异）。一旦通道过期，Google 就会停止发送通知，你会错过变更，直到你注册新的通道。
+
+**推荐的续订策略：**
+
+1. 存储注册每个通道时返回的 `expiration` 值。
+2. 安排一个任务，至少在通道过期前 **24 小时**重新注册。
+3. 成功注册新通道后，停止旧通道。
+
+```bash
+# Re-register with a new channel ID and updated expiration
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-02",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1925000000000
+  }'
+```
+
+<Tip>
+  使用 UUID 生成器（例如 macOS/Linux 上的 `uuidgen`）生成唯一的通道 ID。在之前的通道停止之前重用相同的 ID 可能导致冲突或重复通知。
+</Tip>

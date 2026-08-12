@@ -1,0 +1,133 @@
+---
+title: "管理 Google 应用权限和第三方访问"
+sidebarTitle: "权限"
+description: "查看并撤销第三方应用访问权限，管理 Google Workspace 分享策略，控制已连接应用的 API 作用域。"
+---
+
+当你使用 Google 账户登录第三方应用和服务，或授权它们访问你的数据时，这些应用会获得授权令牌，从而访问你账户中的特定部分。随着时间推移，你可能会积累数十个已连接应用，其中许多你可能不再使用。定期审查并撤销不必要的权限是保护账户安全和隐私最有效的方法之一。
+
+## 查看已连接应用
+
+你可以在账户仪表板的**安全性**部分查看当前拥有你 Google 账户访问权限的每个应用。
+
+<Steps>
+  <Step title="打开你的 Google 账户">
+    访问 [myaccount.google.com](https://myaccount.google.com) 并登录。
+  </Step>
+  <Step title="前往安全性">
+    点击左侧边栏中的**安全性**。
+  </Step>
+  <Step title="打开有账户访问权限的第三方应用">
+    向下滚动到**你与第三方应用和服务的连接**部分，点击**查看所有连接**。
+  </Step>
+  <Step title="查看列表">
+    你会看到所有已获得访问权限的应用，以及每个应用的最后访问日期和所持有的权限。
+  </Step>
+</Steps>
+
+<Note>
+  使用“通过 Google 登录”登录的应用会与通过 API 编程方式获得访问权限的应用一同显示在这里。两种类型都可以从同一页面进行审查和撤销。
+</Note>
+
+## 撤销访问权限
+
+如果你不再使用某个应用，或者你不认识某个已连接的应用，你应该立即撤销其访问权限。
+
+<Steps>
+  <Step title="导航到已连接应用">
+    从 [myaccount.google.com](https://myaccount.google.com) 前往**安全性** → 第三方应用下的**查看所有连接**。
+  </Step>
+  <Step title="选择要移除的应用">
+    点击你想要撤销访问权限的应用。
+  </Step>
+  <Step title="查看权限">
+    阅读应用被授予的作用域列表。这会准确显示应用可以访问哪些数据。
+  </Step>
+  <Step title="点击“删除所有连接”">
+    点击**删除你与 [应用名称] 的所有连接**，并在提示时确认。
+  </Step>
+  <Step title="验证移除">
+    该应用将不再出现在你的已连接应用列表中，且失去使用被撤销令牌访问你账户的能力。
+  </Step>
+</Steps>
+
+<Warning>
+  撤销访问权限会立即使应用的访问令牌失效——该应用无法再读取或写入你的 Google 数据。但是，应用已经下载或存储在其自身系统中的任何数据不会被自动删除。请查看该应用自身的隐私设置，或联系开发者请求数据删除。
+</Warning>
+
+## OAuth 作用域
+
+OAuth 作用域精确定义了应用被允许对你的 Google 账户执行的操作。当应用请求访问时，它会指定一组映射到特定能力的作用域字符串。在向任何第三方应用授予访问权限之前，你都应始终审查所请求的作用域。
+
+作用域字符串遵循以下格式：
+
+```text
+https://www.googleapis.com/auth/[service].[permission-level]
+```
+
+例如：
+
+```text
+https://www.googleapis.com/auth/drive.readonly
+```
+
+此作用域允许应用读取你 Google Drive 中的文件，但不能创建、修改或删除它们。
+
+### 常见的 OAuth 作用域
+
+| 作用域 | 访问级别 | 应用可以做什么 |
+|---|---|---|
+| `https://www.googleapis.com/auth/drive.readonly` | 只读 | 查看和下载 Drive 中的文件 |
+| `https://www.googleapis.com/auth/drive` | 完全访问 | 创建、编辑和删除 Drive 中的任意文件 |
+| `https://www.googleapis.com/auth/gmail.readonly` | 只读 | 读取所有 Gmail 邮件和设置 |
+| `https://www.googleapis.com/auth/gmail.send` | 仅发送 | 代表你发送邮件 |
+| `https://www.googleapis.com/auth/gmail.modify` | 读/写 | 读取、发送、删除并管理邮件 |
+| `https://www.googleapis.com/auth/calendar.readonly` | 只读 | 查看你的日历事件 |
+| `https://www.googleapis.com/auth/calendar` | 完全访问 | 创建、编辑和删除日历事件 |
+| `https://www.googleapis.com/auth/userinfo.email` | 个人资料 | 访问你的邮箱地址 |
+| `https://www.googleapis.com/auth/userinfo.profile` | 个人资料 | 访问你的基本资料信息 |
+| `openid` | 身份 | 通过 OpenID Connect 验证你的身份 |
+
+<Warning>
+  避免授予宽泛的作用域——例如 `https://www.googleapis.com/auth/drive` 或 `https://www.googleapis.com/auth/gmail.modify`——除非你完全信任该应用并有明确的需要。始终优先选择满足应用功能的最严格作用域。仅需从 Drive 读取文件的应用绝不应请求完整的 Drive 写权限。
+</Warning>
+
+<Tip>
+  在使用 Google API 构建你自己的应用时，请遵循最小权限原则：只请求应用真正需要的作用域。这有助于建立用户信任，并在应用凭据被泄露时降低安全风险。
+</Tip>
+
+## Workspace 管理员权限
+
+如果你管理一个 Google Workspace 组织，你可以额外控制用户能将哪些第三方应用连接到他们的工作账户。这些设置在 **Google Admin Console** 中管理。
+
+<Steps>
+  <Step title="打开 Admin Console">
+    使用 Workspace 管理员凭据登录 [admin.google.com](https://admin.google.com)。
+  </Step>
+  <Step title="前往 Security → API Controls">
+    导航到 **Security** → **Access and data control** → **API controls**。
+  </Step>
+  <Step title="管理域范围内的应用访问">
+    点击 **Manage Third-Party App Access** 查看组织内用户已连接的所有 OAuth 应用。
+  </Step>
+  <Step title="配置应用信任设置">
+    对每个应用，你可以设置其信任级别：
+    - **Trusted** —— 用户可以授予任何请求的作用域
+    - **Limited** —— 用户只能授予对标记为无限制的 Google 服务的访问权限
+    - **Blocked** —— 组织内任何用户都不能连接此应用
+  </Step>
+  <Step title="设置组织范围的默认值">
+    在 **App access control** 下，配置默认情况下是否允许用户授予对不受信任应用的访问权限。
+  </Step>
+</Steps>
+
+| 管理员控制 | 描述 |
+|---|---|
+| **每个应用的信任级别** | 为你的组织精细地允许或阻止单个 OAuth 应用 |
+| **域范围委派** | 授予服务账户在组织范围内代表用户行事的权限 |
+| **应用访问控制默认值** | 为不受信任的第三方应用设置组织范围的策略 |
+| **审计日志** | 查看哪些用户在何时授权了哪些应用 |
+
+<Note>
+  域范围委派（DWD）授予服务账户冒充组织内任意用户的能力。仅在绝对必要时使用 DWD，并定期审计哪些服务账户被授予了此级别的访问权限。
+</Note>

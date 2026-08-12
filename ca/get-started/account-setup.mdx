@@ -1,0 +1,58 @@
+---
+title: "Configuració del compte de Google: activa API i obtén credencials"
+sidebarTitle: "Configuració del compte"
+description: "Crea un compte de Google, configura un projecte a la Cloud Console, activa les API que has escollit i genera credencials per autenticar la teva aplicació."
+---
+
+Abans de poder utilitzar les API per a desenvolupadors de Google, necessites un compte de Google, un projecte de Cloud per allotjar els teus recursos i un conjunt de credencials que la teva aplicació utilitzarà per autenticar-se. Aquesta guia et guia per cadascun d'aquests passos perquè estiguis a punt per fer la teva primera crida a l'API.
+
+## Passos de configuració
+
+<Steps>
+  <Step title="Crea un compte de Google">
+    Si encara no tens un compte de Google, vés a [accounts.google.com/signup](https://accounts.google.com/signup) i completa el formulari de registre. El teu compte de Google et dona accés a tots els serveis de Google, inclosos la Cloud Console, Gmail, Drive i totes les API per a desenvolupadors.
+  </Step>
+  <Step title="Vés a Google Cloud Console">
+    Navega a la [Google Cloud Console](https://console.cloud.google.com) i inicia sessió amb el teu compte de Google. La Console és el teu centre principal per gestionar projectes de Google Cloud, activar API i crear credencials.
+  </Step>
+  <Step title="Crea un projecte">
+    1. Fes clic al selector de projectes a la part superior de la pàgina de la Console.
+    2. Fes clic a **New Project**.
+    3. Introdueix un **Project name** descriptiu (per exemple, `my-search-app`).
+    4. Selecciona un **Billing account** si se't demana i fes clic a **Create**.
+
+    Totes les API i credencials que creïs es limitaran a aquest projecte, cosa que facilita gestionar l'ús i la facturació per separat per a cada aplicació.
+  </Step>
+  <Step title="Activa API">
+    1. A la navegació esquerra, vés a **APIs & Services → Library**.
+    2. Cerca l'API que vols utilitzar (per exemple, **Custom Search API**, **Maps JavaScript API** o **Gmail API**).
+    3. Fes clic al nom de l'API i, després, fes clic a **Enable**.
+
+    Repeteix aquest pas per a cada API de Google que la teva aplicació necessiti. Només les API activades poden rebre peticions de les teves credencials.
+  </Step>
+  <Step title="Crea credencials (clau d'API)">
+    1. Vés a **APIs & Services → Credentials**.
+    2. Fes clic a **Create Credentials** i selecciona **API key**.
+    3. Google genera una nova clau d'API immediatament. Fes clic a **Copy** per copiar-la al porta-retalls.
+    4. Opcionalment, fes clic a **Edit API key** per restringir la clau a API específiques o a referents HTTP i adreces IP: es recomana molt per a ús en producció.
+
+    Desa la teva clau d'API en un lloc segur, com ara una variable d'entorn o un gestor de secrets.
+  </Step>
+</Steps>
+
+<Note>
+  **Manté la teva clau d'API en secret.** Mai no committis la teva clau d'API al control de codi font ni l'exposis al codi del client. Si la teva clau es veu compromesa, vés a **APIs & Services → Credentials** a la Cloud Console, elimina la clau afectada i genera'n una de nova immediatament.
+</Note>
+
+## Pròxims passos
+
+Ara que el teu compte i les credencials estan configurats, ja pots començar a construir.
+
+<CardGroup cols={2}>
+  <Card title="Inici ràpid" icon="rocket" href="/quickstart">
+    Fes la teva primera crida a l'API i mira resultats de cerca en directe en pocs minuts
+  </Card>
+  <Card title="Autenticació" icon="lock" href="/api/authentication">
+    Aprèn sobre claus d'API, OAuth 2.0 i comptes de servei
+  </Card>
+</CardGroup>

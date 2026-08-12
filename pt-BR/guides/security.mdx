@@ -1,0 +1,72 @@
+---
+title: "Proteja sua Conta Google e Credenciais de Desenvolvedor"
+sidebarTitle: "Segurança"
+description: "Proteja sua conta Google com Verificação em Duas Etapas, gerencie restrições de chaves de API e siga as melhores práticas para segurança de credenciais."
+---
+
+Sua conta Google é a chave para seu e-mail, documentos, infraestrutura de nuvem e credenciais de API — tornando-a um dos ativos mais valiosos e frequentemente visados que você gerencia. Protegê-la exige tanto bloquear sua conta com autenticação forte quanto lidar com as chaves de API e credenciais de conta de serviço das quais suas aplicações dependem com o mesmo cuidado que você daria a uma senha. Este guia cobre os passos essenciais para reforçar ambos.
+
+## Verificação em Duas Etapas
+
+A Verificação em Duas Etapas (2SV) adiciona uma segunda prova de identidade em cima da sua senha, para que uma senha roubada sozinha não seja suficiente para acessar sua conta. O Google recomenda usar um aplicativo autenticador como seu segundo fator porque ele gera códigos offline e não é vulnerável a ataques de troca de SIM da forma que o SMS é.
+
+<Steps>
+  <Step title="Abra Minha Conta">
+    Acesse [myaccount.google.com](https://myaccount.google.com) e faça login se solicitado.
+  </Step>
+  <Step title="Navegue até Segurança">
+    Clique em **Segurança** no painel de navegação à esquerda.
+  </Step>
+  <Step title="Inicie a configuração da Verificação em Duas Etapas">
+    Na seção **Como você faz login no Google**, clique em **Verificação em duas etapas**, então clique em **Começar**.
+  </Step>
+  <Step title="Escolha seu segundo fator">
+    O Google sugerirá o método mais forte disponível para sua conta. Para melhor segurança, escolha **Aplicativo autenticador** — escaneie o QR code com o Google Authenticator ou qualquer app compatível com TOTP (Authy, 1Password etc.). Alternativamente, você pode usar uma chave de segurança de hardware (FIDO2/WebAuthn) para proteção ainda mais forte.
+  </Step>
+  <Step title="Confirme e salve os códigos de backup">
+    Complete o prompt de verificação, então baixe e armazene seus **códigos de backup** em um local seguro. Esses códigos de uso único permitem recuperar o acesso se você perder seu dispositivo de segundo fator.
+  </Step>
+</Steps>
+
+## Restrições de Chave de API
+
+Uma chave de API não restrita pode ser usada por qualquer pessoa que a obtiver, a partir de qualquer aplicação, para chamar qualquer API do Google habilitada em seu projeto. Restrições reduzem o raio de impacto se uma chave for exposta.
+
+| Tipo de Restrição | Como Definir | Exemplo |
+|---|---|---|
+| **Referrers HTTP** | No Cloud Console: **Credentials → Edit key → Application restrictions → HTTP referrers** | Permita apenas `https://yourdomain.com/*` para que a chave seja rejeitada se usada em qualquer outro site |
+| **Endereços IP** | No Cloud Console: **Credentials → Edit key → Application restrictions → IP addresses** | Permita apenas o IP estático do seu servidor (por exemplo, `203.0.113.42`) para que a chave funcione somente do seu backend |
+| **Restrição de API** | No Cloud Console: **Credentials → Edit key → API restrictions → Restrict key** | Limite a chave a uma única API (por exemplo, Maps JavaScript API) para que ela não possa ser usada para chamar Gmail ou Drive |
+
+Aplique todas as três camadas sempre que possível: restrinja por referrer ou IP *e* trave a chave apenas nas APIs que ela realmente precisa.
+
+## Rotacionando Chaves de API
+
+Mesmo com restrições em vigor, você deve rotacionar chaves periodicamente ou imediatamente se suspeitar que uma chave foi comprometida.
+
+1. No [Cloud Console](https://console.cloud.google.com), vá em **APIs & Services → Credentials**.
+2. Clique em **Create Credentials → API key** para gerar uma chave nova com as mesmas restrições da antiga.
+3. Atualize a configuração da sua aplicação para usar a nova chave e confirme que tudo funciona corretamente.
+4. Retorne à página de Credentials, clique no menu overflow (**⋮**) da chave antiga e selecione **Delete**. A chave antiga parará de funcionar imediatamente.
+
+Evite uma lacuna no serviço garantindo que a nova chave esteja implantada e verificada *antes* de excluir a antiga.
+
+## Verificação de Segurança
+
+A Verificação de Segurança do Google oferece uma visão geral personalizada da postura de segurança da sua conta em um só lugar. Acesse [myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup) para revisar:
+
+- **Eventos de segurança recentes** — logins desconhecidos ou alterações de senha.
+- **Seus dispositivos** — todos os dispositivos atualmente conectados à sua conta, com a opção de remover qualquer um que você não reconheça.
+- **Acesso de apps de terceiros** — apps e serviços que receberam acesso OAuth à sua conta, para que você possa revogar aqueles que não usa mais.
+- **Status da Verificação em Duas Etapas** — confirmação de que seu segundo fator está ativo e qual método você está usando.
+- **Configurações do Gmail e Drive** — endereços de encaminhamento, contas delegadas e configurações de compartilhamento que poderiam expor seus dados.
+
+Execute a Verificação de Segurança pelo menos uma vez por trimestre e imediatamente após qualquer suspeita de comprometimento de conta.
+
+<Warning>
+Nunca commite chaves de API, segredos de cliente OAuth ou arquivos JSON de conta de serviço no código-fonte — nem mesmo em um repositório privado. O histórico do Git é permanente, repositórios podem ser tornados públicos acidentalmente e scanners automatizados coletam credenciais continuamente de repositórios públicos. Armazene segredos em variáveis de ambiente ou em um gerenciador de segredos dedicado e adicione padrões de arquivo de credencial (por exemplo, `*.json`, `.env`) ao seu `.gitignore` antes do primeiro commit.
+</Warning>
+
+<Tip>
+Para cargas de trabalho de produção, use o [Google Cloud Secret Manager](https://cloud.google.com/secret-manager) para armazenar, versionar e auditar o acesso a credenciais. O Secret Manager integra nativamente com Cloud Run, Cloud Functions e GKE via bindings do IAM, para que seus serviços possam recuperar segredos em tempo de execução sem nunca gravá-los em disco ou incorporá-los em imagens de container.
+</Tip>

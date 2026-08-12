@@ -1,0 +1,66 @@
+---
+title: "Google Search 작동 방식: 색인 및 순위화 설명"
+sidebarTitle: "Search"
+description: "Google이 콘텐츠를 어떻게 색인하고, 순위화하고, 노출하는지 알아보세요. 검색 연산자, Custom Search, 그리고 앱에 검색을 통합하는 방법을 이해하세요."
+---
+
+Google Search는 매년 수천억 개의 페이지를 처리하고 수조 건의 쿼리에 응답하며, 세계에서 가장 널리 사용되는 정보 검색 시스템입니다. 여러분 자신의 검색 기법을 다듬든, Google이 콘텐츠를 올바르게 노출하도록 콘텐츠를 최적화하든, 제품에 검색 기능을 직접 임베드하든, Search가 내부적으로 어떻게 작동하는지 이해하면 의미 있는 이점을 얻을 수 있습니다.
+
+## 검색 작동 방식
+
+Google Search는 백그라운드에서 지속적으로 실행되는 크게 세 단계로 동작합니다.
+
+**크롤링** — Google의 자동화된 크롤러(총칭 Googlebot)는 웹 전반의 링크를 따라가며 새로 만들어지거나 업데이트된 페이지를 발견합니다. `robots.txt` 파일과 `<meta name="robots">` 태그로 크롤러를 안내하여 무엇을 가져올지 제어할 수 있습니다.
+
+**색인화** — 페이지가 크롤링되면 Google은 콘텐츠(텍스트, 이미지, 구조화된 데이터 등)를 분석하고 검색 색인에 이를 나타내는 표현을 저장합니다. 명확한 제목, 서술적인 메타데이터, 유효한 스키마 마크업을 가진 잘 구조화된 페이지는 더 정확하게 색인하기가 쉽습니다.
+
+**순위화** — 사용자가 쿼리를 제출하면, Google의 순위화 시스템은 수백 가지 신호(관련성, 페이지 품질, 컨텍스트, 최신성 등)를 평가해 결과를 정렬합니다. 어떤 단일 요인도 순위를 결정하지 않으며, 알고리즘은 신호를 종합적으로 저울질해 해당 쿼리에 가장 유용한 결과를 노출합니다.
+
+<Note>
+  Google은 모든 페이지의 색인화를 보장하지 않습니다. Google Search Console을 사용해 커버리지를 모니터링하고, 크롤링 오류를 식별하고, 중요한 URL의 (재)색인화를 요청하세요.
+</Note>
+
+## 검색 연산자
+
+검색 연산자는 결과를 필터링하고 좁히기 위해 Google 검색창에 직접 입력하는 특별한 명령입니다. 조사, 경쟁 분석, 자체 사이트 노출 감사, 색인 문제 디버깅에 유용합니다.
+
+| 연산자 | 구문 | 기능 |
+|---|---|---|
+| `site:` | `site:example.com` | 결과를 특정 도메인 또는 서브도메인의 페이지로 제한. |
+| `filetype:` | `filetype:pdf` | 특정 파일 유형(pdf, docx, xlsx 등)의 결과 반환. |
+| `intitle:` | `intitle:keyword` | HTML `<title>` 태그에 키워드가 포함된 페이지 일치. |
+| 정확한 구문 | `"machine learning"` | 해당 정확한 단어 순서를 포함하는 결과만 반환. |
+| 용어 제외 | `-keyword` | 지정된 단어나 구문이 포함된 결과 제거. |
+
+단일 쿼리에서 연산자를 조합할 수 있습니다. 예를 들어 `site:docs.example.com filetype:pdf -intitle:archive`는 docs 서브도메인에 있으면서 제목에 "archive"가 없는 PDF 파일을 찾습니다.
+
+<Tip>
+  연산자 앞에 `OR`(대문자)을 붙이면 두 조건 중 하나에 일치하도록 할 수 있습니다 — 예를 들어 `site:example.com OR site:example.io`는 한 쿼리로 두 도메인의 결과를 반환합니다.
+</Tip>
+
+## Custom Search Engine (CSE)
+
+Custom Search Engine을 사용하면 전체 웹이 아니라 특정 사이트 또는 페이지 집합을 쿼리하는 범위 지정된 브랜딩 검색 경험을 만들 수 있습니다. 이는 문서, 도움말 센터, 이커머스 카탈로그에 검색창을 추가할 때 유용합니다.
+
+**Custom Search Engine을 만들려면:**
+
+1. [Programmable Search Engine 제어판](https://programmablesearchengine.google.com/controlpanel/all)으로 이동하세요.
+2. **Add**를 클릭하고 검색하려는 사이트나 URL 패턴을 입력하세요.
+3. 엔진에 이름을 지정하고 저장하세요 — Google이 여러분의 엔진을 식별하는 고유한 **Search Engine ID**(`cx` 파라미터)를 생성합니다.
+4. **Look and feel**에서 모양과 느낌을 맞춤 설정한 후, 임베드 스니펫을 페이지에 복사하세요.
+
+<Note>
+  CSE 결과는 일반 Google Search와 동일한 색인화 규칙을 따릅니다. 페이지가 색인되지 않으면 CSE 결과에도 나타나지 않습니다.
+</Note>
+
+## Programmable Search API
+
+Programmable Search JSON API는 Custom Search Engine 결과에 대한 프로그래밍 방식 접근을 제공하므로, Google UI를 임베드하지 않고도 애플리케이션 내에서 완전히 검색 결과를 조회, 서식 지정, 표시할 수 있습니다.
+
+주요 기능은 다음과 같습니다:
+
+- CSE를 쿼리하고 제목, URL, 스니펫, 풍부한 메타데이터가 포함된 구조화된 JSON 응답을 받습니다.
+- 요청 시점에 결과를 다듬기 위해 `dateRestrict`, `sort`, `filter` 파라미터를 적용합니다.
+- 정의된 범위 내에서 이미지를 검색하려면 `searchType=image` 파라미터를 사용합니다.
+
+전체 요청/응답 스키마, 인증 요구사항, 코드 샘플은 [Search API 레퍼런스](/api/search)를 참조하세요.

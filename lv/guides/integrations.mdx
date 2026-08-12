@@ -1,0 +1,82 @@
+---
+title: "Integrējiet Google API un pakalpojumus savā lietojumprogrammā"
+sidebarTitle: "Integrācijas"
+description: "Savienojiet Google API ar savu lietotni, izmantojot OAuth 2.0, API atslēgas un pakalpojumu kontus. Iestatīšana soli pa solim izplatītiem integrācijas modeļiem."
+---
+
+Google atklāj vairumu savu galveno pakalpojumu — Drive, Gmail, Sheets, Calendar, Maps un citus — caur REST API, ko var izsaukt jebkura lietojumprogramma. Pirms rakstāt savu pirmo API pieprasījumu, jums jāizlemj, kā jūsu lietotne autentificēsies: izmantojot vienkāršu API atslēgu publiskiem datiem, OAuth 2.0 darbībai pierakstīta lietotāja vārdā vai pakalpojumu kontu automatizētām servera-servera darbplūsmām. Šis ceļvedis izskaidro katru opciju un soli pa solim parāda iestatīšanas soļus katrai no tām.
+
+## Izvēlieties autentifikācijas metodi
+
+Pareizā autentifikācijas metode ir atkarīga no tā, ko dara jūsu integrācija un kā datiem tā piekļūst.
+
+| Autentifikācijas metode | Tipiskais lietošanas gadījums | Kad izmantot | Nepieciešama lietotāja piekrišana |
+|---|---|---|---|
+| **API atslēga** | Publisku datu lasīšana (piemēram, Maps, YouTube metadati) | Jūsu lietotne piekļūst nejutīgiem, publiski pieejamiem resursiem | Nē |
+| **OAuth 2.0** | Darbība pierakstīta Google lietotāja vārdā | Jūsu lietotne lasa vai raksta lietotāja Drive failus, Gmail, Kalendāru utt. | Jā — lietotājam jāpiešķir atļauja |
+| **Pakalpojumu konts** | Servera-servera automatizācija bez cilvēka-lietotāja iesaistes | Aizmugures uzdevumi, datu plūsmas, piekļuve resursiem, kas pieder jūsu organizācijai | Nē |
+
+## OAuth 2.0 plūsma
+
+OAuth 2.0 ir standarts, kas ļauj lietotājiem piešķirt jūsu lietojumprogrammai ierobežotu piekļuvi saviem Google datiem, nekoplietojot paroli. Sekojiet šiem soļiem, lai ieviestu Authorization Code plūsmu.
+
+<Steps>
+  <Step title="Izveidojiet OAuth klienta ID Cloud konsolē">
+    Atveriet [Google Cloud konsoli](https://console.cloud.google.com), pārejiet uz **APIs & Services → Credentials** un noklikšķiniet uz **Create Credentials → OAuth client ID**. Izvēlieties **Web application** (vai platformu, kas atbilst jūsu lietotnei) un pievienojiet savus autorizētos novirzīšanas URI.
+  </Step>
+  <Step title="Konfigurējiet piekrišanas ekrānu">
+    Dodieties uz **APIs & Services → OAuth consent screen**. Ievadiet savas lietotnes nosaukumu, atbalsta e-pastu un tvērumus, ko jūsu lietotne pieprasīs. Tvērumi precīzi definē, kuriem Google datiem jūsu lietotne var piekļūt — pieprasiet tikai minimumu, kas jūsu lietotnei nepieciešams.
+  </Step>
+  <Step title="Novirziet lietotājus uz Google autorizācijas URL">
+    Kad lietotājs vēlas savienot savu Google kontu, novirziet viņu uz Google autorizācijas galapunktu ar jūsu `client_id`, pieprasīto `scope`, `redirect_uri` un `response_type=code`. Google parādīs konfigurēto piekrišanas ekrānu.
+  </Step>
+  <Step title="Apmainiet autorizācijas kodu pret marķieriem">
+    Kad lietotājs apstiprina, Google novirza atpakaļ uz jūsu `redirect_uri` ar īslaicīgu `code` parametru. Veiciet servera puses POST pieprasījumu uz `https://oauth2.googleapis.com/token` ar kodu, `client_id`, `client_secret` un `redirect_uri`, lai saņemtu `access_token` un (ja pieprasījāt piekļuvi `offline`) `refresh_token`.
+  </Step>
+  <Step title="Izsauciet API ar Bearer marķieri">
+    Iekļaujiet `access_token` katra API pieprasījuma galvenē `Authorization`. Piekļuves marķieri izbeidzas pēc vienas stundas — izmantojiet `refresh_token`, lai automātiski iegūtu jaunu, atkārtoti neaicinot lietotāju.
+  </Step>
+</Steps>
+
+## Pakalpojumu konti
+
+Pakalpojumu konts ir īpašs Google konts, kas pieder jūsu lietojumprogrammai, nevis atsevišķam lietotājam. Tas autentificējas ar privātu atslēgu, padarot to ideālu aizmugures pakalpojumiem, plānotiem uzdevumiem un jebkurai darbplūsmai, kur nav interaktīva lietotāja.
+
+1. Cloud konsolē dodieties uz **IAM & Admin → Service Accounts** un noklikšķiniet uz **Create Service Account**.
+2. Piešķiriet kontam aprakstošu nosaukumu un pēc izvēles piešķiriet tam IAM lomu, kas atspoguļo minimālās nepieciešamās atļaujas.
+3. Atveriet pakalpojumu kontu, dodieties uz cilni **Keys**, noklikšķiniet uz **Add Key → Create new key** un atlasiet **JSON**. Nekavējoties lejupielādējiet atslēgas failu — to nevar lejupielādēt vēlreiz.
+4. Uzglabājiet JSON atslēgu droši (paraugpraksi skatiet [Drošības ceļvedī](/guides/security)) un ielādējiet to savā servera puses kodā, izmantojot atbilstošu Google klienta bibliotēku.
+
+Lai ļautu pakalpojumu kontam piekļūt konkrētai Google Drive mapei vai Sheets failam, koplietojiet šo resursu ar pakalpojumu konta e-pasta adresi (redzama Cloud konsolē) tieši tāpat, kā jūs to koplietotu ar cilvēku lietotāju.
+
+## API izsaukumi
+
+Kad jums ir piekļuves marķieris, pievienojiet to kā `Bearer` marķieri sava HTTP pieprasījuma galvenē `Authorization`. Šeit ir piemērs, kas uzskaita failus lietotāja Google Drive:
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+Aizstājiet `YOUR_ACCESS_TOKEN` ar marķieri, ko saņēmāt no OAuth plūsmas vai parakstot JWT ar sava pakalpojumu konta atslēgu. Atbilde ir JSON objekts, kas satur failu sarakstu, kuriem autentificētais principāls var piekļūt.
+
+<Note>
+Pilnīgai atsaucei par marķieru tvērumiem, atsvaidzināšanas plūsmām un marķieru atsaukšanas apstrādi skatiet [Autentifikācijas API atsauci](/api/authentication).
+</Note>
+
+## Populāras integrācijas
+
+<CardGroup cols={2}>
+  <Card title="Google Drive API" icon="hard-drive">
+    Augšupielādējiet, lejupielādējiet, organizējiet un koplietojiet failus un mapes Google Drive. Atbalsta atsākamas augšupielādes, failu metadatu vaicājumus un koplietošanas atļauju pārvaldību.
+  </Card>
+  <Card title="Gmail API" icon="envelope">
+    Programmatiski lasiet, sūtiet un pārvaldiet e-pasta ziņojumus un pavedienus. Ideāli piemērots e-pasta automatizācijas, atbalsta pieteikumu apstrādes vai pielāgotu iesūtnes klientu veidošanai.
+  </Card>
+  <Card title="Google Sheets API" icon="table">
+    Lasiet un rakstiet izklājlapu datus, formatējiet šūnas un pārvaldiet nosauktos diapazonus. Bieži izmanto vieglai datu glabāšanai, atskaišu paneļiem un veidlapu-uz-izklājlapu plūsmām.
+  </Card>
+  <Card title="Google Calendar API" icon="calendar">
+    Veidojiet, atjauniniet un dzēsiet kalendāra notikumus un pārvaldiet dalībniekus. Izmantojiet to, lai sinhronizētu plānošanas sistēmas, sūtītu sanāksmju uzaicinājumus vai veidotu pieejamības rīkus.
+  </Card>
+</CardGroup>

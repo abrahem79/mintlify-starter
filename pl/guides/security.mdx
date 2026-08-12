@@ -1,0 +1,72 @@
+---
+title: "Zabezpiecz swoje konto Google i poświadczenia programistyczne"
+sidebarTitle: "Bezpieczeństwo"
+description: "Chroń swoje konto Google weryfikacją dwuetapową, zarządzaj ograniczeniami kluczy API i stosuj najlepsze praktyki bezpieczeństwa poświadczeń."
+---
+
+Twoje konto Google jest kluczem do poczty, dokumentów, infrastruktury chmurowej i poświadczeń API — co czyni je jednym z najcenniejszych i najczęściej atakowanych zasobów, którymi zarządzasz. Zabezpieczenie go wymaga zarówno zamknięcia konta silnym uwierzytelnianiem, jak i traktowania kluczy API oraz poświadczeń kont usługi, na których polegają Twoje aplikacje, z taką samą troską, jak hasła. Ten przewodnik omawia niezbędne kroki, aby wzmocnić oba te obszary.
+
+## Weryfikacja dwuetapowa
+
+Weryfikacja dwuetapowa (2SV) dodaje drugi dowód tożsamości ponad hasło, dzięki czemu samo skradzione hasło nie wystarczy do dostępu do konta. Google zaleca użycie aplikacji uwierzytelniającej jako drugiego składnika, ponieważ generuje kody offline i nie jest podatna na ataki SIM-swap, tak jak SMS.
+
+<Steps>
+  <Step title="Otwórz Moje konto">
+    Wejdź na [myaccount.google.com](https://myaccount.google.com) i zaloguj się, jeśli zostaniesz o to poproszony.
+  </Step>
+  <Step title="Przejdź do Bezpieczeństwa">
+    Kliknij **Bezpieczeństwo** w lewym panelu nawigacyjnym.
+  </Step>
+  <Step title="Rozpocznij konfigurację weryfikacji dwuetapowej">
+    W sekcji **Jak logujesz się w Google** kliknij **Weryfikacja dwuetapowa**, a następnie kliknij **Rozpocznij**.
+  </Step>
+  <Step title="Wybierz drugi składnik">
+    Google zasugeruje najsilniejszą dostępną dla Twojego konta metodę. Dla najlepszego bezpieczeństwa wybierz **Aplikację uwierzytelniającą** — zeskanuj kod QR za pomocą Google Authenticator lub dowolnej aplikacji zgodnej z TOTP (Authy, 1Password itd.). Alternatywnie możesz użyć sprzętowego klucza bezpieczeństwa (FIDO2/WebAuthn) dla jeszcze silniejszej ochrony.
+  </Step>
+  <Step title="Potwierdź i zapisz kody zapasowe">
+    Zakończ prompt weryfikacyjny, następnie pobierz i przechowuj **kody zapasowe** w bezpiecznym miejscu. Te jednorazowe kody pozwalają odzyskać dostęp, jeśli stracisz urządzenie drugiego składnika.
+  </Step>
+</Steps>
+
+## Ograniczenia kluczy API
+
+Nieograniczony klucz API może zostać użyty przez każdego, kto go zdobędzie, z dowolnej aplikacji, do wywoływania dowolnego API Google włączonego w Twoim projekcie. Ograniczenia zawężają promień rażenia, gdyby klucz kiedykolwiek został ujawniony.
+
+| Typ ograniczenia | Jak ustawić | Przykład |
+|---|---|---|
+| **Odsyłacze HTTP** | W Cloud Console: **Credentials → Edit key → Application restrictions → HTTP referrers** | Zezwól tylko na `https://yourdomain.com/*`, aby klucz był odrzucany przy użyciu z dowolnej innej witryny |
+| **Adresy IP** | W Cloud Console: **Credentials → Edit key → Application restrictions → IP addresses** | Zezwól tylko na statyczny adres IP Twojego serwera (np. `203.0.113.42`), aby klucz działał wyłącznie z Twojego backendu |
+| **Ograniczenie API** | W Cloud Console: **Credentials → Edit key → API restrictions → Restrict key** | Ogranicz klucz do jednego API (np. Maps JavaScript API), aby nie mógł być używany do wywołań Gmaila ani Dysku |
+
+Stosuj wszystkie trzy warstwy, gdziekolwiek to możliwe: ogranicz po odsyłaczu lub IP *oraz* zablokuj klucz tylko do tych API, których naprawdę potrzebuje.
+
+## Rotacja kluczy API
+
+Nawet z wprowadzonymi ograniczeniami powinieneś okresowo rotować klucze lub natychmiast, jeśli podejrzewasz, że klucz został skompromitowany.
+
+1. W [Cloud Console](https://console.cloud.google.com) przejdź do **APIs & Services → Credentials**.
+2. Kliknij **Create Credentials → API key**, aby wygenerować świeży klucz z tymi samymi ograniczeniami co stary.
+3. Zaktualizuj konfigurację aplikacji, aby używała nowego klucza, i potwierdź, że wszystko działa poprawnie.
+4. Wróć do strony Credentials, kliknij menu przepełnienia starego klucza (**⋮**) i wybierz **Delete**. Stary klucz przestanie działać natychmiast.
+
+Unikaj przerwy w działaniu, upewniając się, że nowy klucz został wdrożony i zweryfikowany *przed* usunięciem starego.
+
+## Kontrola bezpieczeństwa
+
+Kontrola bezpieczeństwa Google daje Ci spersonalizowany przegląd stanu bezpieczeństwa konta w jednym miejscu. Odwiedź [myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup), aby przejrzeć:
+
+- **Ostatnie zdarzenia bezpieczeństwa** — nieznane logowania lub zmiany hasła.
+- **Twoje urządzenia** — każde urządzenie aktualnie zalogowane na Twoje konto, z możliwością usunięcia tych, których nie rozpoznajesz.
+- **Dostęp aplikacji stron trzecich** — aplikacje i usługi, którym przyznano dostęp OAuth do Twojego konta, dzięki czemu możesz odebrać te, których już nie używasz.
+- **Status weryfikacji dwuetapowej** — potwierdzenie, że Twój drugi składnik jest aktywny i jaką metodę używasz.
+- **Ustawienia Gmaila i Dysku** — adresy przekazywania, konta delegowane i ustawienia udostępniania, które mogłyby ujawnić Twoje dane.
+
+Uruchamiaj Kontrolę bezpieczeństwa przynajmniej raz na kwartał oraz natychmiast po każdym podejrzanym naruszeniu konta.
+
+<Warning>
+Nigdy nie umieszczaj kluczy API, sekretów klienta OAuth ani plików JSON kont usługi w kodzie źródłowym — nawet w prywatnym repozytorium. Historia Gita jest trwała, repozytoria mogą zostać przypadkowo upublicznione, a automatyczne skanery nieustannie zbierają poświadczenia z publicznych repozytoriów. Przechowuj sekrety w zmiennych środowiskowych lub dedykowanym menedżerze sekretów, a wzorce plików poświadczeń (np. `*.json`, `.env`) dodawaj do `.gitignore` przed pierwszym commitem.
+</Warning>
+
+<Tip>
+Dla obciążeń produkcyjnych używaj [Google Cloud Secret Manager](https://cloud.google.com/secret-manager) do przechowywania, wersjonowania i audytowania dostępu do poświadczeń. Secret Manager natywnie integruje się z Cloud Run, Cloud Functions i GKE przez powiązania IAM, dzięki czemu Twoje usługi mogą pobierać sekrety w czasie działania, nie zapisując ich na dysku ani nie wypalając ich w obrazach kontenerów.
+</Tip>

@@ -1,0 +1,72 @@
+---
+title: "Sikre Google-kontoen din og utviklerlegitimasjonen"
+sidebarTitle: "Sikkerhet"
+description: "Beskytt Google-kontoen din med 2-trinnsverifisering, administrer API-nøkkel-restriksjoner, og følg beste praksis for legitimasjonssikkerhet."
+---
+
+Google-kontoen din er nøkkelen til e-posten, dokumentene, skyinfrastrukturen og API-legitimasjonen din — noe som gjør den til en av de mest verdifulle og hyppigst målrettede ressursene du administrerer. Å sikre den krever både å låse ned kontoen din med sterk autentisering og å håndtere API-nøklene og tjenestekontolegitimasjonen som applikasjonene dine er avhengige av med samme forsiktighet som du ville gitt et passord. Denne veiledningen dekker de essensielle stegene for å styrke begge.
+
+## 2-trinnsverifisering
+
+2-trinnsverifisering (2SV) legger til et andre identitetsbevis oppå passordet ditt, slik at et stjålet passord alene ikke er nok til å få tilgang til kontoen din. Google anbefaler å bruke en autentiseringsapp som din andre faktor fordi den genererer koder offline og ikke er sårbar for SIM-swapping-angrep slik SMS er.
+
+<Steps>
+  <Step title="Åpne My Account">
+    Gå til [myaccount.google.com](https://myaccount.google.com) og logg inn hvis du blir bedt om det.
+  </Step>
+  <Step title="Naviger til Security">
+    Klikk **Security** i navigasjonspanelet til venstre.
+  </Step>
+  <Step title="Start 2-trinnsverifisering-oppsett">
+    Under **How you sign in to Google**-delen, klikk **2-Step Verification**, og klikk deretter **Get started**.
+  </Step>
+  <Step title="Velg din andre faktor">
+    Google vil foreslå den sterkeste metoden tilgjengelig for kontoen din. For best sikkerhet, velg **Authenticator app** — skann QR-koden med Google Authenticator eller en TOTP-kompatibel app (Authy, 1Password, osv.). Alternativt kan du bruke en maskinvare-sikkerhetsnøkkel (FIDO2/WebAuthn) for enda sterkere beskyttelse.
+  </Step>
+  <Step title="Bekreft og lagre reservekoder">
+    Fullfør verifiseringsforespørselen, og last deretter ned og oppbevar **backup codes** på et sikkert sted. Disse engangskodene lar deg gjenvinne tilgang hvis du mister din andre-faktor-enhet.
+  </Step>
+</Steps>
+
+## API-nøkkel-restriksjoner
+
+En ubegrenset API-nøkkel kan brukes av alle som får tak i den, fra hvilken som helst applikasjon, til å kalle et hvilket som helst Google API som er aktivert i prosjektet ditt. Restriksjoner begrenser skadeomfanget hvis en nøkkel noen gang blir eksponert.
+
+| Restriksjonstype | Slik setter du det | Eksempel |
+|---|---|---|
+| **HTTP-henvisere** | I Cloud Console: **Credentials → Edit key → Application restrictions → HTTP referrers** | Tillat bare `https://yourdomain.com/*` slik at nøkkelen avvises hvis den brukes fra et annet nettsted |
+| **IP-adresser** | I Cloud Console: **Credentials → Edit key → Application restrictions → IP addresses** | Tillat bare serverens statiske IP (f.eks. `203.0.113.42`) slik at nøkkelen bare fungerer fra backend-en din |
+| **API-restriksjon** | I Cloud Console: **Credentials → Edit key → API restrictions → Restrict key** | Begrens nøkkelen til et enkelt API (f.eks. Maps JavaScript API) slik at den ikke kan brukes til å kalle Gmail eller Drive |
+
+Bruk alle tre lag der det er mulig: begrens etter henviser eller IP *og* lås nøkkelen til bare de API-ene den faktisk trenger.
+
+## Roter API-nøkler
+
+Selv med restriksjoner på plass, bør du rotere nøkler periodisk eller umiddelbart hvis du mistenker at en nøkkel har blitt kompromittert.
+
+1. I [Cloud Console](https://console.cloud.google.com), gå til **APIs & Services → Credentials**.
+2. Klikk **Create Credentials → API key** for å generere en ny nøkkel med de samme restriksjonene som den gamle.
+3. Oppdater applikasjonens konfigurasjon for å bruke den nye nøkkelen og bekreft at alt fungerer korrekt.
+4. Gå tilbake til Credentials-siden, klikk den gamle nøkkelens overløpsmeny (**⋮**), og velg **Delete**. Den gamle nøkkelen vil slutte å fungere umiddelbart.
+
+Unngå et avbrudd i tjenesten ved å sørge for at den nye nøkkelen er distribuert og verifisert *før* du sletter den gamle.
+
+## Sikkerhetssjekk
+
+Googles sikkerhetssjekk gir deg en personlig oversikt over kontoens sikkerhetsstilling på ett sted. Besøk [myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup) for å gjennomgå:
+
+- **Nylige sikkerhetshendelser** — ukjente pålogginger eller passordendringer.
+- **Enhetene dine** — hver enhet som for øyeblikket er logget inn på kontoen din, med muligheten til å fjerne enhver du ikke gjenkjenner.
+- **Tredjeparts app-tilgang** — apper og tjenester som har fått OAuth-tilgang til kontoen din, slik at du kan tilbakekalle enhver du ikke lenger bruker.
+- **2-trinnsverifiseringsstatus** — bekreftelse på at din andre faktor er aktiv og hvilken metode du bruker.
+- **Gmail- og Drive-innstillinger** — videresendingsadresser, delegerte kontoer og delingsinnstillinger som kan eksponere dataene dine.
+
+Kjør Sikkerhetssjekk minst én gang per kvartal, og umiddelbart etter enhver mistenkt kontokompromiss.
+
+<Warning>
+Forplikt aldri API-nøkler, OAuth-klienthemmeligheter eller tjenestekonto-JSON-filer til kildekode — ikke engang i et privat repositorium. Git-historikk er permanent, repositorier kan gjøres offentlige ved et uhell, og automatiserte skannere høster kontinuerlig legitimasjon fra offentlige repositorier. Lagre hemmeligheter i miljøvariabler eller en dedikert hemmelighetsadministrator i stedet, og legg til legitimasjonsfilmønstre (f.eks. `*.json`, `.env`) i `.gitignore` før din første forpliktelse.
+</Warning>
+
+<Tip>
+For produksjonsarbeidsbelastninger, bruk [Google Cloud Secret Manager](https://cloud.google.com/secret-manager) for å lagre, versjonere og revidere tilgang til legitimasjon. Secret Manager integrerer nativt med Cloud Run, Cloud Functions og GKE via IAM-bindinger, slik at tjenestene dine kan hente hemmeligheter ved kjøretid uten å noen gang skrive dem til disk eller bake dem inn i containerbilder.
+</Tip>

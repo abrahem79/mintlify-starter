@@ -1,0 +1,109 @@
+---
+title: "Google REST API: 概要と使い始めるためのガイド"
+sidebarTitle: "概要"
+description: "Google の REST API の入門: ベース URL、バージョニング、リクエストとレスポンスの形式、レート制限、そしてすべてのサービスのエラーハンドリング。"
+---
+
+Google は、検索や生産性ツールからクラウドインフラストラクチャ、機械学習に至るまで、あらゆるものを支える幅広い REST API を公開しています。Web アプリ、モバイルクライアント、バックエンドサービスのいずれを構築する場合でも、これらの API を使えば、標準的な HTTP リクエストと JSON を用いて Google プラットフォームにプログラムからアクセスできます。このガイドでは、最初の呼び出しを行う前に必要な基礎的な概念を扱います。
+
+## ベース URL
+
+Google のすべての REST API は、共通のベース URL から提供されます。
+
+```text
+https://www.googleapis.com
+```
+
+一部の API は専用のホスト名を持ちますが（例: `https://people.googleapis.com`）、大半は `https://www.googleapis.com/{api}/{version}/{resource}` というパターンに従います。
+
+## API のバージョニング
+
+Google API は**パスベースのバージョニング**を採用しています。バージョンセグメントは URL パス内の API 名の直後に現れます。例:
+
+| API | バージョン付きエンドポイントプレフィックス |
+|-----|-----------------------------|
+| Custom Search | `https://www.googleapis.com/customsearch/v1` |
+| Drive | `https://www.googleapis.com/drive/v3` |
+| OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |
+
+Google が新しいメジャーバージョンをリリースする場合、以前のバージョンは公式の廃止期限が発表されるまで元のパスで引き続き利用可能です。新規統合では常に最新の安定バージョンを対象にしてください。
+
+## リクエスト形式
+
+すべての API 呼び出しは、以下の規約に従う必要があります。
+
+- **メソッド** — 操作に適した HTTP 動詞を使用します（`GET`、`POST`、`PUT`、`PATCH`、`DELETE`）。
+- **コンテンツタイプ** — ボディを持つリクエストには `Content-Type: application/json` を含めます。
+- **認可** — 認証情報を `Authorization` ヘッダーに Bearer トークンとして渡すか、API キー認証のリクエストでは `key` クエリパラメーター経由で渡します。
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+```
+
+- **ボディ** — リクエストボディは有効な JSON である必要があります。ブール値は `true`/`false`（文字列ではなく）とし、タイムスタンプは RFC 3339 形式に従います。
+
+## レスポンス形式
+
+成功レスポンスは HTTP `2xx` ステータスコードと JSON ボディを返します。多くのコレクションエンドポイントは標準的なエンベロープに従います。
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "items": [
+    { "id": "1BxiM...", "name": "Report.pdf" }
+  ]
+}
+```
+
+- **`kind`** — リソースタイプを識別する名前空間付きの文字列（例: `customsearch#search`、`drive#file`）。
+- **`items`** — リスト操作によって返されるリソースオブジェクトの配列。
+- **`nextPageToken`** — 追加の結果ページが存在する場合に含まれます。次のリクエストで `pageToken` として渡してください。
+
+## レート制限
+
+レート制限は API ごとに異なり、プロジェクトおよびユーザーごとに適用されます。制限を超過すると、API は HTTP `429 Too Many Requests` を返します。クライアント側で指数バックオフとリトライロジックを実装する必要があります。
+
+<Tip>
+  推奨されるリトライ戦略や、大量ワークロードでのクォータ増加のリクエスト方法については、[トラブルシューティングガイド](/help/troubleshooting)を参照してください。
+</Tip>
+
+## エラーレスポンス
+
+すべての API エラーは一貫した JSON 構造に従うため、プログラムでの解析とハンドリングが容易です。
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+| フィールド | 説明 |
+|-------|-------------|
+| `error.code` | エラーの HTTP ステータスコード。 |
+| `error.message` | 何が問題だったかを人間が読める形で説明。 |
+| `error.status` | 機械可読なエラーコード文字列。 |
+
+一般的な status 値には `PERMISSION_DENIED`、`NOT_FOUND`、`INVALID_ARGUMENT`、`UNAUTHENTICATED`、`RESOURCE_EXHAUSTED` などがあります。
+
+## API を確認する
+
+<CardGroup cols={2}>
+  <Card title="認証" icon="key" href="/api/authentication">
+    API キー、OAuth 2.0 トークン、サービスアカウントでの認証方法を学びます。
+  </Card>
+  <Card title="Search API" icon="magnifying-glass" href="/api/search">
+    Programmable Search Engine にクエリを送信し、構造化された Web 結果を取得します。
+  </Card>
+  <Card title="Accounts API" icon="user" href="/api/accounts">
+    認証済みユーザーのプロフィール、メール、ID データを取得します。
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api/webhooks">
+    リソース変更イベントのリアルタイム通知を購読します。
+  </Card>
+</CardGroup>

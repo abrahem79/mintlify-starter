@@ -1,0 +1,130 @@
+---
+title: "API de compte utilisateur : récupérer les données de profil et d'identité"
+sidebarTitle: "API Accounts"
+description: "Récupérez le profil, l'adresse courriel, le nom et la photo de l'utilisateur authentifié à l'aide de GET /oauth2/v2/userinfo ou de l'API People avec un jeton porteur OAuth 2.0."
+---
+
+Google propose deux points de terminaison complémentaires pour lire l'identité et les données de profil de l'utilisateur authentifié. Le point de terminaison userinfo OAuth 2.0 fournit un résumé léger — courriel, nom d'affichage, photo de profil et paramètres régionaux — et convient parfaitement aux flux de connexion. L'API People offre une vue plus riche et structurée de la fiche de contact de l'utilisateur et convient lorsque vous avez besoin d'un contrôle granulaire des champs. Les deux points de terminaison requièrent un jeton d'accès OAuth 2.0 valide avec les portées appropriées.
+
+<Note>
+  Les deux points de terminaison décrits dans cette page requièrent un jeton porteur OAuth 2.0 valide. Les clés d'API ne sont **pas** acceptées — ces ressources sont liées à une identité d'utilisateur authentifié. Consultez le [guide d'authentification](/api/authentication) pour configurer votre flux OAuth.
+</Note>
+
+---
+
+## Obtenir le profil de l'utilisateur actuel
+
+Récupérez un profil compact pour l'utilisateur actuellement authentifié.
+
+**Point de terminaison**
+
+```http
+GET https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**Portée requise :** `openid email profile`
+
+### Exemple de requête
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/oauth2/v2/userinfo"
+```
+
+### Exemple de réponse
+
+```json
+{
+  "id": "116195079999551234567",
+  "email": "alex@example.com",
+  "name": "Alex Johnson",
+  "given_name": "Alex",
+  "family_name": "Johnson",
+  "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+  "locale": "en"
+}
+```
+
+### Champs de la réponse
+
+<ResponseField name="id" type="string">
+  L'identifiant Google unique et stable du compte de l'utilisateur. Cette valeur ne change pas, même si l'utilisateur met à jour son adresse courriel ou son nom.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  L'adresse courriel principale du compte Google de l'utilisateur. Nécessite la portée `email`.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Le nom d'affichage complet de l'utilisateur tel qu'il apparaît sur son compte Google.
+</ResponseField>
+
+<ResponseField name="given_name" type="string">
+  Le prénom (given name) de l'utilisateur. Nécessite la portée `profile`.
+</ResponseField>
+
+<ResponseField name="family_name" type="string">
+  Le nom de famille (family name) de l'utilisateur. Nécessite la portée `profile`.
+</ResponseField>
+
+<ResponseField name="picture" type="string">
+  Une URL pointant vers la photo de profil de l'utilisateur hébergée sur les serveurs de Google. L'image est accessible publiquement, mais peut changer si l'utilisateur met à jour sa photo.
+</ResponseField>
+
+<ResponseField name="locale" type="string">
+  L'étiquette de langue BCP 47 représentant la langue préférée de l'utilisateur (p. ex. `"en"`, `"fr"`, `"ja"`). Nécessite la portée `profile`.
+</ResponseField>
+
+---
+
+## Obtenir des informations sur l'utilisateur via l'API People
+
+L'API People renvoie des données structurées plus riches et vous permet de demander précisément les champs dont vous avez besoin à l'aide du paramètre `personFields`.
+
+**Point de terminaison**
+
+```http
+GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
+```
+
+**Portée requise :** `https://www.googleapis.com/auth/contacts.readonly`
+
+### Exemple de requête
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses"
+```
+
+### Exemple de réponse
+
+```json
+{
+  "resourceName": "people/116195079999551234567",
+  "etag": "%EgoBAgkLDg8REhMaAQ==",
+  "names": [
+    {
+      "displayName": "Alex Johnson",
+      "givenName": "Alex",
+      "familyName": "Johnson",
+      "metadata": {
+        "primary": true,
+        "source": { "type": "PROFILE" }
+      }
+    }
+  ],
+  "emailAddresses": [
+    {
+      "value": "alex@example.com",
+      "metadata": {
+        "primary": true,
+        "verified": true
+      }
+    }
+  ]
+}
+```
+
+<Tip>
+  Vous pouvez demander des `personFields` supplémentaires tels que `phoneNumbers`, `addresses`, `birthdays` et `photos` en les ajoutant en liste séparée par des virgules : `?personFields=names,emailAddresses,phoneNumbers`.
+</Tip>

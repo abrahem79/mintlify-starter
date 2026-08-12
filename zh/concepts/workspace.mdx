@@ -1,0 +1,66 @@
+---
+title: "Google Workspace：面向团队的协作工具"
+sidebarTitle: "Workspace"
+description: "Google Workspace 集成了 Gmail、Drive、Docs、Sheets、Slides 和 Meet。了解套餐、共享和团队协作功能。"
+---
+
+Google Workspace 是一套集成的基于云的生产力应用，让你的团队可以随时随地创建、沟通和协作——无需安装任何软件。因为每个应用都建立在同一个平台上，文件存放在 Drive 中，身份通过单个 Google 账户管理，实时共同编辑在 Docs、Sheets 和 Slides 中的表现始终一致。无论你是独立创作者还是大型企业的一员，Workspace 都会随你的需求扩展，通过一系列套餐提供管理控制、合规功能和共享存储。
+
+## 应用速览
+
+Workspace 由多个紧密集成的应用组成。以下是最常用应用的快速参考。
+
+<CardGroup cols={2}>
+  <Card title="Gmail" icon="envelope">
+    Google 的电子邮件服务，具有强大的搜索、智能过滤、标签以及通过 Google 日历集成的日程安排功能。Gmail 支持企业账户使用自定义域名，并内置垃圾邮件和网络钓鱼防护。
+  </Card>
+  <Card title="Drive" icon="hard-drive">
+    面向你的所有 Workspace 文件以及任何你上传内容的云存储和文件管理。Drive 是 Workspace 的中枢——Docs、Sheets 和 Slides 文件都存放于此，同时还有 PDF、图片和其他资源。
+  </Card>
+  <Card title="Docs & Sheets" icon="file-lines">
+    实时协同的文字处理（Docs）和电子表格编辑（Sheets）。两者都支持多用户同时编辑、内嵌评论、版本历史，以及通过 Apps Script 实现公式/脚本自动化。
+  </Card>
+  <Card title="Meet" icon="video">
+    直接内置于 Workspace 的视频会议。可从 Gmail、日历或 Docs 中一键发起会议。Meet 支持屏幕共享、分组讨论室、实时字幕和保存到 Drive 的录制。
+  </Card>
+</CardGroup>
+
+## 共享与权限
+
+Workspace 对存储在 Drive 中的文件和文件夹采用基于角色的权限模型。共享一项内容时，你会分配以下四种角色之一，决定接收方能做什么。
+
+| 角色 | 可查看 | 可评论 | 可编辑 | 可管理共享 |
+|---|---|---|---|---|
+| **Viewer** | ✅ | ❌ | ❌ | ❌ |
+| **Commenter** | ✅ | ✅ | ❌ | ❌ |
+| **Editor** | ✅ | ✅ | ✅ | ❌ |
+| **Owner** | ✅ | ✅ | ✅ | ✅ |
+
+需要记住的几条重要规则：
+
+- 每个文件恰好有一个 **Owner**。所有权可以转移给同一 Workspace 组织中的另一位用户，但不能转移给个人 Google 账户。
+- **Editor** 默认可以与他人重新分享文件。若要限制这一点，请打开分享设置并禁用 **Editors can change permissions and share**。
+- 你可以与特定个人、拥有链接的任何人共享，或者（在 Business 和 Enterprise 套餐上）仅限组织成员共享。
+
+<Warning>
+  将文件设置为“Anyone with the link can edit”会让任何获得该 URL 的人——包括组织外部的人——都可以公开编辑。请仅将此设置用于有意公开且风险较低的内容。
+</Warning>
+
+## 存储
+
+Workspace 存储在你的组织范围内**共享**，而不是按用户分配。你组织的总存储容量在 Drive、Gmail 和 Photos 中的所有用户和所有内容之间共享。
+
+关于存储的关键要点：
+
+- **计入存储的内容：** 你在 Drive 中拥有的文件（包括 Docs、Sheets 和 Slides）、Gmail 中的邮件和附件，以及 Google Photos 中的照片和视频。
+- **不计入的内容：** 回收站中的项目（在永久删除前）、他人共享给你但你并不拥有的项目，以及 2021 年 6 月之前创建的 Google 原生文件（Docs、Sheets、Slides）。
+- **配额：** 如果你的组织达到存储上限，用户将无法上传新文件、收发邮件或备份照片，除非释放存储空间或升级套餐。
+- **管理用量：** 管理员可以在 Google Admin 控制台中按用户监控用量，并在 Business Starter 和 Business Standard 套餐上为个人设置存储上限。
+
+<Note>
+  在免费版（个人 Google 账户）上，每个账户拥有 15 GB 的存储空间，在 Drive、Gmail 和 Photos 之间共享。升级到付费的 Google One 或 Workspace 套餐会提升这一上限。
+</Note>
+
+<Tip>
+  要充分利用 Workspace 的协作功能——包括共享云端硬盘、评论工作流以及实时共同编辑的最佳实践——请参阅[协作指南](/guides/collaboration)。
+</Tip>

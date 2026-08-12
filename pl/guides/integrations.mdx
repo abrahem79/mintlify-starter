@@ -1,0 +1,82 @@
+---
+title: "Integruj API i usługi Google w swojej aplikacji"
+sidebarTitle: "Integracje"
+description: "Łącz API Google z aplikacją przy użyciu OAuth 2.0, kluczy API i kont usługi. Konfiguracja krok po kroku dla typowych wzorców integracji."
+---
+
+Google udostępnia większość swoich kluczowych usług — Dysk, Gmaila, Arkusze, Kalendarz, Mapy i inne — przez REST API, które może wywoływać dowolna aplikacja. Zanim napiszesz pierwsze żądanie API, musisz zdecydować, jak Twoja aplikacja się uwierzytelni: prostym kluczem API dla danych publicznych, OAuth 2.0 dla działań w imieniu zalogowanego użytkownika lub kontem usługi dla zautomatyzowanych przepływów server-to-server. Ten przewodnik wyjaśnia każdą opcję i przeprowadza przez kroki konfiguracji.
+
+## Wybierz metodę uwierzytelniania
+
+Właściwa metoda uwierzytelniania zależy od tego, co robi Twoja integracja i czyich danych dotyczy.
+
+| Metoda | Typowy przypadek użycia | Kiedy używać | Wymagana zgoda użytkownika |
+|---|---|---|---|
+| **Klucz API** | Odczyt danych publicznych (np. Mapy, metadane YouTube) | Twoja aplikacja korzysta z niewrażliwych, publicznie dostępnych zasobów | Nie |
+| **OAuth 2.0** | Działanie w imieniu zalogowanego użytkownika Google | Twoja aplikacja odczytuje lub zapisuje pliki Dysku, Gmaila, Kalendarza użytkownika itp. | Tak — użytkownik musi udzielić zgody |
+| **Konto usługi** | Automatyzacja server-to-server bez udziału człowieka | Zadania backendowe, potoki danych, dostęp do zasobów należących do Twojej organizacji | Nie |
+
+## Przepływ OAuth 2.0
+
+OAuth 2.0 to standard pozwalający użytkownikom przyznawać Twojej aplikacji ograniczony dostęp do ich danych Google bez udostępniania hasła. Wykonaj poniższe kroki, aby zaimplementować przepływ Authorization Code.
+
+<Steps>
+  <Step title="Utwórz identyfikator klienta OAuth w Cloud Console">
+    Otwórz [Google Cloud Console](https://console.cloud.google.com), przejdź do **APIs & Services → Credentials** i kliknij **Create Credentials → OAuth client ID**. Wybierz **Web application** (lub platformę pasującą do Twojej aplikacji) i dodaj autoryzowane identyfikatory URI przekierowań.
+  </Step>
+  <Step title="Skonfiguruj ekran zgody">
+    Przejdź do **APIs & Services → OAuth consent screen**. Uzupełnij nazwę aplikacji, e-mail pomocy i zakresy, o które aplikacja będzie prosić. Zakresy definiują dokładnie, do jakich danych Google Twoja aplikacja może uzyskać dostęp — żądaj tylko minimum, którego naprawdę potrzebujesz.
+  </Step>
+  <Step title="Przekieruj użytkowników do URL autoryzacji Google">
+    Gdy użytkownik chce połączyć swoje konto Google, przekieruj go do endpointu autoryzacji Google z Twoim `client_id`, żądanym `scope`, `redirect_uri` i `response_type=code`. Google wyświetli skonfigurowany przez Ciebie ekran zgody.
+  </Step>
+  <Step title="Wymień kod autoryzacji na tokeny">
+    Gdy użytkownik zatwierdzi, Google przekieruje go z powrotem do Twojego `redirect_uri` z krótkotrwałym parametrem `code`. Wykonaj po stronie serwera żądanie POST do `https://oauth2.googleapis.com/token` z kodem, `client_id`, `client_secret` i `redirect_uri`, aby otrzymać `access_token` oraz (jeśli poprosiłeś o dostęp `offline`) `refresh_token`.
+  </Step>
+  <Step title="Wywołuj API z tokenem Bearer">
+    Dołączaj `access_token` do nagłówka `Authorization` każdego żądania API. Tokeny dostępu wygasają po godzinie — używaj `refresh_token`, aby automatycznie uzyskać nowy bez ponownego pytania użytkownika.
+  </Step>
+</Steps>
+
+## Konta usługi
+
+Konto usługi to specjalne konto Google, które należy do Twojej aplikacji, a nie do pojedynczego użytkownika. Uwierzytelnia się kluczem prywatnym, co czyni je idealnym dla usług zaplecza, zaplanowanych zadań i wszelkich przepływów, w których nie ma interaktywnego użytkownika.
+
+1. W Cloud Console przejdź do **IAM & Admin → Service Accounts** i kliknij **Create Service Account**.
+2. Nadaj kontu opisową nazwę i opcjonalnie przyznaj mu rolę IAM odzwierciedlającą minimalne potrzebne uprawnienia.
+3. Otwórz konto usługi, przejdź do karty **Keys**, kliknij **Add Key → Create new key** i wybierz **JSON**. Pobierz plik klucza natychmiast — nie będziesz mógł go pobrać ponownie.
+4. Przechowuj plik klucza JSON w bezpiecznym miejscu (zobacz [Przewodnik po bezpieczeństwie](/guides/security) dla najlepszych praktyk) i wczytuj go w kodzie po stronie serwera przy użyciu odpowiedniej biblioteki klienckiej Google.
+
+Aby pozwolić kontu usługi uzyskać dostęp do konkretnego folderu na Dysku Google lub pliku w Arkuszach, udostępnij ten zasób adresowi e-mail konta usługi (widocznemu w Cloud Console) dokładnie tak, jak udostępniłbyś go człowiekowi.
+
+## Wywoływanie API
+
+Gdy masz już token dostępu, dołącz go jako token `Bearer` w nagłówku `Authorization` żądania HTTP. Oto przykład listujący pliki na Dysku Google użytkownika:
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+Zamień `YOUR_ACCESS_TOKEN` na token, który otrzymałeś z przepływu OAuth lub z podpisania JWT kluczem konta usługi. Odpowiedź to obiekt JSON zawierający listę plików, do których uwierzytelniony podmiot ma dostęp.
+
+<Note>
+Pełne informacje o zakresach tokenów, przepływach odświeżania i obsłudze unieważniania tokenów znajdziesz w [dokumentacji uwierzytelniania API](/api/authentication).
+</Note>
+
+## Popularne integracje
+
+<CardGroup cols={2}>
+  <Card title="Google Drive API" icon="hard-drive">
+    Przesyłaj, pobieraj, organizuj i udostępniaj pliki i foldery na Dysku Google. Obsługuje wznawialne przesyłanie, zapytania o metadane plików i zarządzanie uprawnieniami udostępniania.
+  </Card>
+  <Card title="Gmail API" icon="envelope">
+    Czytaj, wysyłaj i zarządzaj wiadomościami e-mail i wątkami programistycznie. Idealne do budowania automatyzacji poczty, przyjmowania zgłoszeń pomocy technicznej lub niestandardowych klientów skrzynki.
+  </Card>
+  <Card title="Google Sheets API" icon="table">
+    Odczytuj i zapisuj dane arkuszy, formatuj komórki i zarządzaj nazwanymi zakresami. Często używane do lekkiego przechowywania danych, pulpitów raportowych i potoków formularz-do-arkusza.
+  </Card>
+  <Card title="Google Calendar API" icon="calendar">
+    Twórz, aktualizuj i usuwaj wydarzenia kalendarza oraz zarządzaj uczestnikami. Używaj go do synchronizacji systemów harmonogramowania, wysyłania zaproszeń na spotkania lub budowania narzędzi dostępności.
+  </Card>
+</CardGroup>

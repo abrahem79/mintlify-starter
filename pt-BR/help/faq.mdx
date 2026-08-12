@@ -1,0 +1,45 @@
+---
+title: "FAQ dos Serviços do Google: Contas, APIs, Cobrança e Privacidade"
+sidebarTitle: "FAQ"
+description: "Respostas a perguntas comuns sobre contas Google, cotas de armazenamento, Workspace, chaves de API, cobrança, privacidade de dados e limites de taxa para desenvolvedores."
+---
+
+Seja você um novo usuário do Google ou um desenvolvedor experiente trabalhando com APIs do Google, é provável que se depare com perguntas sobre como funcionam contas, armazenamento, cobrança e controles de acesso. Esta página reúne respostas para as perguntas mais frequentes nos produtos consumer do Google, apps do Workspace e plataforma de desenvolvedores — para que você obtenha respostas rápidas sem precisar procurar por várias centrais de ajuda.
+
+<AccordionGroup>
+  <Accordion title="Como redefinir minha senha do Google?">
+    Você pode redefinir sua senha do Google na página de recuperação de conta em [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery). Insira o endereço de e-mail associado à sua conta e siga os prompts — o Google enviará um código de verificação para seu e-mail ou número de telefone de recuperação. Uma vez verificado, você poderá criar uma nova senha. Se você perdeu o acesso a todas as opções de recuperação, o Google fornece um processo de verificação de identidade em que fará perguntas para confirmar sua identidade com base no histórico da sua conta.
+  </Accordion>
+
+  <Accordion title="Por que minha chave de API não está funcionando?">
+    Os motivos mais comuns pelos quais uma chave de API para de funcionar são: a chave foi restringida a endereços IP ou referrers específicos que não correspondem ao seu ambiente atual, a chave não tem a API necessária habilitada em seu projeto do Google Cloud, ou a chave foi excluída ou regenerada. Abra o [Google Cloud Console](https://console.cloud.google.com), navegue até **APIs & Services → Credentials** e verifique as restrições e o status da sua chave. Confirme também se a API de destino (por exemplo, Maps JavaScript API, Sheets API) está habilitada em **APIs & Services → Enabled APIs & services**.
+  </Accordion>
+
+  <Accordion title="O que conta para minha cota de armazenamento do Google?">
+    Seus 15 GB de armazenamento gratuito do Google são compartilhados entre Gmail (e-mails e anexos), Google Drive (arquivos enviados) e Google Photos (imagens e vídeos com backup). Google Docs, Sheets, Slides, Forms e Drawings criados nativamente nos formatos do Google **não** contam para sua cota. Contudo, arquivos enviados ao Drive em outros formatos — como `.docx`, `.xlsx` ou `.pdf` — consomem armazenamento. Você pode verificar seu uso atual e o detalhamento em [one.google.com/storage](https://one.google.com/storage).
+  </Accordion>
+
+  <Accordion title="Como excluo minha conta Google?">
+    Você pode excluir permanentemente sua Conta Google na seção **Dados e privacidade** das configurações da sua conta. Acesse [myaccount.google.com](https://myaccount.google.com), clique em **Dados e privacidade**, role até **Mais opções** e clique em **Excluir sua Conta Google**. O Google pedirá que você primeiro baixe uma cópia dos seus dados usando o Google Takeout. Observe que a exclusão é permanente — seu Gmail, arquivos do Drive e todos os dados associados serão perdidos e não podem ser recuperados após o término do período de tolerância.
+  </Accordion>
+
+  <Accordion title="Posso usar as APIs do Google gratuitamente?">
+    Muitas APIs do Google oferecem um nível gratuito com limites de uso generosos — por exemplo, a Maps JavaScript API inclui US$ 200/mês em créditos gratuitos, e as chamadas da API do Google Sheets são gratuitas até os limites de uso definidos por projeto. Contudo, uso de alto volume, certas APIs premium (como Google Maps Routes Preferred) e recursos de nível empresarial exigem que uma conta de cobrança esteja configurada no Google Cloud. Você pode revisar os preços para qualquer API específica em [cloud.google.com/pricing](https://cloud.google.com/pricing) ou dentro da página de documentação da API individual.
+  </Accordion>
+
+  <Accordion title="Como transferir a propriedade de um Google Doc?">
+    Para transferir a propriedade de um Google Doc, Sheet ou Slide, abra o arquivo e clique em **Compartilhar** no canto superior direito. Encontre a pessoa para quem você deseja transferir a propriedade (ela já deve ter acesso), clique no dropdown ao lado do nome dela e selecione **Transferir propriedade**. O destinatário receberá uma notificação por e-mail e deverá aceitar a transferência. Observe que você só pode transferir a propriedade para outro usuário dentro da mesma organização do Google Workspace ou, para contas pessoais, para outro titular de Conta Google.
+  </Accordion>
+
+  <Accordion title="Como reporto um e-mail de spam ou phishing no Gmail?">
+    Para reportar um e-mail de spam no Gmail, abra a mensagem, clique no **menu de três pontos** (⋮) no canto superior direito do e-mail e selecione **Denunciar spam** ou **Denunciar phishing**. Denunciar phishing envia o e-mail ao Google para revisão e ajuda a proteger outros usuários de ataques similares. O Gmail também moverá automaticamente o e-mail para fora da sua caixa de entrada. Se você recebe e-mails de phishing que se passam por uma empresa ou instituição, você pode adicionalmente reportá-los à [equipe do Google Safe Browsing](https://safebrowsing.google.com/safebrowsing/report_phish/).
+  </Accordion>
+
+  <Accordion title="Quais são os limites de taxa para a API de Pesquisa do Google?">
+    A Google Custom Search JSON API permite até **100 consultas de pesquisa por dia** gratuitamente, com consultas adicionais disponíveis a US$ 5 por 1.000 consultas (até 10.000 por dia). Isso se aplica à API do Programmable Search Engine — se você estiver usando a API do Google Search Console ou outras APIs relacionadas à pesquisa, os limites diferem e são documentados separadamente. Você pode monitorar seu uso e configurar cotas de requisição no [Google Cloud Console](https://console.cloud.google.com) em **APIs & Services → Quotas**. Para necessidades de pesquisa de volume muito alto, o Google oferece opções de nível empresarial pelo Google Cloud.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Não encontrou a resposta que procura? Visite a [Central de Ajuda do Google](https://support.google.com) para documentação de suporte específica do produto, ou entre em contato diretamente com o Suporte do Google pela sua Conta Google em **Suporte** no menu de navegação.
+</Note>

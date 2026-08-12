@@ -1,0 +1,126 @@
+---
+title: "Programmable Search API: 결과 쿼리 및 조회"
+sidebarTitle: "Search API"
+description: "GET /customsearch/v1을 통해 Google Programmable Search Engine을 쿼리하고 제목, URL, 스니펫을 포함한 구조화된 JSON 결과를 받으세요."
+---
+
+Google Programmable Search API를 사용하면 애플리케이션에 맞춤 웹 검색을 임베드할 수 있습니다. [Programmable Search Engine 제어판](https://programmablesearchengine.google.com/)에서 검색 엔진을 만들어, 여러분의 엔진이 어떤 사이트를 또는 전체 웹을 대상으로 할지 정의합니다. 그런 다음 간단한 `GET` 요청을 통해 해당 엔진을 쿼리하고, 원하는 대로 렌더링할 수 있는 구조화된 JSON 결과 — 제목, URL, 스니펫 — 를 받게 됩니다.
+
+## 엔드포인트
+
+```http
+GET https://www.googleapis.com/customsearch/v1
+```
+
+인증은 `key` 쿼리 파라미터로 전달된 API 키를 통해 처리됩니다. 이 엔드포인트에는 OAuth 토큰이 필요하지 않습니다.
+
+## 쿼리 파라미터
+
+<ParamField query="q" type="string" required>
+  검색 쿼리 문자열입니다. 공백과 특수 문자는 URL 인코딩하세요(예: `climate+change` 또는 `climate%20change`).
+</ParamField>
+
+<ParamField query="key" type="string" required>
+  프로젝트의 API 키입니다. [Google Cloud Console](https://console.cloud.google.com/apis/credentials)에서 생성하세요.
+</ParamField>
+
+<ParamField query="cx" type="string" required>
+  Programmable Search Engine의 고유 식별자입니다. 검색 엔진의 설정 페이지에서 "Search engine ID" 아래에서 찾을 수 있습니다.
+</ParamField>
+
+<ParamField query="num" type="integer">
+  페이지당 반환할 결과 수입니다. 허용되는 값은 `1`부터 `10`까지입니다. 기본값은 `10`입니다.
+</ParamField>
+
+<ParamField query="start" type="integer">
+  반환할 첫 결과의 인덱스이며, 페이지네이션에 사용됩니다. 기본값은 `1`입니다. 최댓값은 `91`입니다(결과 91–100번 반환). 자세한 내용은 [페이지네이션](#pagination)을 참조하세요.
+</ParamField>
+
+<ParamField query="lr" type="string">
+  결과를 특정 언어로 작성된 문서로 제한합니다. `lang_`이 접두어로 붙은 언어 코드를 전달하세요. 예를 들어 영어는 `lang_en`, 프랑스어는 `lang_fr`입니다.
+</ParamField>
+
+<ParamField query="safe" type="string">
+  SafeSearch 필터링을 활성화합니다. 노골적인 콘텐츠를 걸러내려면 `active`, 필터링을 비활성화하려면 `off`를 전달하세요. 기본값은 `off`입니다.
+</ParamField>
+
+## 요청 예시
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=5"
+```
+
+## 응답 예시
+
+```json
+{
+  "kind": "customsearch#search",
+  "searchInformation": {
+    "totalResults": "12400000",
+    "searchTime": 0.248
+  },
+  "items": [
+    {
+      "title": "Climate Change Overview",
+      "link": "https://example.com/climate",
+      "snippet": "An overview of current climate change research and its global implications for ecosystems and economies."
+    },
+    {
+      "title": "What Is Climate Change? — NASA",
+      "link": "https://climate.nasa.gov/what-is-climate-change/",
+      "snippet": "NASA's guide to the science, causes, and projected impacts of climate change."
+    }
+  ]
+}
+```
+
+## 응답 필드
+
+<ResponseField name="kind" type="string">
+  반환된 리소스의 유형을 식별합니다. 검색 응답의 경우 항상 `"customsearch#search"`입니다.
+</ResponseField>
+
+<ResponseField name="searchInformation.totalResults" type="string">
+  쿼리와 일치하는 결과의 추정 총 개수이며 문자열로 반환됩니다. 이는 근사치이며 요청마다 달라질 수 있습니다.
+</ResponseField>
+
+<ResponseField name="searchInformation.searchTime" type="number">
+  Google이 쿼리를 처리하는 데 걸린 시간(초).
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  검색 결과 객체의 배열입니다. 결과가 없으면 이 배열은 존재하지 않습니다.
+</ResponseField>
+
+<ResponseField name="items[].title" type="string">
+  검색 결과에 표시되는 웹 페이지의 제목.
+</ResponseField>
+
+<ResponseField name="items[].link" type="string">
+  결과 페이지의 전체 URL.
+</ResponseField>
+
+<ResponseField name="items[].snippet" type="string">
+  쿼리 용어가 문맥에 어떻게 나타나는지 보여주는 페이지 콘텐츠의 짧은 발췌.
+</ResponseField>
+
+## 페이지네이션
+
+Programmable Search API는 **요청당 최대 10개의 결과**를 반환하며, 쿼리당 최대 **100개의 결과 총계**(결과 1–100번)를 지원합니다. 결과를 페이지로 넘기려면 `start`를 `num` 값만큼 증가시키세요:
+
+| 페이지 | `start` | `num` |
+|------|---------|-------|
+| 1 | 1 | 10 |
+| 2 | 11 | 10 |
+| 3 | 21 | 10 |
+| … | … | … |
+| 10 | 91 | 10 |
+
+```bash
+# 두 번째 페이지의 결과 가져오기
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=10&start=11"
+```
+
+<Note>
+  100번째 위치를 넘는 결과는 API를 통해 접근할 수 없습니다. 사용 사례에서 더 깊은 페이지네이션이 필요하다면, 추가 용어나 필터로 쿼리를 다듬어 처음 100개 안에서 가장 관련성 높은 결과가 나타나도록 하세요.
+</Note>

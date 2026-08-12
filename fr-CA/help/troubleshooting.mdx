@@ -1,0 +1,145 @@
+---
+title: "Résoudre les erreurs de connexion Google, Drive et d'API"
+sidebarTitle: "Dépannage"
+description: "Diagnostiquez et corrigez les problèmes courants de connexion Google, les problèmes de synchronisation Drive, les codes d'erreur des API, les limites de quota et les délais d'indexation dans Search."
+---
+
+Même des services fiables comme Google connaissent parfois des problèmes — qu'il s'agisse d'une API qui renvoie des codes d'erreur inattendus, d'une synchronisation qui a cessé de fonctionner ou d'une connexion qui n'aboutit pas. Ce guide vous accompagne à travers les problèmes les plus courants des produits Google et de la plateforme pour développeurs, avec des étapes claires pour diagnostiquer et résoudre chacun d'eux.
+
+<Tip>
+  Avant de dépanner des problèmes individuels, consultez le [tableau de bord d'état de Google Workspace](https://www.google.com/appsstatus) pour voir s'il y a une panne active affectant un ou plusieurs services Google. Beaucoup de problèmes de connexion, de synchronisation et d'API sont causés par des incidents d'infrastructure temporaires qui se résolvent d'eux-mêmes.
+</Tip>
+
+## Codes d'erreur d'API
+
+Lorsqu'une API Google renvoie une erreur, le code d'état HTTP et le message d'erreur ensemble vous indiquent exactement ce qui n'a pas fonctionné. Le tableau ci-dessous couvre les réponses d'erreur les plus courantes et comment les traiter :
+
+| État HTTP | Code d'erreur | Signification | Comment corriger |
+|---|---|---|---|
+| **400** | `INVALID_ARGUMENT` | La requête était malformée ou contenait un paramètre invalide | Passez en revue votre corps de requête et vos paramètres de requête par rapport à la référence de l'API; vérifiez les champs requis manquants ou les types de données incorrects |
+| **401** | `UNAUTHENTICATED` | La requête manque d'identifiants d'authentification valides | Rafraîchissez votre jeton OAuth ou vérifiez que votre clé d'API est incluse dans les en-têtes de requête; assurez-vous que les identifiants ne sont pas expirés |
+| **403** | `PERMISSION_DENIED` | Le compte authentifié n'a pas la permission d'effectuer cette action | Vérifiez que la portée OAuth requise est accordée et que l'API est activée dans votre projet Cloud; vérifiez les paramètres de partage de la ressource |
+| **429** | `RESOURCE_EXHAUSTED` | Vous avez dépassé votre quota ou votre limite de débit pour cette API | Implémentez un repli exponentiel et une logique de nouvelle tentative; demandez une augmentation de quota via la console Cloud au besoin |
+| **500** | `INTERNAL` | Une erreur inattendue s'est produite sur les serveurs de Google | Réessayez la requête avec un repli exponentiel; si l'erreur persiste, consultez la page [état de Google Cloud](https://status.cloud.google.com) |
+
+<Note>
+  Toutes les réponses d'erreur des API Google comprennent un corps JSON avec les champs `code`, `message` et `status`. Journalisez toujours le corps de réponse d'erreur complet — et pas seulement le code d'état HTTP — pour obtenir les informations de diagnostic les plus exploitables.
+</Note>
+
+## Impossible de se connecter
+
+Si vous ne pouvez pas vous connecter à votre compte Google, suivez les étapes suivantes dans l'ordre :
+
+<Steps>
+  <Step title="Vérifier le verrouillage des majuscules et la disposition du clavier">
+    Les mots de passe sont sensibles à la casse. Assurez-vous que le verrouillage des majuscules est désactivé et que vous utilisez la bonne disposition de clavier avant de saisir à nouveau votre mot de passe.
+  </Step>
+  <Step title="Utiliser Mot de passe oublié">
+    Sur la page de connexion, cliquez sur **Mot de passe oublié?**. Google enverra un code de vérification à votre adresse courriel ou numéro de téléphone de récupération. Saisissez le code pour vérifier votre identité et créer un nouveau mot de passe.
+  </Step>
+  <Step title="Vérifier votre méthode de validation en deux étapes">
+    Si vous avez activé la validation en deux étapes (2SV) et ne recevez pas votre code d'authentification, assurez-vous que votre téléphone a du signal et que l'application Google Authenticator (ou une autre application TOTP) affiche le bon code synchronisé sur l'heure. Si vous avez perdu l'accès à votre appareil 2SV, utilisez un code de secours enregistré ou demandez une récupération de compte à [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery).
+  </Step>
+  <Step title="Vérifier une suspension de compte">
+    Si Google détecte une activité inhabituelle ou une violation des politiques, votre compte peut être temporairement suspendu. Vous verrez alors un message clair sur la page de connexion. Suivez les instructions à l'écran pour contester la suspension ou vérifier votre identité.
+  </Step>
+  <Step title="Essayer un autre navigateur ou appareil">
+    Les extensions de navigateur, les identifiants mis en cache ou les témoins corrompus peuvent parfois nuire à la connexion. Essayez de vous connecter depuis une fenêtre de navigation privée ou depuis un autre navigateur pour écarter un problème local.
+  </Step>
+</Steps>
+
+## Problèmes de synchronisation de Google Drive
+
+Si les fichiers ne se synchronisent pas entre votre ordinateur et Google Drive, ou si Drive pour ordinateur a cessé de fonctionner, suivez ces étapes :
+
+<AccordionGroup>
+  <Accordion title="Vérifier votre quota de stockage">
+    Si le stockage de votre compte Google est plein, Drive cessera de synchroniser les nouveaux fichiers et pourrait échouer à téléverser les modifications. Rendez-vous à [one.google.com/storage](https://one.google.com/storage) pour vérifier votre utilisation. Si vous êtes au-dessus de la limite, supprimez les fichiers inutiles de Gmail, de la corbeille de Drive ou de Google Photos, ou passez à un forfait Google One.
+  </Accordion>
+
+  <Accordion title="Vérifier votre connexion Internet">
+    Drive pour ordinateur exige une connexion Internet stable pour se synchroniser. Confirmez votre connexion en ouvrant un navigateur et en chargeant une page Web. Si votre connexion est intermittente, la synchronisation se mettra en pause et reprendra automatiquement une fois la connexion stabilisée.
+  </Accordion>
+
+  <Accordion title="Redémarrer Drive pour ordinateur">
+    Cliquez sur l'icône Drive pour ordinateur dans la barre d'état système (Windows) ou dans la barre de menu (macOS), puis sélectionnez **Quitter**. Relancez l'application depuis votre dossier Applications ou le menu Démarrer. Le redémarrage du client le force à revérifier l'état de la synchronisation et à résoudre plusieurs problèmes transitoires.
+  </Accordion>
+
+  <Accordion title="Réassocier votre compte Google">
+    Si l'application affiche une erreur d'authentification, vous devrez peut-être réassocier votre compte. Ouvrez les préférences de Drive pour ordinateur, allez à **Comptes**, puis déconnectez-vous et reconnectez-vous avec votre compte Google. Cela rafraîchit vos identifiants sans affecter vos fichiers synchronisés.
+  </Accordion>
+
+  <Accordion title="Vérifier la longueur des chemins de fichiers ou les problèmes de nommage">
+    Drive pour ordinateur peut refuser de synchroniser des fichiers dont les chemins dépassent les limites système (260 caractères sur Windows) ou dont les noms contiennent des caractères non pris en charge par votre système d'exploitation. Renommez ou déplacez les fichiers problématiques vers un chemin plus court et consultez le journal d'erreurs de Drive pour ordinateur pour les noms de fichiers précis.
+  </Accordion>
+</AccordionGroup>
+
+## Quota d'API dépassé (429)
+
+Recevoir une erreur `429 RESOURCE_EXHAUSTED` signifie que votre application a envoyé trop de requêtes en trop peu de temps, ou qu'elle a atteint sa limite de quota quotidienne. Voici comment la gérer :
+
+### Implémenter un repli exponentiel
+
+Plutôt que de réessayer immédiatement une requête échouée, attendez un intervalle progressivement plus long entre chaque nouvelle tentative. Cela empêche votre client de marteler l'API pendant qu'elle est sous charge et laisse le temps aux fenêtres de quota de se réinitialiser.
+
+```python
+import time
+import random
+
+def api_request_with_backoff(request_func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return request_func()
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limited. Retrying in {wait:.2f} seconds...")
+                time.sleep(wait)
+            else:
+                raise
+```
+
+### Demander une augmentation de quota
+
+Si votre application atteint constamment ses limites de quota, vous pouvez demander une augmentation via la console Google Cloud :
+
+<Steps>
+  <Step title="Ouvrir la console Cloud">
+    Rendez-vous à [console.cloud.google.com](https://console.cloud.google.com) et sélectionnez votre projet.
+  </Step>
+  <Step title="Aller à APIs & Services → Quotas & System Limits">
+    Accédez à **APIs & Services** → **Quotas & System Limits** et filtrez par l'API qui est limitée.
+  </Step>
+  <Step title="Sélectionner le quota à augmenter">
+    Trouvez le quota précis (p. ex. « Queries per day » ou « Requests per minute »), cochez la case à côté et cliquez sur **Edit quotas**.
+  </Step>
+  <Step title="Soumettre votre demande">
+    Saisissez la nouvelle valeur de quota souhaitée et une brève justification. Google examine généralement les demandes d'augmentation de quota en 2 à 3 jours ouvrables.
+  </Step>
+</Steps>
+
+## Les résultats de recherche ne se mettent pas à jour
+
+Si vous avez apporté des modifications à une page Web et que les mises à jour ne s'affichent pas dans les résultats Google Search, le délai est presque toujours dû au pipeline d'exploration et d'indexation de Google — et non à une erreur.
+
+<AccordionGroup>
+  <Accordion title="Comprendre les délais d'indexation">
+    Après qu'un explorateur de Google (Googlebot) a visité une page, il faut du temps supplémentaire pour que l'index soit mis à jour et que ces changements apparaissent dans les résultats de recherche. Pour la plupart des sites, ce processus prend de quelques jours à quelques semaines. Les nouveaux sites ou les pages à faible autorité peuvent prendre plus de temps à être explorés en premier lieu.
+  </Accordion>
+
+  <Accordion title="Consulter la version en cache de Google">
+    Vous pouvez voir quelle version de votre page Google a indexée en dernier en recherchant `cache:votredomaine.com/page` dans Google Search. Si la version en cache est désuète, c'est simplement que Google n'a pas encore réexploré la page.
+  </Accordion>
+
+  <Accordion title="Demander la réindexation via Search Console">
+    Si vous avez besoin qu'une page précise soit mise à jour d'urgence, utilisez l'outil **Inspection d'URL** dans [Google Search Console](https://search.google.com/search-console). Collez l'URL, puis cliquez sur **Demander une indexation** pour demander à Googlebot de la réexplorer dès que possible. Cela ne garantit pas des résultats immédiats, mais priorise l'URL dans la file d'exploration.
+  </Accordion>
+
+  <Accordion title="Vérifier votre robots.txt et vos balises noindex">
+    Assurez-vous que votre page n'est pas accidentellement bloquée pour l'indexation. Vérifiez que votre fichier `robots.txt` n'interdit pas à Googlebot d'explorer l'URL, et vérifiez qu'il n'y a pas de balise `<meta name="robots" content="noindex">` sur la page. L'un ou l'autre empêchera votre contenu d'apparaître dans les résultats de recherche.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Demander la réindexation à répétition pour la même URL n'accélère pas le processus. Le pipeline d'indexation de Google est géré automatiquement, et soumettre des requêtes en double n'augmentera pas davantage la priorité d'exploration.
+</Warning>

@@ -1,233 +1,640 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "theme": "almond",
+  "name": "Google",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#ef7025",
+    "light": "#eec9bc",
+    "dark": "#4fa1ab"
   },
   "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
   "navigation": {
     "languages": [
       {
         "language": "en",
-        "pages": [
+        "tabs": [
           {
-            "group": "Getting Started",
-            "pages": [
-              "index",
-              "quickstart"
+            "tab": "Documentation",
+            "groups": [
+              {
+                "group": "Get Started",
+                "pages": ["introduction", "quickstart", "get-started/account-setup"]
+              },
+              {
+                "group": "Core Concepts",
+                "pages": ["concepts/overview", "concepts/search", "concepts/workspace"]
+              },
+              {
+                "group": "Guides",
+                "pages": ["guides/search-tips", "guides/collaboration", "guides/integrations", "guides/security"]
+              },
+              {
+                "group": "Configuration",
+                "pages": ["configuration/account-settings", "configuration/notifications", "configuration/permissions"]
+              },
+              {
+                "group": "Help",
+                "pages": ["help/faq", "help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "API Reference",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": ["api/overview", "api/authentication"]
+              },
+              {
+                "group": "Endpoints",
+                "pages": ["api/search", "api/accounts", "api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "pt-BR",
-        "pages": [
+        "tabs": [
           {
-            "group": "Primeiros passos",
-            "pages": [
-              "pt-BR/index",
-              "pt-BR/quickstart"
+            "tab": "Documentação",
+            "groups": [
+              {
+                "group": "Primeiros passos",
+                "pages": ["pt-BR/introduction", "pt-BR/quickstart", "pt-BR/get-started/account-setup"]
+              },
+              {
+                "group": "Conceitos principais",
+                "pages": ["pt-BR/concepts/overview", "pt-BR/concepts/search", "pt-BR/concepts/workspace"]
+              },
+              {
+                "group": "Guias",
+                "pages": ["pt-BR/guides/search-tips", "pt-BR/guides/collaboration", "pt-BR/guides/integrations", "pt-BR/guides/security"]
+              },
+              {
+                "group": "Configuração",
+                "pages": ["pt-BR/configuration/account-settings", "pt-BR/configuration/notifications", "pt-BR/configuration/permissions"]
+              },
+              {
+                "group": "Ajuda",
+                "pages": ["pt-BR/help/faq", "pt-BR/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "Referência da API",
+            "groups": [
+              {
+                "group": "Visão geral",
+                "pages": ["pt-BR/api/overview", "pt-BR/api/authentication"]
+              },
+              {
+                "group": "Endpoints",
+                "pages": ["pt-BR/api/search", "pt-BR/api/accounts", "pt-BR/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "ar",
-        "pages": [
+        "tabs": [
           {
-            "group": "البدء",
-            "pages": [
-              "ar/index",
-              "ar/quickstart"
+            "tab": "التوثيق",
+            "groups": [
+              {
+                "group": "البدء",
+                "pages": ["ar/introduction", "ar/quickstart", "ar/get-started/account-setup"]
+              },
+              {
+                "group": "المفاهيم الأساسية",
+                "pages": ["ar/concepts/overview", "ar/concepts/search", "ar/concepts/workspace"]
+              },
+              {
+                "group": "الأدلة",
+                "pages": ["ar/guides/search-tips", "ar/guides/collaboration", "ar/guides/integrations", "ar/guides/security"]
+              },
+              {
+                "group": "الإعدادات",
+                "pages": ["ar/configuration/account-settings", "ar/configuration/notifications", "ar/configuration/permissions"]
+              },
+              {
+                "group": "المساعدة",
+                "pages": ["ar/help/faq", "ar/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "مرجع الواجهة البرمجية",
+            "groups": [
+              {
+                "group": "نظرة عامة",
+                "pages": ["ar/api/overview", "ar/api/authentication"]
+              },
+              {
+                "group": "نقاط النهاية",
+                "pages": ["ar/api/search", "ar/api/accounts", "ar/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "ca",
-        "pages": [
+        "tabs": [
           {
-            "group": "Primers passos",
-            "pages": [
-              "ca/index",
-              "ca/quickstart"
+            "tab": "Documentació",
+            "groups": [
+              {
+                "group": "Primers passos",
+                "pages": ["ca/introduction", "ca/quickstart", "ca/get-started/account-setup"]
+              },
+              {
+                "group": "Conceptes bàsics",
+                "pages": ["ca/concepts/overview", "ca/concepts/search", "ca/concepts/workspace"]
+              },
+              {
+                "group": "Guies",
+                "pages": ["ca/guides/search-tips", "ca/guides/collaboration", "ca/guides/integrations", "ca/guides/security"]
+              },
+              {
+                "group": "Configuració",
+                "pages": ["ca/configuration/account-settings", "ca/configuration/notifications", "ca/configuration/permissions"]
+              },
+              {
+                "group": "Ajuda",
+                "pages": ["ca/help/faq", "ca/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "Referència de l'API",
+            "groups": [
+              {
+                "group": "Visió general",
+                "pages": ["ca/api/overview", "ca/api/authentication"]
+              },
+              {
+                "group": "Punts d'accés",
+                "pages": ["ca/api/search", "ca/api/accounts", "ca/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "cs",
-        "pages": [
+        "tabs": [
           {
-            "group": "Začínáme",
-            "pages": [
-              "cs/index",
-              "cs/quickstart"
+            "tab": "Dokumentace",
+            "groups": [
+              {
+                "group": "Začínáme",
+                "pages": ["cs/introduction", "cs/quickstart", "cs/get-started/account-setup"]
+              },
+              {
+                "group": "Základní pojmy",
+                "pages": ["cs/concepts/overview", "cs/concepts/search", "cs/concepts/workspace"]
+              },
+              {
+                "group": "Průvodci",
+                "pages": ["cs/guides/search-tips", "cs/guides/collaboration", "cs/guides/integrations", "cs/guides/security"]
+              },
+              {
+                "group": "Konfigurace",
+                "pages": ["cs/configuration/account-settings", "cs/configuration/notifications", "cs/configuration/permissions"]
+              },
+              {
+                "group": "Nápověda",
+                "pages": ["cs/help/faq", "cs/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "Reference API",
+            "groups": [
+              {
+                "group": "Přehled",
+                "pages": ["cs/api/overview", "cs/api/authentication"]
+              },
+              {
+                "group": "Koncové body",
+                "pages": ["cs/api/search", "cs/api/accounts", "cs/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "zh",
-        "pages": [
+        "tabs": [
           {
-            "group": "入门",
-            "pages": [
-              "zh/index",
-              "zh/quickstart"
+            "tab": "文档",
+            "groups": [
+              {
+                "group": "入门",
+                "pages": ["zh/introduction", "zh/quickstart", "zh/get-started/account-setup"]
+              },
+              {
+                "group": "核心概念",
+                "pages": ["zh/concepts/overview", "zh/concepts/search", "zh/concepts/workspace"]
+              },
+              {
+                "group": "指南",
+                "pages": ["zh/guides/search-tips", "zh/guides/collaboration", "zh/guides/integrations", "zh/guides/security"]
+              },
+              {
+                "group": "配置",
+                "pages": ["zh/configuration/account-settings", "zh/configuration/notifications", "zh/configuration/permissions"]
+              },
+              {
+                "group": "帮助",
+                "pages": ["zh/help/faq", "zh/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "API 参考",
+            "groups": [
+              {
+                "group": "概览",
+                "pages": ["zh/api/overview", "zh/api/authentication"]
+              },
+              {
+                "group": "端点",
+                "pages": ["zh/api/search", "zh/api/accounts", "zh/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "fr-CA",
-        "pages": [
+        "tabs": [
           {
-            "group": "Pour commencer",
-            "pages": [
-              "fr-CA/index",
-              "fr-CA/quickstart"
+            "tab": "Documentation",
+            "groups": [
+              {
+                "group": "Pour commencer",
+                "pages": ["fr-CA/introduction", "fr-CA/quickstart", "fr-CA/get-started/account-setup"]
+              },
+              {
+                "group": "Concepts fondamentaux",
+                "pages": ["fr-CA/concepts/overview", "fr-CA/concepts/search", "fr-CA/concepts/workspace"]
+              },
+              {
+                "group": "Guides",
+                "pages": ["fr-CA/guides/search-tips", "fr-CA/guides/collaboration", "fr-CA/guides/integrations", "fr-CA/guides/security"]
+              },
+              {
+                "group": "Configuration",
+                "pages": ["fr-CA/configuration/account-settings", "fr-CA/configuration/notifications", "fr-CA/configuration/permissions"]
+              },
+              {
+                "group": "Aide",
+                "pages": ["fr-CA/help/faq", "fr-CA/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "Référence de l'API",
+            "groups": [
+              {
+                "group": "Aperçu",
+                "pages": ["fr-CA/api/overview", "fr-CA/api/authentication"]
+              },
+              {
+                "group": "Points de terminaison",
+                "pages": ["fr-CA/api/search", "fr-CA/api/accounts", "fr-CA/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "cn",
-        "pages": [
+        "tabs": [
           {
-            "group": "入门",
-            "pages": [
-              "cn/index",
-              "cn/quickstart"
+            "tab": "文档",
+            "groups": [
+              {
+                "group": "入门",
+                "pages": ["cn/introduction", "cn/quickstart", "cn/get-started/account-setup"]
+              },
+              {
+                "group": "核心概念",
+                "pages": ["cn/concepts/overview", "cn/concepts/search", "cn/concepts/workspace"]
+              },
+              {
+                "group": "指南",
+                "pages": ["cn/guides/search-tips", "cn/guides/collaboration", "cn/guides/integrations", "cn/guides/security"]
+              },
+              {
+                "group": "配置",
+                "pages": ["cn/configuration/account-settings", "cn/configuration/notifications", "cn/configuration/permissions"]
+              },
+              {
+                "group": "帮助",
+                "pages": ["cn/help/faq", "cn/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "API 参考",
+            "groups": [
+              {
+                "group": "概览",
+                "pages": ["cn/api/overview", "cn/api/authentication"]
+              },
+              {
+                "group": "端点",
+                "pages": ["cn/api/search", "cn/api/accounts", "cn/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "no",
-        "pages": [
+        "tabs": [
           {
-            "group": "Kom i gang",
-            "pages": [
-              "no/index",
-              "no/quickstart"
+            "tab": "Dokumentasjon",
+            "groups": [
+              {
+                "group": "Kom i gang",
+                "pages": ["no/introduction", "no/quickstart", "no/get-started/account-setup"]
+              },
+              {
+                "group": "Kjernebegreper",
+                "pages": ["no/concepts/overview", "no/concepts/search", "no/concepts/workspace"]
+              },
+              {
+                "group": "Veiledninger",
+                "pages": ["no/guides/search-tips", "no/guides/collaboration", "no/guides/integrations", "no/guides/security"]
+              },
+              {
+                "group": "Konfigurasjon",
+                "pages": ["no/configuration/account-settings", "no/configuration/notifications", "no/configuration/permissions"]
+              },
+              {
+                "group": "Hjelp",
+                "pages": ["no/help/faq", "no/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "API-referanse",
+            "groups": [
+              {
+                "group": "Oversikt",
+                "pages": ["no/api/overview", "no/api/authentication"]
+              },
+              {
+                "group": "Endepunkter",
+                "pages": ["no/api/search", "no/api/accounts", "no/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "ja-jp",
-        "pages": [
+        "tabs": [
           {
-            "group": "はじめに",
-            "pages": [
-              "ja-jp/index",
-              "ja-jp/quickstart"
+            "tab": "ドキュメント",
+            "groups": [
+              {
+                "group": "はじめに",
+                "pages": ["ja-jp/introduction", "ja-jp/quickstart", "ja-jp/get-started/account-setup"]
+              },
+              {
+                "group": "主要な概念",
+                "pages": ["ja-jp/concepts/overview", "ja-jp/concepts/search", "ja-jp/concepts/workspace"]
+              },
+              {
+                "group": "ガイド",
+                "pages": ["ja-jp/guides/search-tips", "ja-jp/guides/collaboration", "ja-jp/guides/integrations", "ja-jp/guides/security"]
+              },
+              {
+                "group": "設定",
+                "pages": ["ja-jp/configuration/account-settings", "ja-jp/configuration/notifications", "ja-jp/configuration/permissions"]
+              },
+              {
+                "group": "ヘルプ",
+                "pages": ["ja-jp/help/faq", "ja-jp/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "API リファレンス",
+            "groups": [
+              {
+                "group": "概要",
+                "pages": ["ja-jp/api/overview", "ja-jp/api/authentication"]
+              },
+              {
+                "group": "エンドポイント",
+                "pages": ["ja-jp/api/search", "ja-jp/api/accounts", "ja-jp/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "lv",
-        "pages": [
+        "tabs": [
           {
-            "group": "Sākums",
-            "pages": [
-              "lv/index",
-              "lv/quickstart"
+            "tab": "Dokumentācija",
+            "groups": [
+              {
+                "group": "Sākums",
+                "pages": ["lv/introduction", "lv/quickstart", "lv/get-started/account-setup"]
+              },
+              {
+                "group": "Galvenie jēdzieni",
+                "pages": ["lv/concepts/overview", "lv/concepts/search", "lv/concepts/workspace"]
+              },
+              {
+                "group": "Ceļveži",
+                "pages": ["lv/guides/search-tips", "lv/guides/collaboration", "lv/guides/integrations", "lv/guides/security"]
+              },
+              {
+                "group": "Konfigurācija",
+                "pages": ["lv/configuration/account-settings", "lv/configuration/notifications", "lv/configuration/permissions"]
+              },
+              {
+                "group": "Palīdzība",
+                "pages": ["lv/help/faq", "lv/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "API atsauce",
+            "groups": [
+              {
+                "group": "Pārskats",
+                "pages": ["lv/api/overview", "lv/api/authentication"]
+              },
+              {
+                "group": "Galapunkti",
+                "pages": ["lv/api/search", "lv/api/accounts", "lv/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "jp",
-        "pages": [
+        "tabs": [
           {
-            "group": "はじめに",
-            "pages": [
-              "jp/index",
-              "jp/quickstart"
+            "tab": "ドキュメント",
+            "groups": [
+              {
+                "group": "はじめに",
+                "pages": ["jp/introduction", "jp/quickstart", "jp/get-started/account-setup"]
+              },
+              {
+                "group": "主要な概念",
+                "pages": ["jp/concepts/overview", "jp/concepts/search", "jp/concepts/workspace"]
+              },
+              {
+                "group": "ガイド",
+                "pages": ["jp/guides/search-tips", "jp/guides/collaboration", "jp/guides/integrations", "jp/guides/security"]
+              },
+              {
+                "group": "設定",
+                "pages": ["jp/configuration/account-settings", "jp/configuration/notifications", "jp/configuration/permissions"]
+              },
+              {
+                "group": "ヘルプ",
+                "pages": ["jp/help/faq", "jp/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "API リファレンス",
+            "groups": [
+              {
+                "group": "概要",
+                "pages": ["jp/api/overview", "jp/api/authentication"]
+              },
+              {
+                "group": "エンドポイント",
+                "pages": ["jp/api/search", "jp/api/accounts", "jp/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "ko",
-        "pages": [
+        "tabs": [
           {
-            "group": "시작하기",
-            "pages": [
-              "ko/index",
-              "ko/quickstart"
+            "tab": "문서",
+            "groups": [
+              {
+                "group": "시작하기",
+                "pages": ["ko/introduction", "ko/quickstart", "ko/get-started/account-setup"]
+              },
+              {
+                "group": "핵심 개념",
+                "pages": ["ko/concepts/overview", "ko/concepts/search", "ko/concepts/workspace"]
+              },
+              {
+                "group": "가이드",
+                "pages": ["ko/guides/search-tips", "ko/guides/collaboration", "ko/guides/integrations", "ko/guides/security"]
+              },
+              {
+                "group": "구성",
+                "pages": ["ko/configuration/account-settings", "ko/configuration/notifications", "ko/configuration/permissions"]
+              },
+              {
+                "group": "도움말",
+                "pages": ["ko/help/faq", "ko/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "API 참조",
+            "groups": [
+              {
+                "group": "개요",
+                "pages": ["ko/api/overview", "ko/api/authentication"]
+              },
+              {
+                "group": "엔드포인트",
+                "pages": ["ko/api/search", "ko/api/accounts", "ko/api/webhooks"]
+              }
             ]
           }
         ]
       },
       {
         "language": "pl",
-        "pages": [
+        "tabs": [
           {
-            "group": "Rozpoczęcie pracy",
-            "pages": [
-              "pl/index",
-              "pl/quickstart"
+            "tab": "Dokumentacja",
+            "groups": [
+              {
+                "group": "Rozpoczęcie pracy",
+                "pages": ["pl/introduction", "pl/quickstart", "pl/get-started/account-setup"]
+              },
+              {
+                "group": "Kluczowe pojęcia",
+                "pages": ["pl/concepts/overview", "pl/concepts/search", "pl/concepts/workspace"]
+              },
+              {
+                "group": "Przewodniki",
+                "pages": ["pl/guides/search-tips", "pl/guides/collaboration", "pl/guides/integrations", "pl/guides/security"]
+              },
+              {
+                "group": "Konfiguracja",
+                "pages": ["pl/configuration/account-settings", "pl/configuration/notifications", "pl/configuration/permissions"]
+              },
+              {
+                "group": "Pomoc",
+                "pages": ["pl/help/faq", "pl/help/troubleshooting"]
+              }
+            ]
+          },
+          {
+            "tab": "Dokumentacja API",
+            "groups": [
+              {
+                "group": "Przegląd",
+                "pages": ["pl/api/overview", "pl/api/authentication"]
+              },
+              {
+                "group": "Punkty końcowe",
+                "pages": ["pl/api/search", "pl/api/accounts", "pl/api/webhooks"]
+              }
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    ]
   },
   "navbar": {
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@google.com"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "label": "Sign In",
+      "href": "https://accounts.google.com"
     }
-  },
-  "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
-    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/google",
+      "github": "https://github.com/google"
     }
   }
 }

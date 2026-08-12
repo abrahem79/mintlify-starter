@@ -1,0 +1,134 @@
+---
+title: "Google API autentifikācija: atslēgas, OAuth 2.0, pakalpojumu konti"
+sidebarTitle: "Autentifikācija"
+description: "Autentificējiet Google API pieprasījumus, izmantojot API atslēgas publiskiem datiem, OAuth 2.0 Bearer marķierus lietotāja datiem vai pakalpojumu kontus servera-servera piekļuvei."
+---
+
+Katrs pieprasījums, ko veicat Google REST API, ir jāautentificē. Google atbalsta trīs galvenos autentifikācijas mehānismus: API atslēgas piekļuvei publiskiem datiem, OAuth 2.0 Bearer marķierus darbībai lietotāja vārdā un pakalpojumu konta akreditācijas datus servera-servera integrācijai. Pareizā mehānisma izvēle ir atkarīga no tā, kādiem datiem nepieciešams piekļūt un vai plūsmā iesaistīts cilvēks-lietotājs.
+
+## API atslēgas
+
+API atslēgas ir vienkāršākā autentifikācijas metode. Tās identificē jūsu projektu Google, bet nesatur lietotāja kontekstu, tāpēc ir piemērotas tikai API, kas piekļūst **publiski pieejamiem datiem** (piemēram, Programmable Search API).
+
+Nododiet savu API atslēgu kā `key` vaicājuma parametru katrā pieprasījumā:
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**Piemērs ar curl:**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  Ģenerējiet un pārvaldiet savas API atslēgas [Google Cloud konsolē](https://console.cloud.google.com/apis/credentials). Ierobežojiet katru atslēgu konkrētām API un atsauces URL, lai ierobežotu tās sprādziena rādiusu, ja tā kādreiz tiek atklāta.
+</Tip>
+
+## OAuth 2.0 Bearer marķieri
+
+Kad jūsu lietojumprogrammai ir nepieciešams piekļūt vai modificēt **lietotājam piederošus datus** — piemēram, failus Google Drive, Gmail ziņojumus vai Kalendāra notikumus —, ir jāizmanto OAuth 2.0. Kad lietotājs pabeidz OAuth piekrišanas plūsmu, jūsu lietojumprogramma saņem piekļuves marķieri, ko iekļaujat katra pieprasījuma galvenē `Authorization`.
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Piekļuves marķieri pēc noklusējuma izbeidzas pēc **3600 sekundēm (1 stunda)**. Jūsu lietojumprogrammai jāsaglabā pievienotais atsvaidzināšanas marķieris un jāizmanto tas, lai iegūtu jaunu piekļuves marķieri, atkārtoti neaicinot lietotāju. Sīkāku informāciju skatiet sadaļā [Marķieru atsvaidzināšana](#token-refresh).
+
+**Piemērs ar curl:**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## Pakalpojumu konta akreditācijas dati
+
+Pakalpojumu konti ir īpaši Google konti, kas pieder lietojumprogrammai, nevis atsevišķam lietotājam. Tie ir paredzēti **servera-servera** scenārijiem — piemēram, aizmugures uzdevumam, kas pēc grafika lasa no Google Sheets bez jebkādas lietotāja mijiedarbības.
+
+Lai autentificētos kā pakalpojumu konts:
+
+1. [Google Cloud konsolē](https://console.cloud.google.com/iam-admin/serviceaccounts) izveidojiet pakalpojumu kontu un lejupielādējiet tā JSON atslēgas failu.
+2. Piešķiriet pakalpojumu kontam nepieciešamās IAM lomas (piemēram, `roles/drive.reader`).
+3. Izmantojiet Google klienta bibliotēku vai parakstītu JWT, lai apmainītu atslēgu pret īslaicīgu piekļuves marķieri.
+
+**Piemērs: pakalpojumu konta atslēgas apmaiņa pret piekļuves marķieri, izmantojot curl**
+
+```bash
+# 1. Install the google-auth-library or use the oauth2 token endpoint directly.
+# Below shows the two-legged JWT flow at its simplest using Python's google-auth library.
+# Install: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+Kad piekļuves marķieris ir iegūts, nododiet to kā Bearer marķieri tāpat kā ar OAuth 2.0:
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  Uzglabājiet savu pakalpojumu konta JSON atslēgas failu droši un nekad neievietojiet to versiju kontrolē. Nekavējoties rotējiet atslēgas, ja aizdomās turat, ka tās ir atklātas.
+</Warning>
+
+## Tvērumi
+
+OAuth 2.0 tvērumi precīzi definē, kādas atļaujas piešķir piekļuves marķieris. Jūs pieprasāt tvērumus autorizācijas solī, un lietotājs tos redz uzskaitītus Google piekrišanas ekrānā. Pieprasiet tikai tos tvērumus, kas jūsu lietojumprogrammai patiesi nepieciešami — pārāk plašu tvērumu pieprasīšana grauj lietotāja uzticību un var tikt noraidīta lietotnes verifikācijas laikā.
+
+| Tvērums | Piešķirtā piekļuve |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | Piekļuve tikai lasīšanai visiem lietotāja Google Drive failiem. |
+| `https://www.googleapis.com/auth/drive` | Pilna lasīšanas un rakstīšanas piekļuve lietotāja Google Drive. |
+| `https://www.googleapis.com/auth/gmail.readonly` | Piekļuve tikai lasīšanai lietotāja Gmail ziņojumiem un iestatījumiem. |
+| `https://www.googleapis.com/auth/calendar` | Pilna lasīšanas un rakstīšanas piekļuve lietotāja Google kalendāram. |
+| `openid` | Autentificēt lietotāju un iegūt stabilu lietotāja ID, izmantojot OpenID Connect. |
+| `email` | Piekļūt lietotāja Google konta galvenajai e-pasta adresei. |
+| `profile` | Piekļūt lietotāja pamata profila informācijai (vārds, fotoattēls, lokalizācija). |
+
+## Marķieru atsvaidzināšana
+
+Kad piekļuves marķieris izbeidzas, apmainiet savu atsvaidzināšanas marķieri pret jaunu, nosūtot `POST` pieprasījumu uz Google marķiera galapunktu:
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+Veiksmīga atbilde satur jauno piekļuves marķieri kopā ar tā derīguma termiņu:
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| Lauks | Apraksts |
+|-------|-------------|
+| `access_token` | Jaunais Bearer marķieris, ko izmantot turpmākajos API pieprasījumos. |
+| `expires_in` | Sekundes līdz marķiera izbeigšanās (parasti `3600`). |
+| `token_type` | Vienmēr `"Bearer"`. |
+
+Saglabājiet jauno `access_token` un aizstājiet iepriekšējo savā lietojumprogrammā. Pats atsvaidzināšanas marķieris paliek derīgs, līdz lietotājs atsauc piekļuvi vai to citādi anulē Google.
+
+<Warning>
+  Nekad neievietojiet savu OAuth `client_secret` klienta puses kodā (JavaScript pakotnēs, mobilajās lietotnēs vai publiskajos repozitorijos). Ja tas ir atklāts, uzbrucējs var uzdoties par jūsu lietojumprogrammu, nolaupīt OAuth plūsmas un piekļūt lietotāja datiem jūsu vārdā. Vienmēr veiciet marķieru apmaiņu drošā aizmugures serverī.
+</Warning>

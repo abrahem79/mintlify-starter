@@ -1,0 +1,126 @@
+---
+title: "Programmable Search API: consulta i obtén resultats"
+sidebarTitle: "API de cerca"
+description: "Consulta un Google Programmable Search Engine via GET /customsearch/v1 i rep resultats JSON estructurats amb títols, URL i fragments."
+---
+
+La Google Programmable Search API et permet incorporar cerca web personalitzada a la teva aplicació. Creant un motor de cerca al [panell de control del Programmable Search Engine](https://programmablesearchengine.google.com/), defineixes quins llocs o si el motor cobreix tot el web. Després consultes aquest motor mitjançant una petició `GET` senzilla i reps resultats JSON estructurats —títols, URL i fragments— que pots renderitzar com vulguis.
+
+## Endpoint
+
+```http
+GET https://www.googleapis.com/customsearch/v1
+```
+
+L'autenticació es gestiona mitjançant una clau d'API passada com a paràmetre de consulta `key`. No es requereix cap token OAuth per a aquest endpoint.
+
+## Paràmetres de consulta
+
+<ParamField query="q" type="string" required>
+  La cadena de consulta de cerca. Codifica en URL els espais i caràcters especials (p. ex. `climate+change` o `climate%20change`).
+</ParamField>
+
+<ParamField query="key" type="string" required>
+  La clau d'API del teu projecte. Genera'n una a la [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+</ParamField>
+
+<ParamField query="cx" type="string" required>
+  L'identificador únic del teu Programmable Search Engine. El trobaràs a la pàgina de configuració del teu motor de cerca sota "Search engine ID".
+</ParamField>
+
+<ParamField query="num" type="integer">
+  El nombre de resultats a retornar per pàgina. Els valors acceptats són `1` fins a `10`. Per defecte és `10`.
+</ParamField>
+
+<ParamField query="start" type="integer">
+  L'índex del primer resultat a retornar, utilitzat per a la paginació. Per defecte és `1`. El valor màxim és `91` (que dona els resultats 91–100). Consulta [Paginació](#pagination) per a més detalls.
+</ParamField>
+
+<ParamField query="lr" type="string">
+  Restringeix els resultats a documents escrits en un idioma específic. Passa un codi d'idioma prefixat amb `lang_`, per exemple `lang_en` per a l'anglès o `lang_fr` per al francès.
+</ParamField>
+
+<ParamField query="safe" type="string">
+  Activa el filtratge SafeSearch. Passa `active` per filtrar contingut explícit, o `off` per desactivar el filtratge. Per defecte és `off`.
+</ParamField>
+
+## Petició d'exemple
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=5"
+```
+
+## Resposta d'exemple
+
+```json
+{
+  "kind": "customsearch#search",
+  "searchInformation": {
+    "totalResults": "12400000",
+    "searchTime": 0.248
+  },
+  "items": [
+    {
+      "title": "Climate Change Overview",
+      "link": "https://example.com/climate",
+      "snippet": "An overview of current climate change research and its global implications for ecosystems and economies."
+    },
+    {
+      "title": "What Is Climate Change? — NASA",
+      "link": "https://climate.nasa.gov/what-is-climate-change/",
+      "snippet": "NASA's guide to the science, causes, and projected impacts of climate change."
+    }
+  ]
+}
+```
+
+## Camps de resposta
+
+<ResponseField name="kind" type="string">
+  Identifica el tipus de recurs retornat. Per a respostes de cerca sempre és `"customsearch#search"`.
+</ResponseField>
+
+<ResponseField name="searchInformation.totalResults" type="string">
+  El nombre total estimat de resultats que coincideixen amb la consulta, retornat com a cadena. És una aproximació i pot variar entre peticions.
+</ResponseField>
+
+<ResponseField name="searchInformation.searchTime" type="number">
+  El temps que Google ha trigat a processar la consulta, en segons.
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  Una matriu d'objectes de resultat de cerca. Aquesta matriu no apareix si no s'han trobat resultats.
+</ResponseField>
+
+<ResponseField name="items[].title" type="string">
+  El títol de la pàgina web tal com apareix als resultats de cerca.
+</ResponseField>
+
+<ResponseField name="items[].link" type="string">
+  L'URL complet de la pàgina de resultat.
+</ResponseField>
+
+<ResponseField name="items[].snippet" type="string">
+  Un breu extracte del contingut de la pàgina que mostra com apareixen els termes de la consulta en context.
+</ResponseField>
+
+## Paginació
+
+La Programmable Search API retorna un màxim de **10 resultats per petició** i admet fins a **100 resultats en total** per consulta (resultats 1–100). Per paginar els resultats, incrementa `start` en el valor de `num`:
+
+| Pàgina | `start` | `num` |
+|------|---------|-------|
+| 1 | 1 | 10 |
+| 2 | 11 | 10 |
+| 3 | 21 | 10 |
+| … | … | … |
+| 10 | 91 | 10 |
+
+```bash
+# Fetch the second page of results
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=10&start=11"
+```
+
+<Note>
+  Els resultats més enllà de la posició 100 no són accessibles a través de l'API. Si el teu cas d'ús requereix una paginació més profunda, considera refinar la consulta amb termes o filtres addicionals per fer aflorar els resultats més rellevants dins dels primers 100.
+</Note>

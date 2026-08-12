@@ -1,0 +1,45 @@
+---
+title: "FAQ dels serveis de Google: comptes, API, facturació i privadesa"
+sidebarTitle: "FAQ"
+description: "Respostes a preguntes habituals sobre comptes de Google, quotes d'emmagatzematge, Workspace, claus d'API, facturació, privadesa de dades i límits de velocitat per a desenvolupadors."
+---
+
+Tant si ets un usuari nou de Google com un desenvolupador experimentat que treballa amb API de Google, és probable que et trobis amb preguntes sobre com funcionen els comptes, l'emmagatzematge, la facturació i els controls d'accés. Aquesta pàgina recull respostes a les preguntes més freqüents dels productes de consum de Google, les aplicacions de Workspace i la plataforma de desenvolupador, perquè puguis obtenir respostes ràpides sense haver de buscar en múltiples centres d'ajuda.
+
+<AccordionGroup>
+  <Accordion title="Com restableixo la meva contrasenya de Google?">
+    Pots restablir la teva contrasenya de Google des de la pàgina de recuperació de comptes a [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery). Introdueix l'adreça de correu electrònic associada al teu compte i segueix les indicacions: Google enviarà un codi de verificació al teu correu electrònic o número de telèfon de recuperació. Un cop verificat, podràs crear una nova contrasenya. Si has perdut l'accés a totes les opcions de recuperació, Google proporciona un procés de verificació d'identitat en què se't faran preguntes per confirmar la teva identitat basant-se en l'historial del teu compte.
+  </Accordion>
+
+  <Accordion title="Per què no em funciona la clau d'API?">
+    Les raons més comunes perquè una clau d'API deixi de funcionar són que la clau ha estat restringida a adreces IP o referents específics que no coincideixen amb el teu entorn actual, la clau no té l'API necessària activada al teu projecte de Google Cloud, o la clau ha estat eliminada o regenerada. Obre la [Google Cloud Console](https://console.cloud.google.com), navega a **APIs & Services → Credentials** i verifica les restriccions i l'estat de la teva clau. També confirma que l'API objectiu (p. ex., Maps JavaScript API, Sheets API) està activada sota **APIs & Services → Enabled APIs & services**.
+  </Accordion>
+
+  <Accordion title="Què compta per a la meva quota d'emmagatzematge de Google?">
+    Els teus 15 GB d'emmagatzematge gratuït de Google es comparteixen entre Gmail (correus i adjunts), Google Drive (fitxers pujats) i Google Photos (imatges i vídeos amb còpia de seguretat). Els Google Docs, Sheets, Slides, Forms i Drawings que es creen de manera nativa en els formats de Google **no** compten per a la teva quota. Tanmateix, els fitxers pujats a Drive en altres formats —com ara `.docx`, `.xlsx` o `.pdf`— sí que consumeixen emmagatzematge. Pots comprovar l'ús actual i el desglossament a [one.google.com/storage](https://one.google.com/storage).
+  </Accordion>
+
+  <Accordion title="Com elimino el meu compte de Google?">
+    Pots eliminar permanentment el teu compte de Google des de la secció **Dades i privadesa** de la configuració del teu compte. Vés a [myaccount.google.com](https://myaccount.google.com), fes clic a **Dades i privadesa**, desplaça't fins a **Més opcions** i fes clic a **Elimina el teu compte de Google**. Google et demanarà que descarreguis una còpia de les teves dades primer utilitzant Google Takeout. Tingues en compte que l'eliminació és permanent: el teu Gmail, els fitxers de Drive i totes les dades associades es perdran i no es poden recuperar després que expiri el període de gràcia.
+  </Accordion>
+
+  <Accordion title="Puc utilitzar les API de Google de manera gratuïta?">
+    Moltes API de Google ofereixen una capa gratuïta amb límits d'ús generosos: per exemple, la Maps JavaScript API inclou 200 $/mes en crèdits gratuïts, i les crides a l'API de Google Sheets són gratuïtes fins a límits d'ús establerts per projecte. No obstant això, l'ús d'alt volum, certes API premium (com Google Maps Routes Preferred) i les funcions de nivell empresarial requereixen que es configuri un compte de facturació a Google Cloud. Pots revisar els preus de qualsevol API específica a [cloud.google.com/pricing](https://cloud.google.com/pricing) o a la pàgina de documentació de l'API individual.
+  </Accordion>
+
+  <Accordion title="Com transfereixo la propietat d'un Google Doc?">
+    Per transferir la propietat d'un Google Doc, Sheet o Slide, obre el fitxer i fes clic a **Comparteix** a la cantonada superior dreta. Troba la persona a qui vols transferir la propietat (ha de tenir accés ja), fes clic al desplegable al costat del seu nom i selecciona **Transfereix la propietat**. El destinatari rebrà una notificació per correu electrònic i haurà d'acceptar la transferència. Tingues en compte que només pots transferir la propietat a un altre usuari dins la mateixa organització de Google Workspace o, per a comptes personals, a un altre titular de compte de Google.
+  </Accordion>
+
+  <Accordion title="Com denuncio un correu de brossa o de phishing a Gmail?">
+    Per denunciar un correu de brossa a Gmail, obre el missatge, fes clic al **menú de tres punts** (⋮) a la part superior dreta del correu i selecciona **Denuncia com a brossa** o **Denuncia com a phishing**. Denunciar phishing envia el correu a Google per a la seva revisió i ajuda a protegir altres usuaris d'atacs similars. Gmail també mourà automàticament el correu fora de la teva safata d'entrada. Si reps correus de phishing que suplanten una empresa o institució, també els pots denunciar a l'[equip de Google Safe Browsing](https://safebrowsing.google.com/safebrowsing/report_phish/).
+  </Accordion>
+
+  <Accordion title="Quins són els límits de velocitat per a l'API de Google Search?">
+    La Google Custom Search JSON API permet fins a **100 consultes de cerca per dia** de manera gratuïta, amb consultes addicionals disponibles a 5 $ per cada 1.000 consultes (fins a 10.000 per dia). Això s'aplica a l'API del Programmable Search Engine: si utilitzes l'API de Google Search Console o altres API relacionades amb la cerca, els límits difereixen i es documenten per separat. Pots monitoritzar el teu ús i configurar quotes de peticions a la [Google Cloud Console](https://console.cloud.google.com) sota **APIs & Services → Quotas**. Per a necessitats de cerca de volum molt alt, Google ofereix opcions de nivell empresarial a través de Google Cloud.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  No trobes la resposta que busques? Visita el [Centre d'ajuda de Google](https://support.google.com) per obtenir documentació d'assistència específica per a producte, o posa't en contacte amb el suport de Google directament des del teu compte de Google sota **Suport** al menú de navegació.
+</Note>

@@ -1,0 +1,72 @@
+---
+title: "Zabezpečte svůj účet Google a vývojářské přihlašovací údaje"
+sidebarTitle: "Zabezpečení"
+description: "Chraňte svůj účet Google pomocí dvoufázového ověření, spravujte omezení klíčů API a řiďte se osvědčenými postupy pro zabezpečení přihlašovacích údajů."
+---
+
+Váš účet Google je klíčem k vaší e-mailové poště, dokumentům, cloudové infrastruktuře a přihlašovacím údajům k API — což z něj činí jedno z nejcennějších a nejčastěji cílených aktiv, která spravujete. Jeho zabezpečení vyžaduje jak uzamknutí účtu silnou autentizací, tak i zacházení s klíči API a přihlašovacími údaji servisních účtů, na nichž vaše aplikace závisí, se stejnou péčí, jakou byste věnovali heslu. Tento průvodce pokrývá základní kroky k posílení obojího.
+
+## Dvoufázové ověření
+
+Dvoufázové ověření (2SV) přidává druhý důkaz identity nad rámec vašeho hesla, takže ukradené heslo samo o sobě k přístupu k účtu nestačí. Google doporučuje použít jako druhý faktor autentizační aplikaci, protože generuje kódy offline a není zranitelná vůči útokům typu SIM-swapping, jak je to u SMS.
+
+<Steps>
+  <Step title="Otevřete Můj účet">
+    Přejděte na [myaccount.google.com](https://myaccount.google.com) a v případě potřeby se přihlaste.
+  </Step>
+  <Step title="Přejděte do Zabezpečení">
+    V levé navigační části klikněte na **Zabezpečení**.
+  </Step>
+  <Step title="Zahajte nastavení dvoufázového ověření">
+    V sekci **Jak se přihlašujete ke Googlu** klikněte na **Dvoufázové ověření** a poté na **Začít**.
+  </Step>
+  <Step title="Vyberte druhý faktor">
+    Google navrhne nejsilnější dostupnou metodu pro váš účet. Pro nejlepší zabezpečení zvolte **Autentizační aplikaci** — naskenujte QR kód pomocí Google Authenticator nebo jakékoli TOTP kompatibilní aplikace (Authy, 1Password atd.). Alternativně můžete použít hardwarový bezpečnostní klíč (FIDO2/WebAuthn) pro ještě silnější ochranu.
+  </Step>
+  <Step title="Potvrďte a uložte záložní kódy">
+    Dokončete výzvu k ověření, poté si stáhněte a uložte na bezpečné místo své **záložní kódy**. Tyto jednorázové kódy vám umožní znovu získat přístup, pokud ztratíte zařízení pro druhý faktor.
+  </Step>
+</Steps>
+
+## Omezení klíčů API
+
+Neomezený klíč API může použít kdokoli, kdo jej získá, z jakékoli aplikace k volání jakéhokoli Google API aktivovaného ve vašem projektu. Omezení zužují dopad, pokud dojde k vyzrazení klíče.
+
+| Typ omezení | Jak jej nastavit | Příklad |
+|---|---|---|
+| **HTTP referrery** | V Cloud Console: **Credentials → Edit key → Application restrictions → HTTP referrers** | Povolte pouze `https://yourdomain.com/*`, aby byl klíč odmítnut, pokud je použit z jiného webu |
+| **IP adresy** | V Cloud Console: **Credentials → Edit key → Application restrictions → IP addresses** | Povolte pouze statickou IP vašeho serveru (např. `203.0.113.42`), aby klíč fungoval pouze z vašeho backendu |
+| **Omezení API** | V Cloud Console: **Credentials → Edit key → API restrictions → Restrict key** | Omezte klíč na jediné API (např. Maps JavaScript API), aby nešel použít k volání Gmailu nebo Disku |
+
+Použijte všechny tři vrstvy kdekoli je to možné: omezte podle referreru nebo IP *a* uzamkněte klíč pouze na API, která skutečně potřebuje.
+
+## Rotace klíčů API
+
+I s nastavenými omezeními byste měli klíče pravidelně rotovat, nebo okamžitě, pokud máte podezření, že byl klíč kompromitován.
+
+1. V [Cloud Console](https://console.cloud.google.com) přejděte na **APIs & Services → Credentials**.
+2. Klikněte na **Create Credentials → API key** a vygenerujte nový klíč se stejnými omezeními jako starý.
+3. Aktualizujte konfiguraci své aplikace, aby používala nový klíč, a ověřte, že vše správně funguje.
+4. Vraťte se na stránku Credentials, klikněte na nabídku (⋮) starého klíče a vyberte **Delete**. Starý klíč okamžitě přestane fungovat.
+
+Vyhněte se výpadku služby tím, že se ujistíte, že nový klíč je nasazen a ověřen *před* smazáním starého.
+
+## Kontrola zabezpečení
+
+Kontrola zabezpečení Googlu vám na jednom místě poskytuje personalizovaný přehled o stavu zabezpečení vašeho účtu. Přejděte na [myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup) a zkontrolujte:
+
+- **Nedávné bezpečnostní události** — neznámá přihlášení nebo změny hesla.
+- **Vaše zařízení** — každé zařízení aktuálně přihlášené ke svému účtu s možností odebrat jakékoli, které nepoznáváte.
+- **Přístup aplikací třetích stran** — aplikace a služby, kterým byl udělen OAuth přístup k vašemu účtu, abyste mohli odvolat ty, které již nepoužíváte.
+- **Stav dvoufázového ověření** — potvrzení, že váš druhý faktor je aktivní a kterou metodu používáte.
+- **Nastavení Gmailu a Disku** — přesměrovací adresy, delegované účty a nastavení sdílení, která by mohla vystavit vaše data.
+
+Spouštějte Kontrolu zabezpečení alespoň jednou za čtvrtletí, a okamžitě po jakémkoli podezření na kompromitaci účtu.
+
+<Warning>
+Nikdy neukládejte klíče API, OAuth client secrets ani JSON soubory servisních účtů do zdrojového kódu — ani do soukromého repozitáře. Historie Gitu je trvalá, repozitáře se mohou omylem zveřejnit a automatizované scannery neustále sklízejí přihlašovací údaje z veřejných repozitářů. Ukládejte tajemství místo toho do proměnných prostředí nebo do vyhrazeného správce tajných klíčů a přidejte vzory souborů s přihlašovacími údaji (např. `*.json`, `.env`) do svého `.gitignore` ještě před prvním commitem.
+</Warning>
+
+<Tip>
+Pro produkční zátěže použijte [Google Cloud Secret Manager](https://cloud.google.com/secret-manager) k ukládání, verzování a auditování přístupu k přihlašovacím údajům. Secret Manager se nativně integruje s Cloud Run, Cloud Functions a GKE prostřednictvím IAM vazeb, takže vaše služby mohou získávat tajemství v době běhu, aniž by je někdy zapisovaly na disk nebo je zapékaly do obrazů kontejnerů.
+</Tip>

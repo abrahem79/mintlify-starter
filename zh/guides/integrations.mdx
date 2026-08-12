@@ -1,0 +1,82 @@
+---
+title: "将 Google API 和服务集成到你的应用中"
+sidebarTitle: "集成"
+description: "使用 OAuth 2.0、API 密钥和服务账户将 Google API 连接到你的应用。为常见集成模式提供分步设置。"
+---
+
+Google 通过 REST API 暴露了其大多数核心服务——Drive、Gmail、Sheets、日历、Maps 等——任何应用都可以调用。在编写第一个 API 请求之前，你需要决定应用如何进行身份验证：使用简单的 API 密钥访问公共数据、使用 OAuth 2.0 代表已登录用户执行操作，或使用服务账户进行自动化的服务器到服务器工作流。本指南解释每种选项，并带你完成每种方式的设置步骤。
+
+## 选择身份验证方法
+
+正确的身份验证方法取决于你的集成做什么以及它访问谁的数据。
+
+| 认证方法 | 典型用例 | 何时使用 | 是否需用户同意 |
+|---|---|---|---|
+| **API 密钥** | 读取公共数据（例如 Maps、YouTube 元数据） | 你的应用访问非敏感、公开可用的资源 | 否 |
+| **OAuth 2.0** | 代表已登录的 Google 用户执行操作 | 你的应用读写用户的 Drive 文件、Gmail、日历等 | 是——用户必须授权 |
+| **服务账户** | 无人机参与的服务器到服务器自动化 | 后端任务、数据管道、访问组织拥有的资源 | 否 |
+
+## OAuth 2.0 流程
+
+OAuth 2.0 是让用户在不共享密码的情况下授予应用对其 Google 数据的有限访问权限的标准。按以下步骤实现授权码流程。
+
+<Steps>
+  <Step title="在 Cloud Console 中创建 OAuth 客户端 ID">
+    打开 [Google Cloud Console](https://console.cloud.google.com)，导航到 **APIs & Services → Credentials**，点击 **Create Credentials → OAuth client ID**。选择 **Web application**（或与你应用匹配的平台），并添加你的授权重定向 URI。
+  </Step>
+  <Step title="配置授权页面">
+    前往 **APIs & Services → OAuth consent screen**。填写你的应用名称、支持邮箱以及你的应用将请求的作用域。作用域精确定义了你的应用可以访问的 Google 数据——仅请求你的应用真正需要的最少作用域。
+  </Step>
+  <Step title="将用户重定向到 Google 授权 URL">
+    当用户想要连接他们的 Google 账户时，将其重定向到 Google 的授权端点，并附上 `client_id`、请求的 `scope`、`redirect_uri` 和 `response_type=code`。Google 将显示你配置的授权页面。
+  </Step>
+  <Step title="用授权码交换令牌">
+    在用户同意后，Google 会带着一个短期有效的 `code` 参数重定向回你的 `redirect_uri`。在服务器端向 `https://oauth2.googleapis.com/token` 发起 POST 请求，附带 `code`、你的 `client_id`、`client_secret` 和 `redirect_uri`，以获取 `access_token`，以及（如果你请求了 `offline` 访问权限）一个 `refresh_token`。
+  </Step>
+  <Step title="使用 Bearer 令牌调用 API">
+    将 `access_token` 包含在每次 API 请求的 `Authorization` 头中。访问令牌一小时后过期——使用 `refresh_token` 自动获取新令牌，无需再次提示用户。
+  </Step>
+</Steps>
+
+## 服务账户
+
+服务账户是一种特殊的 Google 账户，属于你的应用而非某位用户。它使用私钥进行身份验证，适合后端服务、定时任务以及任何没有交互式用户的工作流。
+
+1. 在 Cloud Console 中，前往 **IAM & Admin → Service Accounts** 并点击 **Create Service Account**。
+2. 为账户指定一个描述性名称，并（可选地）为其授予反映其最小所需权限的 IAM 角色。
+3. 打开该服务账户，前往 **Keys** 选项卡，点击 **Add Key → Create new key**，选择 **JSON**。立即下载密钥文件——你无法再次下载它。
+4. 安全存储 JSON 密钥（请参阅[安全指南](/guides/security)了解最佳实践），并使用相应的 Google 客户端库在服务器端代码中加载它。
+
+要让服务账户访问特定的 Google Drive 文件夹或 Sheets 文件，请像与人类用户共享那样，将该资源共享给服务账户的邮箱地址（在 Cloud Console 中可见）。
+
+## 调用 API
+
+一旦你有了访问令牌，就将它作为 `Bearer` 令牌附在 HTTP 请求的 `Authorization` 头中。下面的例子列出用户 Google Drive 中的文件：
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+将 `YOUR_ACCESS_TOKEN` 替换为你从 OAuth 流程或使用服务账户密钥签署 JWT 后获得的令牌。响应是一个 JSON 对象，包含该已认证主体有权访问的文件列表。
+
+<Note>
+关于令牌作用域、刷新流程和令牌撤销处理的完整参考，请参阅[身份验证 API 参考](/api/authentication)。
+</Note>
+
+## 常见集成
+
+<CardGroup cols={2}>
+  <Card title="Google Drive API" icon="hard-drive">
+    在 Google Drive 中上传、下载、整理和共享文件与文件夹。支持可恢复上传、文件元数据查询和共享权限管理。
+  </Card>
+  <Card title="Gmail API" icon="envelope">
+    以编程方式读取、发送和管理邮件消息与会话。适合构建邮件自动化、支持工单接入或自定义收件箱客户端。
+  </Card>
+  <Card title="Google Sheets API" icon="table">
+    读写电子表格数据、格式化单元格、管理命名区域。常用于轻量数据存储、报表仪表板和表单到 Sheets 的数据管道。
+  </Card>
+  <Card title="Google Calendar API" icon="calendar">
+    创建、更新和删除日历事件并管理参与者。用于同步日程系统、发送会议邀请或构建可用时间查询工具。
+  </Card>
+</CardGroup>

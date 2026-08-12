@@ -1,0 +1,58 @@
+---
+title: "Nastavení účtu Google: Aktivace API a získání přihlašovacích údajů"
+sidebarTitle: "Nastavení účtu"
+description: "Vytvořte si účet Google, založte projekt v Cloud Console, aktivujte vybraná API a vygenerujte přihlašovací údaje pro autentizaci své aplikace."
+---
+
+Než budete moci používat vývojářská rozhraní API Googlu, potřebujete účet Google, Cloud projekt pro umístění svých prostředků a sadu přihlašovacích údajů, které bude vaše aplikace používat k autentizaci. Tento průvodce vás provede každým z těchto kroků, abyste byli připraveni provést své první volání API.
+
+## Kroky nastavení
+
+<Steps>
+  <Step title="Vytvořte si účet Google">
+    Pokud ještě nemáte účet Google, přejděte na [accounts.google.com/signup](https://accounts.google.com/signup) a vyplňte registrační formulář. Váš účet Google vám dává přístup ke každé službě Google, včetně Cloud Console, Gmailu, Disku a všech vývojářských API.
+  </Step>
+  <Step title="Přejděte do Google Cloud Console">
+    Přejděte na [Google Cloud Console](https://console.cloud.google.com) a přihlaste se svým účtem Google. Console je vaším centrálním místem pro správu projektů Google Cloud, aktivaci API a vytváření přihlašovacích údajů.
+  </Step>
+  <Step title="Vytvořte projekt">
+    1. Klikněte na výběr projektu v horní části stránky Console.
+    2. Klikněte na **New Project**.
+    3. Zadejte popisný **Project name** (například `my-search-app`).
+    4. V případě výzvy vyberte **Billing account**, poté klikněte na **Create**.
+
+    Všechna API a přihlašovací údaje, které vytvoříte, budou vázány na tento projekt, což usnadňuje samostatnou správu využití a fakturace pro každou aplikaci.
+  </Step>
+  <Step title="Aktivujte API">
+    1. V levé navigaci přejděte na **APIs & Services → Library**.
+    2. Vyhledejte API, které chcete použít (například **Custom Search API**, **Maps JavaScript API** nebo **Gmail API**).
+    3. Klikněte na název API a poté na **Enable**.
+
+    Tento krok opakujte pro každé Google API, které vaše aplikace potřebuje. Pouze aktivovaná API mohou přijímat požadavky s vašimi přihlašovacími údaji.
+  </Step>
+  <Step title="Vytvořte přihlašovací údaje (API klíč)">
+    1. Přejděte na **APIs & Services → Credentials**.
+    2. Klikněte na **Create Credentials** a vyberte **API key**.
+    3. Google okamžitě vygeneruje nový klíč API. Kliknutím na **Copy** jej zkopírujte do schránky.
+    4. Volitelně klikněte na **Edit API key** a omezte klíč na konkrétní API nebo na HTTP referrery a IP adresy — to je silně doporučeno pro produkční použití.
+
+    Klíč API uložte na bezpečné místo, například do proměnné prostředí nebo do správce tajných klíčů.
+  </Step>
+</Steps>
+
+<Note>
+  **Udržujte svůj klíč API v tajnosti.** Nikdy neukládejte klíč API do systému správy verzí ani jej nezpřístupňujte v kódu na straně klienta. Pokud dojde ke kompromitaci vašeho klíče, přejděte v Cloud Console do **APIs & Services → Credentials**, smažte postižený klíč a okamžitě vygenerujte nový.
+</Note>
+
+## Další kroky
+
+Nyní, když je váš účet a přihlašovací údaje nastaveny, jste připraveni začít stavět.
+
+<CardGroup cols={2}>
+  <Card title="Rychlý start" icon="rocket" href="/quickstart">
+    Proveďte své první volání API a během pár minut uvidíte živé výsledky vyhledávání
+  </Card>
+  <Card title="Autentizace" icon="lock" href="/api/authentication">
+    Naučte se pracovat s klíči API, OAuth 2.0 a servisními účty
+  </Card>
+</CardGroup>

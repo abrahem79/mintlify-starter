@@ -1,0 +1,109 @@
+---
+title: "Google REST API-er: Oversikt og kom-i-gang-veiledning"
+sidebarTitle: "Oversikt"
+description: "Introduksjon til Googles REST API-er: base-URL-er, versjonering, forespørsels- og svarformat, hastighetsgrenser og feilhåndtering for alle tjenester."
+---
+
+Google eksponerer et bredt utvalg av REST API-er som driver alt fra søk og produktivitet til skyinfrastruktur og maskinlæring. Enten du bygger en webapp, en mobilklient eller en backend-tjeneste, gir disse API-ene deg programmatisk tilgang til Googles plattform ved bruk av standard HTTP-forespørsler og JSON. Denne veiledningen dekker de grunnleggende konseptene du trenger før du gjør ditt første kall.
+
+## Base-URL
+
+Alle Google REST API-er serveres fra en felles base-URL:
+
+```text
+https://www.googleapis.com
+```
+
+Noen API-er har dedikerte vertsnavn (for eksempel `https://people.googleapis.com`), men de fleste følger mønsteret `https://www.googleapis.com/{api}/{version}/{resource}`.
+
+## API-versjonering
+
+Google API-er bruker **stibasert versjonering**. Versjonssegmentet vises umiddelbart etter API-navnet i URL-stien, for eksempel:
+
+| API | Versjonert endepunktsprefiks |
+|-----|-----------------------------|
+| Custom Search | `https://www.googleapis.com/customsearch/v1` |
+| Drive | `https://www.googleapis.com/drive/v3` |
+| OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |
+
+Når Google lanserer en ny hovedversjon, forblir den forrige versjonen tilgjengelig på sin opprinnelige sti til en offisiell frist for avvikling er kunngjort. Sikt alltid mot den siste stabile versjonen for nye integrasjoner.
+
+## Forespørselsformat
+
+Hvert API-kall må følge disse konvensjonene:
+
+- **Metode** — bruk HTTP-verbet som passer operasjonen (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`).
+- **Innholdstype** — inkluder `Content-Type: application/json` på forespørsler som bærer en body.
+- **Autorisasjon** — send legitimasjon i `Authorization`-headeren som en Bearer-token, eller via `key`-spørringsparameteren for API-nøkkel-autentiserte forespørsler:
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+```
+
+- **Body** — forespørselsbodyer må være gyldig JSON. Boolean-verdier skal være `true`/`false` (ikke strenger), og tidsstempler skal følge RFC 3339-format.
+
+## Svarformat
+
+Vellykkede svar returnerer HTTP `2xx`-statuskoder og en JSON-body. De fleste samlingsendepunkter følger en standard konvolutt:
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "items": [
+    { "id": "1BxiM...", "name": "Report.pdf" }
+  ]
+}
+```
+
+- **`kind`** — en navneromssatt streng som identifiserer ressurstypen (f.eks. `customsearch#search`, `drive#file`).
+- **`items`** — en matrise med ressursobjekter returnert av listeoperasjoner.
+- **`nextPageToken`** — til stede når flere sider med resultater finnes; send den som `pageToken` på neste forespørsel.
+
+## Hastighetsgrenser
+
+Hastighetsgrenser varierer per API og håndheves per prosjekt og per bruker. Når du overskrider en grense, returnerer API-et HTTP `429 Too Many Requests`. Du bør implementere eksponentiell back-off og retry-logikk i klienten din.
+
+<Tip>
+  Se [feilsøkingsveiledningen](/help/troubleshooting) for anbefalte retry-strategier og veiledning om å be om kvoteøkninger for arbeidsbelastninger med høyt volum.
+</Tip>
+
+## Feilsvar
+
+Alle API-feil følger en konsistent JSON-struktur, noe som gjør det enkelt å analysere og håndtere dem programmatisk:
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+| Felt | Beskrivelse |
+|-------|-------------|
+| `error.code` | HTTP-statuskoden for feilen. |
+| `error.message` | En menneskelesbar beskrivelse av hva som gikk galt. |
+| `error.status` | En maskinlesbar feilkodestreng. |
+
+Vanlige statusverdier inkluderer `PERMISSION_DENIED`, `NOT_FOUND`, `INVALID_ARGUMENT`, `UNAUTHENTICATED` og `RESOURCE_EXHAUSTED`.
+
+## Utforsk API-et
+
+<CardGroup cols={2}>
+  <Card title="Autentisering" icon="key" href="/api/authentication">
+    Lær hvordan du autentiserer med API-nøkler, OAuth 2.0-tokens og tjenestekontoer.
+  </Card>
+  <Card title="Søke-API" icon="magnifying-glass" href="/api/search">
+    Spør etter din programmerbare søkemotor og hent strukturerte nettresultater.
+  </Card>
+  <Card title="Kontoer-API" icon="user" href="/api/accounts">
+    Hent den autentiserte brukerens profil, e-post og identitetsdata.
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api/webhooks">
+    Abonner på push-varsler for sanntidshendelser for ressursendringer.
+  </Card>
+</CardGroup>

@@ -1,0 +1,58 @@
+---
+title: "Konfiguracja konta Google: włącz API i uzyskaj poświadczenia"
+sidebarTitle: "Konfiguracja konta"
+description: "Utwórz konto Google, skonfiguruj projekt w Cloud Console, włącz wybrane API i wygeneruj poświadczenia do uwierzytelniania swojej aplikacji."
+---
+
+Zanim będziesz mógł korzystać z API Google dla programistów, potrzebujesz konta Google, projektu Cloud, w którym umieścisz zasoby, oraz zestawu poświadczeń, których Twoja aplikacja użyje do uwierzytelniania. Ten przewodnik przeprowadzi Cię przez każdy z tych kroków, byś był gotowy do wykonania pierwszego wywołania API.
+
+## Kroki konfiguracji
+
+<Steps>
+  <Step title="Utwórz konto Google">
+    Jeśli nie masz jeszcze konta Google, przejdź do [accounts.google.com/signup](https://accounts.google.com/signup) i uzupełnij formularz rejestracyjny. Twoje konto Google daje dostęp do każdej usługi Google, w tym Cloud Console, Gmaila, Dysku i wszystkich API dla programistów.
+  </Step>
+  <Step title="Przejdź do Google Cloud Console">
+    Przejdź do [Google Cloud Console](https://console.cloud.google.com) i zaloguj się na swoje konto Google. Konsola jest Twoim centralnym miejscem zarządzania projektami Google Cloud, włączania API i tworzenia poświadczeń.
+  </Step>
+  <Step title="Utwórz projekt">
+    1. Kliknij selektor projektu w górnej części strony Konsoli.
+    2. Kliknij **New Project**.
+    3. Wprowadź opisową **Project name** (na przykład `my-search-app`).
+    4. Wybierz **Billing account**, jeśli zostaniesz o to poproszony, a następnie kliknij **Create**.
+
+    Wszystkie API i poświadczenia, które utworzysz, będą powiązane z tym projektem, co ułatwia zarządzanie użyciem i rozliczaniem osobno dla każdej aplikacji.
+  </Step>
+  <Step title="Włącz API">
+    1. W lewej nawigacji przejdź do **APIs & Services → Library**.
+    2. Wyszukaj API, którego chcesz użyć (np. **Custom Search API**, **Maps JavaScript API** lub **Gmail API**).
+    3. Kliknij nazwę API, a następnie kliknij **Enable**.
+
+    Powtórz ten krok dla każdego API Google, którego potrzebuje Twoja aplikacja. Tylko włączone API mogą odbierać żądania od Twoich poświadczeń.
+  </Step>
+  <Step title="Utwórz poświadczenia (klucz API)">
+    1. Przejdź do **APIs & Services → Credentials**.
+    2. Kliknij **Create Credentials** i wybierz **API key**.
+    3. Google natychmiast wygeneruje nowy klucz API. Kliknij **Copy**, aby skopiować go do schowka.
+    4. Opcjonalnie kliknij **Edit API key**, aby ograniczyć klucz do konkretnych API lub adresów odsyłających HTTP i adresów IP — jest to zdecydowanie zalecane w środowisku produkcyjnym.
+
+    Przechowuj klucz API w bezpiecznym miejscu, takim jak zmienna środowiskowa lub menedżer sekretów.
+  </Step>
+</Steps>
+
+<Note>
+  **Utrzymuj klucz API w tajemnicy.** Nigdy nie umieszczaj klucza API w systemie kontroli wersji ani nie ujawniaj go w kodzie po stronie klienta. Jeśli klucz zostanie skompromitowany, przejdź do **APIs & Services → Credentials** w Cloud Console, usuń dotknięty klucz i natychmiast wygeneruj nowy.
+</Note>
+
+## Następne kroki
+
+Skoro Twoje konto i poświadczenia są już skonfigurowane, jesteś gotowy do rozpoczęcia budowy.
+
+<CardGroup cols={2}>
+  <Card title="Szybki start" icon="rocket" href="/quickstart">
+    Wykonaj pierwsze wywołanie API i zobacz rzeczywiste wyniki wyszukiwania w kilka minut
+  </Card>
+  <Card title="Uwierzytelnianie" icon="lock" href="/api/authentication">
+    Poznaj klucze API, OAuth 2.0 i konta usługi
+  </Card>
+</CardGroup>

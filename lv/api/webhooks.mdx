@@ -1,0 +1,153 @@
+---
+title: "Google API tīmekļa āķi: spiedienpaziņojumu abonēšana"
+sidebarTitle: "Tīmekļa āķi"
+description: "Reģistrējiet Google Drive spiedienpaziņojumu kanālus, lai saņemtu reāllaika tīmekļa āķa atzvanus, kad faili vai resursi tiek izveidoti, atjaunināti vai dzēsti."
+---
+
+Tā vietā, lai atkārtoti aptaujātu API, lai pārbaudītu, vai resurss ir mainījies, varat izmantot Google spiedienpaziņojumu sistēmu, lai Google izsauktu jūsu serveri brīdī, kad izmaiņas notiek. Jūs reģistrējat **novērošanas kanālu**, kas norāda uz jūsu kontrolētu HTTPS galapunktu; pēc tam Google nosūta `POST` pieprasījumus uz šo galapunktu ikreiz, kad novērotais resurss tiek izveidots, atjaunināts vai dzēsts. Spiedienpaziņojumi ir pieejami Google Drive, Gmail, Kalendāram un vairākām citām API.
+
+<Warning>
+  Jūsu tīmekļa āķa galapunktam **jābūt** piegādātam caur HTTPS ar derīgu sertifikātu. Google nepiegādā paziņojumus uz vienkāršiem HTTP URL. Turklāt jūsu galapunktam ir jāatbild ar HTTP `200 OK` **10 sekunžu laikā** — atbildes, kuru laiks beidzas, tiek uzskatītas par neveiksmēm un var izraisīt to, ka Google pārtrauc piegādāt paziņojumus uz kanālu.
+</Warning>
+
+---
+
+## Kā darbojas spiedienpaziņojumi
+
+Plūsma darbojas četros soļos:
+
+1. **Reģistrēšana** — jūsu lietojumprogramma izsauc metodi `watch` uz resursa, ko vēlaties uzraudzīt, norādot sava galapunkta URL un unikālu kanāla ID.
+2. **Sinhronizācija** — Google apstiprina kanālu ar sākotnējo paziņojumu (`X-Goog-Resource-State: sync`).
+3. **Saņemšana** — Google nosūta `POST` pieprasījumu uz jūsu galapunktu katru reizi, kad resurss mainās.
+4. **Atjaunināšana vai apturēšana** — kanāliem ir derīguma termiņš. Jums jāreģistrējas atkārtoti pirms tā beigām vai skaidri jāaptur tie, kad tie vairs nav nepieciešami.
+
+---
+
+## Reģistrējiet novērošanas kanālu
+
+Zemāk esošais piemērs reģistrē novērošanu visiem failiem Google Drive. Citas API seko tam pašam modelim ar dažādiem galapunktu ceļiem.
+
+**Galapunkts**
+
+```http
+POST https://www.googleapis.com/drive/v3/files/watch
+```
+
+### Pieprasījuma ķermeņa parametri
+
+<ParamField body="id" type="string" required>
+  UUID vai cita unikāla virkne, ko ģenerējat, lai identificētu šo kanālu. Google atbalsojas šo vērtību katrā paziņojumā, lai jūs varētu to novirzīt uz pareizo apstrādātāju.
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  Paziņojumu piegādes mehānisms. Jābūt `"web_hook"` HTTPS spiediena piegādei.
+</ParamField>
+
+<ParamField body="address" type="string" required>
+  Jūsu tīmekļa āķa galapunkta pilnvērtīgs HTTPS URL. Google `POST` paziņojumus uz šo URL.
+</ParamField>
+
+<ParamField body="expiration" type="integer">
+  Unix laikspiedols **milisekundēs**, kas norāda, kad kanālam jābeidzas. Ja izlaists, Google piemēro noklusējuma termiņu (parasti līdz 7 dienām). Kanāls jāreģistrē atkārtoti pirms šī laika, lai izvairītos no paziņojumu palaišanas garām.
+</ParamField>
+
+### Pieprasījuma piemērs
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1893456000000
+  }'
+```
+
+### Atbildes piemērs
+
+```json
+{
+  "kind": "api#channel",
+  "id": "my-channel-01",
+  "resourceId": "o3hgv1538sdjfh",
+  "resourceUri": "https://www.googleapis.com/drive/v3/files?...",
+  "expiration": "1893456000000"
+}
+```
+
+Saglabājiet vērtību `resourceId` — tā nepieciešama, lai vēlāk apturētu kanālu.
+
+---
+
+## Ienākošie pieprasījuma galvenes
+
+Kad Google piegādā paziņojumu uz jūsu galapunktu, `POST` pieprasījums ietver šādas pielāgotas galvenes:
+
+| Galvene | Apraksts |
+|--------|-------------|
+| `X-Goog-Channel-ID` | Kanāla `id`, ko norādījāt reģistrējoties. Izmantojiet to, lai identificētu, kura novērošana izraisīja paziņojumu. |
+| `X-Goog-Resource-State` | Notikušo izmaiņu tips. Izplatītas vērtības: `sync` (sākotnējais apstiprinājums), `add`, `update`, `remove`, `trash`, `untrash`, `change`. |
+| `X-Goog-Changed` | Ar komatiem atdalīts to īpašību saraksts, kas mainījās (piemēram, `content,properties`). Klāt paziņojumos `update`. |
+| `X-Goog-Resource-ID` | Google iekšējais identifikators novērotajam resursam. |
+| `X-Goog-Resource-URI` | API URL resursam, kas mainījās. |
+| `X-Goog-Message-Number` | Monotoniski augošs vesels skaitlis katram ziņojumam kanālā. Sinhronizācijas ziņojums vienmēr ir `1`. |
+
+<Note>
+  Paziņojuma ķermenis apzināti ir **tukšs** — Google jums saka, ka kaut kas ir mainījies, bet ne kas ir mainījies. Jums jāizmanto galvene `X-Goog-Resource-URI`, lai veiktu sekojošu API pieprasījumu un iegūtu atjaunināto resursu.
+</Note>
+
+---
+
+## Kanāla apturēšana
+
+Lai pārtrauktu saņemt paziņojumus un atbrīvotu kanālu pirms tā termiņa beigām, nosūtiet `POST` pieprasījumu uz apturēšanas galapunktu:
+
+```http
+POST https://www.googleapis.com/drive/v3/channels/stop
+```
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/channels/stop" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "resourceId": "o3hgv1538sdjfh"
+  }'
+```
+
+Veiksmīga atbilde atgriež HTTP `204 No Content` ar tukšu ķermeni. Pēc kanāla apturēšanas Google nekavējoties pārtrauc piegādāt paziņojumus uz jūsu galapunktu šim kanālam.
+
+---
+
+## Kanāla derīguma termiņš un atjaunošana
+
+Visiem novērošanas kanāliem beidzas termiņš — vai nu norādītajā `expiration` laikspiedolā, vai Google paša maksimumā (kas atšķiras atkarībā no API). Kad kanāla termiņš beidzas, Google pārtrauc sūtīt paziņojumus, un jūs palaidīsit garām izmaiņas, līdz reģistrēsit jaunu kanālu.
+
+**Ieteicamā atjaunošanas stratēģija:**
+
+1. Saglabājiet vērtību `expiration`, kas tiek atgriezta, reģistrējot katru kanālu.
+2. Ieplānojiet uzdevumu, lai reģistrētu kanālu atkārtoti vismaz **24 stundas pirms** tā termiņa beigām.
+3. Pēc veiksmīgas jaunā kanāla reģistrēšanas apturiet veco.
+
+```bash
+# Re-register with a new channel ID and updated expiration
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-02",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1925000000000
+  }'
+```
+
+<Tip>
+  Izmantojiet UUID ģeneratoru (piemēram, `uuidgen` operētājsistēmās macOS/Linux), lai izveidotu unikālus kanālu ID. ID atkārtota izmantošana pirms iepriekšējā kanāla apturēšanas var izraisīt konfliktus vai dublējošus paziņojumus.
+</Tip>

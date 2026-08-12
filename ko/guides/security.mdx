@@ -1,0 +1,72 @@
+---
+title: "Google 계정 및 개발자 자격 증명 보호하기"
+sidebarTitle: "보안"
+description: "2단계 인증으로 Google 계정을 보호하고, API 키 제한을 관리하며, 자격 증명 보안 모범 사례를 따르세요."
+---
+
+여러분의 Google 계정은 이메일, 문서, 클라우드 인프라, API 자격 증명에 대한 열쇠입니다 — 여러분이 관리하는 자산 중 가장 가치 있고 자주 표적이 되는 것 중 하나입니다. 이를 보호하려면 강력한 인증으로 계정을 잠그는 것과, 애플리케이션이 의존하는 API 키 및 서비스 계정 자격 증명을 비밀번호와 동일한 주의로 다루는 것이 모두 필요합니다. 이 가이드는 둘 다 강화하기 위한 필수 단계를 다룹니다.
+
+## 2단계 인증
+
+2단계 인증(2SV)은 비밀번호 위에 두 번째 신원 증명을 추가하므로, 도난당한 비밀번호만으로는 계정에 접근할 수 없습니다. Google은 인증기 앱을 두 번째 요소로 사용하는 것을 권장합니다. 이는 코드를 오프라인에서 생성하며 SMS와 달리 SIM 스와핑 공격에 취약하지 않기 때문입니다.
+
+<Steps>
+  <Step title="내 계정 열기">
+    [myaccount.google.com](https://myaccount.google.com)으로 이동하고 요청되면 로그인하세요.
+  </Step>
+  <Step title="보안으로 이동">
+    왼쪽 탐색 패널에서 **보안**을 클릭하세요.
+  </Step>
+  <Step title="2단계 인증 설정 시작">
+    **Google에 로그인하는 방법** 섹션 아래에서 **2단계 인증**을 클릭한 다음 **시작하기**를 클릭하세요.
+  </Step>
+  <Step title="두 번째 요소 선택">
+    Google이 계정에 사용 가능한 가장 강력한 방법을 제안합니다. 최고의 보안을 위해 **인증기 앱**을 선택하세요 — Google Authenticator나 다른 TOTP 호환 앱(Authy, 1Password 등)으로 QR 코드를 스캔하세요. 대안으로 훨씬 더 강력한 보호를 위해 하드웨어 보안 키(FIDO2/WebAuthn)를 사용할 수 있습니다.
+  </Step>
+  <Step title="확인 및 백업 코드 저장">
+    확인 프롬프트를 완료한 다음 **백업 코드**를 다운로드해 안전한 위치에 보관하세요. 이 일회용 코드는 두 번째 요소 기기를 잃어버렸을 때 다시 접근할 수 있게 해줍니다.
+  </Step>
+</Steps>
+
+## API 키 제한
+
+제한되지 않은 API 키는 이를 얻은 누구든지 어떤 애플리케이션에서 프로젝트에서 활성화된 모든 Google API를 호출하는 데 사용할 수 있습니다. 제한은 키가 노출되었을 때 피해 범위를 좁힙니다.
+
+| 제한 유형 | 설정 방법 | 예시 |
+|---|---|---|
+| **HTTP 리퍼러** | Cloud Console: **Credentials → Edit key → Application restrictions → HTTP referrers** | `https://yourdomain.com/*`만 허용해 다른 사이트에서 사용되면 키가 거부되도록 함 |
+| **IP 주소** | Cloud Console: **Credentials → Edit key → Application restrictions → IP addresses** | 서버의 정적 IP만 허용(예: `203.0.113.42`)해 키가 백엔드에서만 작동하도록 함 |
+| **API 제한** | Cloud Console: **Credentials → Edit key → API restrictions → Restrict key** | 키를 단일 API(예: Maps JavaScript API)로 제한해 Gmail이나 Drive를 호출하는 데 사용할 수 없도록 함 |
+
+가능한 모든 곳에서 세 계층 모두를 적용하세요: 리퍼러 또는 IP로 제한하고 *동시에* 키를 실제로 필요한 API로만 잠그세요.
+
+## API 키 로테이션
+
+제한을 두더라도 키를 주기적으로 로테이션하거나 키가 손상된 것으로 의심되면 즉시 로테이션해야 합니다.
+
+1. [Cloud Console](https://console.cloud.google.com)에서 **APIs & Services → Credentials**로 이동하세요.
+2. **Create Credentials → API key**를 클릭해 이전 키와 동일한 제한이 적용된 새 키를 생성하세요.
+3. 애플리케이션 구성을 업데이트해 새 키를 사용하도록 하고 모든 것이 올바르게 작동하는지 확인하세요.
+4. Credentials 페이지로 돌아가 이전 키의 오버플로 메뉴(**⋮**)를 클릭하고 **Delete**를 선택하세요. 이전 키는 즉시 작동을 멈춥니다.
+
+이전 키를 삭제하기 *전에* 새 키가 배포되고 검증되도록 하여 서비스 공백을 피하세요.
+
+## Security Checkup
+
+Google의 Security Checkup은 한 곳에서 계정의 보안 상태에 대한 맞춤형 개요를 제공합니다. [myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup)을 방문해 다음을 검토하세요:
+
+- **최근 보안 이벤트** — 낯선 로그인이나 비밀번호 변경.
+- **기기** — 계정에 현재 로그인된 모든 기기, 낯선 것을 제거할 수 있는 옵션과 함께.
+- **서드파티 앱 접근** — 계정에 OAuth 접근 권한이 부여된 앱과 서비스, 더 이상 사용하지 않는 것을 취소할 수 있음.
+- **2단계 인증 상태** — 두 번째 요소가 활성 상태이며 어떤 방법을 사용하고 있는지 확인.
+- **Gmail 및 Drive 설정** — 데이터를 노출할 수 있는 전달 주소, 위임 계정, 공유 설정.
+
+분기에 최소 한 번, 그리고 계정 손상이 의심되는 경우 즉시 Security Checkup을 실행하세요.
+
+<Warning>
+API 키, OAuth 클라이언트 시크릿 또는 서비스 계정 JSON 파일을 소스 코드에 절대 커밋하지 마세요 — 비공개 저장소라 하더라도. Git 히스토리는 영구적이고, 저장소는 실수로 공개될 수 있으며, 자동화된 스캐너는 공개 저장소에서 자격 증명을 지속적으로 수집합니다. 대신 환경 변수나 전용 시크릿 매니저에 시크릿을 저장하고, 첫 커밋 전에 자격 증명 파일 패턴(예: `*.json`, `.env`)을 `.gitignore`에 추가하세요.
+</Warning>
+
+<Tip>
+프로덕션 워크로드에는 [Google Cloud Secret Manager](https://cloud.google.com/secret-manager)를 사용해 자격 증명을 저장, 버전 관리, 접근 감사하세요. Secret Manager는 IAM 바인딩을 통해 Cloud Run, Cloud Functions, GKE와 기본적으로 통합되므로, 서비스가 시크릿을 디스크에 쓰거나 컨테이너 이미지에 굽지 않고도 런타임에 검색할 수 있습니다.
+</Tip>

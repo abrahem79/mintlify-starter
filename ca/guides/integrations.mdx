@@ -1,0 +1,82 @@
+---
+title: "Integra les API i serveis de Google a la teva aplicació"
+sidebarTitle: "Integracions"
+description: "Connecta les API de Google a la teva aplicació utilitzant OAuth 2.0, claus d'API i comptes de servei. Configuració pas a pas per a patrons d'integració habituals."
+---
+
+Google exposa la majoria dels seus serveis principals —Drive, Gmail, Sheets, Calendar, Maps i més— a través d'API REST que qualsevol aplicació pot cridar. Abans d'escriure la teva primera petició d'API, has de decidir com s'autenticarà la teva aplicació: utilitzant una simple clau d'API per a dades públiques, OAuth 2.0 per a accions en nom d'un usuari que ha iniciat sessió, o un compte de servei per a fluxos de treball automatitzats servidor a servidor. Aquesta guia explica cada opció i et guia pels passos de configuració de cadascuna.
+
+## Escull el teu mètode d'autenticació
+
+El mètode d'autenticació correcte depèn del que fa la teva integració i a les dades de qui accedeix.
+
+| Mètode d'autenticació | Cas d'ús típic | Quan utilitzar-lo | Consentiment de l'usuari requerit |
+|---|---|---|---|
+| **Clau d'API** | Llegir dades públiques (p. ex., Maps, metadades de YouTube) | La teva aplicació accedeix a recursos no sensibles i disponibles públicament | No |
+| **OAuth 2.0** | Actuar en nom d'un usuari de Google que ha iniciat sessió | La teva aplicació llegeix o escriu fitxers de Drive, Gmail, Calendar, etc. d'un usuari | Sí — l'usuari ha de concedir permís |
+| **Compte de servei** | Automatització servidor a servidor sense usuari humà implicat | Tasques de backend, canonades de dades, accés a recursos que la teva organització posseeix | No |
+
+## Flux OAuth 2.0
+
+OAuth 2.0 és l'estàndard per permetre als usuaris concedir a la teva aplicació accés limitat a les seves dades de Google sense compartir la seva contrasenya. Segueix aquests passos per implementar el flux Authorization Code.
+
+<Steps>
+  <Step title="Crea un ID de client OAuth a la Cloud Console">
+    Obre la [Google Cloud Console](https://console.cloud.google.com), navega a **APIs & Services → Credentials** i fes clic a **Create Credentials → OAuth client ID**. Escull **Web application** (o la plataforma que coincideixi amb la teva aplicació) i afegeix els teus URI de redirecció autoritzats.
+  </Step>
+  <Step title="Configura la pantalla de consentiment">
+    Vés a **APIs & Services → OAuth consent screen**. Emplena el nom de la teva aplicació, el correu de suport i els àmbits que la teva aplicació sol·licitarà. Els àmbits defineixen exactament a quines dades de Google pot accedir la teva aplicació: sol·licita només el mínim que necessiti la teva aplicació.
+  </Step>
+  <Step title="Redirigeix els usuaris a l'URL d'autorització de Google">
+    Quan un usuari vulgui connectar el seu compte de Google, redirigeix-lo a l'endpoint d'autorització de Google amb el teu `client_id`, `scope` sol·licitat, `redirect_uri` i `response_type=code`. Google mostrarà la pantalla de consentiment que has configurat.
+  </Step>
+  <Step title="Bescanvia el codi d'autorització per tokens">
+    Després que l'usuari aprovi, Google redirigeix de tornada al teu `redirect_uri` amb un paràmetre `code` de curta durada. Fes una petició POST del costat del servidor a `https://oauth2.googleapis.com/token` amb el codi, el teu `client_id`, `client_secret` i `redirect_uri` per rebre un `access_token` i (si has sol·licitat accés `offline`) un `refresh_token`.
+  </Step>
+  <Step title="Crida l'API amb un token Bearer">
+    Inclou l'`access_token` a la capçalera `Authorization` de cada petició d'API. Els tokens d'accés caduquen al cap d'una hora: utilitza el `refresh_token` per obtenir-ne un de nou automàticament sense tornar a demanar-ho a l'usuari.
+  </Step>
+</Steps>
+
+## Comptes de servei
+
+Un compte de servei és un compte de Google especial que pertany a la teva aplicació en lloc d'a un usuari individual. S'autentica amb una clau privada, cosa que el fa ideal per a serveis de backend, tasques programades i qualsevol flux de treball on no hi ha usuari interactiu.
+
+1. A la Cloud Console, vés a **IAM & Admin → Service Accounts** i fes clic a **Create Service Account**.
+2. Dona al compte un nom descriptiu i, opcionalment, concedeix-li un rol d'IAM que reflecteixi els permisos mínims que necessita.
+3. Obre el compte de servei, vés a la pestanya **Keys**, fes clic a **Add Key → Create new key** i selecciona **JSON**. Descarrega el fitxer de clau immediatament: no el podràs tornar a descarregar.
+4. Desa la clau JSON de manera segura (consulta la [Guia de seguretat](/guides/security) per a les millors pràctiques) i carrega-la al codi del costat del servidor utilitzant la biblioteca client de Google adequada.
+
+Per permetre que un compte de servei accedeixi a una carpeta específica de Google Drive o a un fitxer de Sheets, comparteix aquest recurs amb l'adreça de correu electrònic del compte de servei (visible a la Cloud Console) exactament com faries amb un usuari humà.
+
+## Crida a les API
+
+Un cop tinguis un token d'accés, adjunta'l com a token `Bearer` a la capçalera `Authorization` de la teva petició HTTP. Aquí tens un exemple que llista fitxers al Google Drive d'un usuari:
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+Substitueix `YOUR_ACCESS_TOKEN` pel token que has rebut del flux OAuth o de signar un JWT amb la clau del teu compte de servei. La resposta és un objecte JSON que conté la llista de fitxers a què el principal autenticat té accés.
+
+<Note>
+Per veure la referència completa sobre àmbits de tokens, fluxos de refresc i gestió de revocació de tokens, consulta la [referència de l'API d'autenticació](/api/authentication).
+</Note>
+
+## Integracions populars
+
+<CardGroup cols={2}>
+  <Card title="Google Drive API" icon="hard-drive">
+    Puja, descarrega, organitza i comparteix fitxers i carpetes a Google Drive. Admet càrregues resumibles, consultes de metadades de fitxers i gestió de permisos de compartició.
+  </Card>
+  <Card title="Gmail API" icon="envelope">
+    Llegeix, envia i gestiona missatges i fils de correu electrònic programàticament. Ideal per construir automatització de correu, ingesta de tiquets de suport o clients d'inbox personalitzats.
+  </Card>
+  <Card title="Google Sheets API" icon="table">
+    Llegeix i escriu dades de fulls de càlcul, formata cel·les i gestiona rangs amb nom. Utilitzat habitualment per a emmagatzematge de dades lleuger, taulers de reporting i canonades de formulari a full.
+  </Card>
+  <Card title="Google Calendar API" icon="calendar">
+    Crea, actualitza i elimina esdeveniments de calendari i gestiona assistents. Utilitza'l per sincronitzar sistemes de planificació, enviar invitacions a reunions o construir eines de disponibilitat.
+  </Card>
+</CardGroup>

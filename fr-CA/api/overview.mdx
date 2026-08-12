@@ -1,0 +1,109 @@
+---
+title: "API REST de Google : aperçu et guide de démarrage"
+sidebarTitle: "Aperçu"
+description: "Introduction aux API REST de Google : URL de base, versionnage, format des requêtes et des réponses, limites de débit et gestion des erreurs pour tous les services."
+---
+
+Google expose une vaste suite d'API REST qui alimentent tout, de la recherche et de la productivité à l'infrastructure infonuagique et à l'apprentissage automatique. Que vous conceviez une application Web, un client mobile ou un service d'arrière-plan, ces API vous offrent un accès programmatique à la plateforme Google au moyen de requêtes HTTP standard et de JSON. Ce guide couvre les concepts fondamentaux à connaître avant votre premier appel.
+
+## URL de base
+
+Toutes les API REST de Google sont servies à partir d'une URL de base commune :
+
+```text
+https://www.googleapis.com
+```
+
+Certaines API ont des noms d'hôtes dédiés (par exemple, `https://people.googleapis.com`), mais la majorité suit le modèle `https://www.googleapis.com/{api}/{version}/{resource}`.
+
+## Versionnage des API
+
+Les API Google utilisent le **versionnage basé sur le chemin**. Le segment de version apparaît immédiatement après le nom de l'API dans le chemin d'URL, par exemple :
+
+| API | Préfixe de point de terminaison avec version |
+|-----|-----------------------------|
+| Custom Search | `https://www.googleapis.com/customsearch/v1` |
+| Drive | `https://www.googleapis.com/drive/v3` |
+| OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |
+
+Lorsque Google publie une nouvelle version majeure, la version précédente demeure accessible à son chemin d'origine jusqu'à ce qu'une date officielle de désuétude soit annoncée. Ciblez toujours la dernière version stable pour les nouvelles intégrations.
+
+## Format des requêtes
+
+Chaque appel d'API doit respecter ces conventions :
+
+- **Méthode** — utilisez le verbe HTTP approprié à l'opération (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`).
+- **Type de contenu** — incluez `Content-Type: application/json` sur les requêtes qui portent un corps.
+- **Autorisation** — transmettez les identifiants dans l'en-tête `Authorization` en tant que jeton porteur, ou via le paramètre de requête `key` pour les requêtes authentifiées par clé d'API :
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+```
+
+- **Corps** — les corps de requête doivent être du JSON valide. Les valeurs booléennes doivent être `true`/`false` (et non des chaînes), et les horodatages doivent suivre le format RFC 3339.
+
+## Format des réponses
+
+Les réponses réussies renvoient un code d'état HTTP `2xx` et un corps JSON. La plupart des points de terminaison de collection suivent une enveloppe standard :
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "items": [
+    { "id": "1BxiM...", "name": "Report.pdf" }
+  ]
+}
+```
+
+- **`kind`** — chaîne à espace de nom qui identifie le type de ressource (p. ex. `customsearch#search`, `drive#file`).
+- **`items`** — tableau des objets ressource renvoyés par les opérations de liste.
+- **`nextPageToken`** — présent lorsqu'il existe d'autres pages de résultats; transmettez-le en tant que `pageToken` à la requête suivante.
+
+## Limites de débit
+
+Les limites de débit varient selon l'API et sont appliquées par projet et par utilisateur. Lorsque vous dépassez une limite, l'API renvoie HTTP `429 Too Many Requests`. Vous devriez implémenter une logique de repli exponentiel et de nouvelle tentative dans votre client.
+
+<Tip>
+  Consultez le [guide de dépannage](/help/troubleshooting) pour connaître les stratégies de nouvelle tentative recommandées et les conseils pour demander une augmentation de quota pour les charges de travail à volume élevé.
+</Tip>
+
+## Réponses d'erreur
+
+Toutes les erreurs d'API suivent une structure JSON cohérente, ce qui facilite leur analyse et leur traitement programmatiques :
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+| Champ | Description |
+|-------|-------------|
+| `error.code` | Le code d'état HTTP de l'erreur. |
+| `error.message` | Une description lisible par l'humain de ce qui s'est mal passé. |
+| `error.status` | Une chaîne de code d'erreur lisible par la machine. |
+
+Les valeurs d'état courantes comprennent `PERMISSION_DENIED`, `NOT_FOUND`, `INVALID_ARGUMENT`, `UNAUTHENTICATED` et `RESOURCE_EXHAUSTED`.
+
+## Explorer l'API
+
+<CardGroup cols={2}>
+  <Card title="Authentification" icon="key" href="/api/authentication">
+    Découvrez comment s'authentifier avec des clés d'API, des jetons OAuth 2.0 et des comptes de service.
+  </Card>
+  <Card title="API Search" icon="magnifying-glass" href="/api/search">
+    Interrogez votre Programmable Search Engine et récupérez des résultats Web structurés.
+  </Card>
+  <Card title="API Accounts" icon="user" href="/api/accounts">
+    Récupérez le profil, l'adresse courriel et les données d'identité de l'utilisateur authentifié.
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api/webhooks">
+    Abonnez-vous à des notifications poussées pour les événements de changement de ressource en temps réel.
+  </Card>
+</CardGroup>

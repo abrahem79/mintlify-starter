@@ -1,0 +1,82 @@
+---
+title: "Intégrer les API et services Google à votre application"
+sidebarTitle: "Intégrations"
+description: "Connectez les API Google à votre application en utilisant OAuth 2.0, des clés d'API et des comptes de service. Configuration étape par étape pour les modèles d'intégration courants."
+---
+
+Google expose la plupart de ses services principaux — Drive, Gmail, Sheets, Calendar, Maps, et plus — par des API REST que toute application peut appeler. Avant d'écrire votre première requête API, vous devez décider comment votre application s'authentifiera : à l'aide d'une simple clé d'API pour les données publiques, d'OAuth 2.0 pour des actions au nom d'un utilisateur connecté, ou d'un compte de service pour des flux automatisés de serveur à serveur. Ce guide explique chaque option et vous accompagne dans les étapes de configuration.
+
+## Choisir votre méthode d'authentification
+
+La bonne méthode d'authentification dépend de ce que fait votre intégration et des données auxquelles elle accède.
+
+| Méthode d'auth. | Cas d'utilisation typique | Quand l'utiliser | Consentement utilisateur requis |
+|---|---|---|---|
+| **Clé d'API** | Lecture de données publiques (p. ex. Maps, métadonnées YouTube) | Votre application accède à des ressources non sensibles et accessibles publiquement | Non |
+| **OAuth 2.0** | Agir au nom d'un utilisateur Google connecté | Votre application lit ou écrit les fichiers Drive, Gmail, Calendar, etc. d'un utilisateur | Oui — l'utilisateur doit accorder la permission |
+| **Compte de service** | Automatisation serveur à serveur sans intervention humaine | Tâches d'arrière-plan, pipelines de données, accès aux ressources détenues par votre organisation | Non |
+
+## Flux OAuth 2.0
+
+OAuth 2.0 est la norme pour permettre aux utilisateurs d'accorder à votre application un accès limité à leurs données Google sans partager leur mot de passe. Suivez ces étapes pour implémenter le flux Authorization Code.
+
+<Steps>
+  <Step title="Créer un identifiant client OAuth dans la console Cloud">
+    Ouvrez la [console Google Cloud](https://console.cloud.google.com), accédez à **APIs & Services → Credentials** et cliquez sur **Create Credentials → OAuth client ID**. Choisissez **Web application** (ou la plateforme correspondant à votre application) et ajoutez vos URI de redirection autorisés.
+  </Step>
+  <Step title="Configurer l'écran de consentement">
+    Allez à **APIs & Services → OAuth consent screen**. Renseignez le nom de votre application, un courriel d'assistance et les portées que votre application demandera. Les portées définissent exactement quelles données Google votre application peut consulter — ne demandez que le minimum nécessaire.
+  </Step>
+  <Step title="Rediriger les utilisateurs vers l'URL d'autorisation Google">
+    Lorsqu'un utilisateur veut connecter son compte Google, redirigez-le vers le point de terminaison d'autorisation de Google avec votre `client_id`, la `scope` demandée, le `redirect_uri` et `response_type=code`. Google affichera l'écran de consentement que vous avez configuré.
+  </Step>
+  <Step title="Échanger le code d'autorisation contre des jetons">
+    Après que l'utilisateur a approuvé, Google redirige vers votre `redirect_uri` avec un paramètre `code` de courte durée. Effectuez une requête POST côté serveur à `https://oauth2.googleapis.com/token` avec le code, votre `client_id`, votre `client_secret` et le `redirect_uri` pour recevoir un `access_token` et (si vous avez demandé l'accès `offline`) un `refresh_token`.
+  </Step>
+  <Step title="Appeler l'API avec un jeton porteur">
+    Incluez l'`access_token` dans l'en-tête `Authorization` de chaque requête API. Les jetons d'accès expirent après une heure — utilisez le `refresh_token` pour en obtenir un nouveau automatiquement sans redemander à l'utilisateur.
+  </Step>
+</Steps>
+
+## Comptes de service
+
+Un compte de service est un compte Google spécial qui appartient à votre application plutôt qu'à un utilisateur individuel. Il s'authentifie avec une clé privée, ce qui le rend idéal pour les services d'arrière-plan, les tâches planifiées et tout flux sans utilisateur interactif.
+
+1. Dans la console Cloud, allez à **IAM & Admin → Service Accounts** et cliquez sur **Create Service Account**.
+2. Donnez au compte un nom descriptif et, facultativement, accordez-lui un rôle IAM qui reflète les permissions minimales dont il a besoin.
+3. Ouvrez le compte de service, allez à l'onglet **Keys**, cliquez sur **Add Key → Create new key** et sélectionnez **JSON**. Téléchargez le fichier de clé immédiatement — vous ne pouvez plus le télécharger par la suite.
+4. Stockez la clé JSON en toute sécurité (voir le [guide de sécurité](/guides/security) pour les bonnes pratiques) et chargez-la dans votre code côté serveur à l'aide de la bibliothèque cliente Google appropriée.
+
+Pour permettre à un compte de service d'accéder à un dossier Google Drive ou à un fichier Sheets précis, partagez cette ressource avec l'adresse courriel du compte de service (visible dans la console Cloud) exactement comme vous le feriez avec un utilisateur humain.
+
+## Appeler les API
+
+Une fois que vous avez un jeton d'accès, joignez-le en tant que jeton `Bearer` dans l'en-tête `Authorization` de votre requête HTTP. Voici un exemple qui liste les fichiers du Google Drive d'un utilisateur :
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+Remplacez `YOUR_ACCESS_TOKEN` par le jeton que vous avez reçu du flux OAuth ou de la signature d'un JWT avec votre clé de compte de service. La réponse est un objet JSON contenant la liste des fichiers auxquels le principal authentifié a accès.
+
+<Note>
+Pour la référence complète sur les portées de jeton, les flux de rafraîchissement et le traitement de la révocation, consultez la [référence de l'API d'authentification](/api/authentication).
+</Note>
+
+## Intégrations populaires
+
+<CardGroup cols={2}>
+  <Card title="API Google Drive" icon="hard-drive">
+    Téléversez, téléchargez, organisez et partagez des fichiers et dossiers dans Google Drive. Prend en charge les téléversements reprenables, les requêtes de métadonnées de fichier et la gestion des permissions de partage.
+  </Card>
+  <Card title="API Gmail" icon="envelope">
+    Lisez, envoyez et gérez les messages et fils de courriels de façon programmatique. Idéal pour bâtir de l'automatisation de courriel, l'ingestion de billets d'assistance ou des clients de boîte de réception personnalisés.
+  </Card>
+  <Card title="API Google Sheets" icon="table">
+    Lisez et écrivez des données de feuille de calcul, formatez des cellules et gérez les plages nommées. Couramment utilisée pour du stockage de données léger, des tableaux de bord de rapports et des pipelines formulaire-vers-feuille.
+  </Card>
+  <Card title="API Google Calendar" icon="calendar">
+    Créez, mettez à jour et supprimez des événements d'agenda et gérez les participants. Utilisez-la pour synchroniser des systèmes de planification, envoyer des invitations à des réunions ou bâtir des outils de disponibilité.
+  </Card>
+</CardGroup>

@@ -1,0 +1,45 @@
+---
+title: "FAQ usług Google: konta, API, rozliczenia i prywatność"
+sidebarTitle: "FAQ"
+description: "Odpowiedzi na częste pytania dotyczące kont Google, limitów przechowywania, Workspace, kluczy API, rozliczeń, prywatności danych oraz limitów szybkości dla programistów."
+---
+
+Niezależnie od tego, czy jesteś nowym użytkownikiem Google, czy doświadczonym programistą pracującym z API Google, prawdopodobnie napotkasz pytania o to, jak działają konta, przechowywanie, rozliczenia i kontrole dostępu. Ta strona zbiera odpowiedzi na najczęściej zadawane pytania dotyczące produktów konsumenckich Google, aplikacji Workspace i platformy programistycznej — abyś mógł szybko uzyskać odpowiedzi bez przekopywania się przez wiele centrów pomocy.
+
+<AccordionGroup>
+  <Accordion title="Jak zresetować hasło do konta Google?">
+    Hasło Google możesz zresetować na stronie odzyskiwania konta pod adresem [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery). Wprowadź adres e-mail powiązany z Twoim kontem i postępuj zgodnie z instrukcjami — Google wyśle kod weryfikacyjny na Twój zapasowy e-mail lub numer telefonu. Po weryfikacji będziesz mógł utworzyć nowe hasło. Jeśli utraciłeś dostęp do wszystkich opcji odzyskiwania, Google udostępnia proces weryfikacji tożsamości, w którym zostaniesz zapytany o pytania potwierdzające Twoją tożsamość na podstawie historii konta.
+  </Accordion>
+
+  <Accordion title="Dlaczego mój klucz API nie działa?">
+    Najczęstsze powody, dla których klucz API przestaje działać, to: klucz został ograniczony do konkretnych adresów IP lub odsyłaczy, które nie pasują do Twojego bieżącego środowiska; klucz nie ma włączonego niezbędnego API w Twoim projekcie Google Cloud; lub klucz został usunięty albo wygenerowany na nowo. Otwórz [Google Cloud Console](https://console.cloud.google.com), przejdź do **APIs & Services → Credentials** i zweryfikuj ograniczenia oraz status klucza. Potwierdź także, że docelowe API (np. Maps JavaScript API, Sheets API) jest włączone w **APIs & Services → Enabled APIs & services**.
+  </Accordion>
+
+  <Accordion title="Co wlicza się do limitu przechowywania Google?">
+    Twoje 15 GB bezpłatnego miejsca Google jest dzielone między Gmaila (wiadomości i załączniki), Dysk Google (przesyłane pliki) i Zdjęcia Google (kopie zapasowe obrazów i filmów). Dokumenty, Arkusze, Prezentacje, Formularze i Rysunki tworzone natywnie w formatach Google **nie** wliczają się do limitu. Jednak pliki przesyłane na Dysk w innych formatach — takie jak `.docx`, `.xlsx` czy `.pdf` — zajmują miejsce. Bieżące użycie i podział możesz sprawdzić na [one.google.com/storage](https://one.google.com/storage).
+  </Accordion>
+
+  <Accordion title="Jak usunąć konto Google?">
+    Możesz trwale usunąć konto Google w sekcji **Dane i prywatność** ustawień konta. Przejdź do [myaccount.google.com](https://myaccount.google.com), kliknij **Dane i prywatność**, przewiń do **Więcej opcji** i kliknij **Usuń konto Google**. Google poprosi Cię o wcześniejsze pobranie kopii Twoich danych za pomocą Google Takeout. Pamiętaj, że usunięcie jest trwałe — Twój Gmail, pliki Dysku i wszystkie powiązane dane zostaną utracone i nie będą mogły zostać odzyskane po upływie okresu karencji.
+  </Accordion>
+
+  <Accordion title="Czy mogę korzystać z API Google bezpłatnie?">
+    Wiele API Google oferuje bezpłatny poziom z hojnymi limitami użycia — na przykład Maps JavaScript API obejmuje 200 USD/miesiąc w bezpłatnych kredytach, a wywołania Google Sheets API są bezpłatne do limitów użycia ustawianych per projekt. Jednak duże wolumeny użycia, niektóre premium API (jak Google Maps Routes Preferred) i funkcje klasy enterprise wymagają skonfigurowania konta rozliczeniowego w Google Cloud. Możesz przejrzeć cennik konkretnego API na [cloud.google.com/pricing](https://cloud.google.com/pricing) lub na stronie dokumentacji danego API.
+  </Accordion>
+
+  <Accordion title="Jak przenieść własność Dokumentu Google?">
+    Aby przenieść własność Dokumentu, Arkusza lub Prezentacji Google, otwórz plik i kliknij **Udostępnij** w prawym górnym rogu. Znajdź osobę, której chcesz przenieść własność (musi już mieć dostęp), kliknij listę rozwijaną obok jej imienia i wybierz **Przenieś własność**. Odbiorca otrzyma powiadomienie e-mail i musi zaakceptować przeniesienie. Pamiętaj, że możesz przenieść własność tylko na innego użytkownika w tej samej organizacji Google Workspace lub — w przypadku kont osobistych — na innego posiadacza konta Google.
+  </Accordion>
+
+  <Accordion title="Jak zgłosić spam lub phishing w Gmailu?">
+    Aby zgłosić spam w Gmailu, otwórz wiadomość, kliknij **menu z trzema kropkami** (⋮) w prawym górnym rogu wiadomości i wybierz **Zgłoś spam** lub **Zgłoś phishing**. Zgłoszenie phishingu wysyła e-mail do Google do przeglądu i pomaga chronić innych użytkowników przed podobnymi atakami. Gmail dodatkowo automatycznie przeniesie e-mail z Twojej skrzynki. Jeśli otrzymujesz e-maile phishingowe podszywające się pod firmę lub instytucję, możesz je dodatkowo zgłosić do [zespołu Google Safe Browsing](https://safebrowsing.google.com/safebrowsing/report_phish/).
+  </Accordion>
+
+  <Accordion title="Jakie są limity szybkości dla Google Search API?">
+    Google Custom Search JSON API pozwala na maksymalnie **100 zapytań wyszukiwania dziennie** bezpłatnie, z dodatkowymi zapytaniami dostępnymi po 5 USD za 1 000 zapytań (do 10 000 dziennie). Dotyczy to API Programmable Search Engine — jeśli używasz Google Search Console API lub innych API związanych z wyszukiwaniem, limity są inne i są udokumentowane osobno. Możesz monitorować użycie i konfigurować limity żądań w [Google Cloud Console](https://console.cloud.google.com) w **APIs & Services → Quotas**. Dla bardzo dużych potrzeb wyszukiwania Google oferuje opcje klasy enterprise przez Google Cloud.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Nie możesz znaleźć odpowiedzi, której szukasz? Odwiedź [Centrum pomocy Google](https://support.google.com), aby uzyskać dokumentację wsparcia specyficzną dla produktu, lub skontaktuj się z pomocą Google bezpośrednio ze swojego konta Google w sekcji **Wsparcie** w menu nawigacyjnym.
+</Note>

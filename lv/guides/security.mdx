@@ -1,0 +1,72 @@
+---
+title: "Nodrošiniet savu Google kontu un izstrādātāju akreditācijas datus"
+sidebarTitle: "Drošība"
+description: "Aizsargājiet savu Google kontu ar divpakāpju verifikāciju, pārvaldiet API atslēgu ierobežojumus un ievērojiet paraugpraksi akreditācijas datu drošībai."
+---
+
+Jūsu Google konts ir atslēga uz jūsu e-pastu, dokumentiem, mākoņa infrastruktūru un API akreditācijas datiem, padarot to par vienu no vērtīgākajiem un biežāk mērķētajiem aktīviem, ko pārvaldāt. Tā nodrošināšana prasa gan konta bloķēšanu ar spēcīgu autentifikāciju, gan API atslēgu un pakalpojumu kontu akreditācijas datu apstrādi, no kuriem atkarīgas jūsu lietojumprogrammas, ar tādu pašu rūpību, kādu piešķirtu parolei. Šis ceļvedis aptver būtiskus soļus abu nostiprināšanai.
+
+## Divpakāpju verifikācija
+
+Divpakāpju verifikācija (2SV) pievieno otro identitātes apliecinājumu papildus jūsu parolei, tāpēc nozagta parole vien nav pietiekama, lai piekļūtu jūsu kontam. Google iesaka izmantot autentifikatora lietotni kā otro faktoru, jo tā ģenerē kodus bezsaistē un nav ievainojama pret SIM apmaiņas uzbrukumiem tāpat kā SMS.
+
+<Steps>
+  <Step title="Atveriet My Account">
+    Dodieties uz [myaccount.google.com](https://myaccount.google.com) un pierakstieties, ja tiek prasīts.
+  </Step>
+  <Step title="Pārejiet uz Security">
+    Kreisajā navigācijas panelī noklikšķiniet uz **Security**.
+  </Step>
+  <Step title="Sāciet divpakāpju verifikācijas iestatīšanu">
+    Sadaļā **How you sign in to Google** noklikšķiniet uz **2-Step Verification**, pēc tam noklikšķiniet uz **Get started**.
+  </Step>
+  <Step title="Izvēlieties savu otro faktoru">
+    Google ieteiks spēcīgāko metodi, kas pieejama jūsu kontam. Vislabākajai drošībai izvēlieties **Authenticator app** — noskenējiet QR kodu ar Google Authenticator vai jebkuru TOTP saderīgu lietotni (Authy, 1Password utt.). Alternatīvi vēl spēcīgākai aizsardzībai varat izmantot aparatūras drošības atslēgu (FIDO2/WebAuthn).
+  </Step>
+  <Step title="Apstipriniet un saglabājiet dublējuma kodus">
+    Pabeidziet verifikācijas uzvedni, pēc tam lejupielādējiet un droši uzglabājiet savus **dublējuma kodus**. Šie vienreizējie kodi ļauj atgūt piekļuvi, ja pazaudējat otrā faktora ierīci.
+  </Step>
+</Steps>
+
+## API atslēgas ierobežojumi
+
+Neierobežotu API atslēgu var izmantot ikviens, kas to iegūst, no jebkuras lietojumprogrammas, lai izsauktu jebkuru Google API, kas iespējota jūsu projektā. Ierobežojumi sašaurina sprādziena rādiusu, ja atslēga kādreiz tiek atklāta.
+
+| Ierobežojuma tips | Kā to iestatīt | Piemērs |
+|---|---|---|
+| **HTTP atsauces avoti** | Cloud konsolē: **Credentials → Edit key → Application restrictions → HTTP referrers** | Atļaujiet tikai `https://yourdomain.com/*`, lai atslēga tiktu noraidīta, ja tiek izmantota no jebkuras citas vietnes |
+| **IP adreses** | Cloud konsolē: **Credentials → Edit key → Application restrictions → IP addresses** | Atļaujiet tikai jūsu servera statisko IP (piemēram, `203.0.113.42`), lai atslēga darbojas tikai no jūsu aizmugures |
+| **API ierobežojums** | Cloud konsolē: **Credentials → Edit key → API restrictions → Restrict key** | Ierobežojiet atslēgu tikai vienai API (piemēram, Maps JavaScript API), lai to nevar izmantot, lai izsauktu Gmail vai Drive |
+
+Piemērojiet visus trīs slāņus, kur vien iespējams: ierobežojiet pēc atsauces avota vai IP *un* bloķējiet atslēgu tikai tām API, kuras tai patiesi nepieciešamas.
+
+## API atslēgu rotācija
+
+Pat ar ieviestiem ierobežojumiem jums vajadzētu periodiski rotēt atslēgas vai nekavējoties, ja aizdomās turat, ka atslēga ir kompromitēta.
+
+1. [Cloud konsolē](https://console.cloud.google.com) dodieties uz **APIs & Services → Credentials**.
+2. Noklikšķiniet uz **Create Credentials → API key**, lai ģenerētu jaunu atslēgu ar tādiem pašiem ierobežojumiem kā vecai.
+3. Atjauniniet savas lietojumprogrammas konfigurāciju, lai izmantotu jauno atslēgu, un apstipriniet, ka viss darbojas pareizi.
+4. Atgriezieties uz Credentials lapu, noklikšķiniet uz vecās atslēgas pārpildes izvēlnes (**⋮**) un atlasiet **Delete**. Vecā atslēga nekavējoties pārtrauks darboties.
+
+Izvairieties no pakalpojuma pārtraukuma, nodrošinot, ka jaunā atslēga ir izvietota un pārbaudīta *pirms* dzēšat veco.
+
+## Drošības pārbaude
+
+Google drošības pārbaude sniedz jums personalizētu pārskatu par jūsu konta drošības stāvokli vienā vietā. Apmeklējiet [myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup), lai pārskatītu:
+
+- **Nesenos drošības notikumus** — nepazīstamas pierakstīšanās vai paroļu izmaiņas.
+- **Jūsu ierīces** — katru ierīci, kas pašlaik pierakstīta jūsu kontā, ar iespēju noņemt jebkuru, ko neatpazīstat.
+- **Trešo pušu lietotņu piekļuve** — lietotnes un pakalpojumi, kuriem piešķirta OAuth piekļuve jūsu kontam, lai jūs varētu atsaukt jebkuru, ko vairs neizmantojat.
+- **Divpakāpju verifikācijas statuss** — apstiprinājums, ka jūsu otrais faktors ir aktīvs un kuru metodi izmantojat.
+- **Gmail un Drive iestatījumi** — pārsūtīšanas adreses, deleģētie konti un koplietošanas iestatījumi, kas var atklāt jūsu datus.
+
+Palaidiet drošības pārbaudi vismaz reizi ceturksnī un nekavējoties pēc jebkādas aizdomām par konta kompromitāciju.
+
+<Warning>
+Nekad neievietojiet API atslēgas, OAuth klienta noslēpumus vai pakalpojumu konta JSON failus pirmkodā — pat privātā repozitorijā. Git vēsture ir pastāvīga, repozitoriji nejauši var kļūt publiski, un automatizētie skeneri nepārtraukti novāc akreditācijas datus no publiskajiem repozitorijiem. Tā vietā glabājiet noslēpumus vides mainīgajos vai īpašā noslēpumu pārvaldniekā un pievienojiet akreditācijas datu failu modeļus (piemēram, `*.json`, `.env`) savam `.gitignore` pirms pirmās apņemšanās.
+</Warning>
+
+<Tip>
+Ražošanas darba slodzēm izmantojiet [Google Cloud Secret Manager](https://cloud.google.com/secret-manager), lai glabātu, versionētu un auditētu piekļuvi akreditācijas datiem. Secret Manager dabiski integrējas ar Cloud Run, Cloud Functions un GKE caur IAM saistījumiem, lai jūsu pakalpojumi izpildlaikā varētu iegūt noslēpumus, tos nekad nerakstot diskā vai neiekļaujot konteineru attēlos.
+</Tip>

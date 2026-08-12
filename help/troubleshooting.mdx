@@ -1,0 +1,145 @@
+---
+title: "Troubleshoot Google Sign-In, Drive, and API Errors"
+sidebarTitle: "Troubleshooting"
+description: "Diagnose and fix common problems with Google sign-in failures, Drive sync issues, API error codes, quota limits, and Search indexing delays."
+---
+
+Even reliable services like Google occasionally run into issues — whether it's an API returning unexpected error codes, a sync that stopped working, or a sign-in that won't go through. This guide walks you through the most common problems across Google's products and developer platform, with clear steps to diagnose and resolve each one.
+
+<Tip>
+  Before troubleshooting individual issues, check the [Google Workspace Status Dashboard](https://www.google.com/appsstatus) to see if there's an active outage affecting one or more Google services. Many sign-in, sync, and API issues are caused by temporary infrastructure incidents that resolve on their own.
+</Tip>
+
+## API Error Codes
+
+When a Google API returns an error, the HTTP status code and error message together tell you exactly what went wrong. The table below covers the most common error responses and how to address them:
+
+| HTTP Status | Error Code | Meaning | How to Fix |
+|---|---|---|---|
+| **400** | `INVALID_ARGUMENT` | The request was malformed or contained an invalid parameter | Review your request body and query parameters against the API reference; check for missing required fields or incorrect data types |
+| **401** | `UNAUTHENTICATED` | The request lacks valid authentication credentials | Refresh your OAuth token or verify your API key is included in the request headers; ensure the credentials haven't expired |
+| **403** | `PERMISSION_DENIED` | The authenticated account doesn't have permission to perform this action | Check that the required OAuth scope is granted and that the API is enabled in your Cloud project; verify the resource's sharing settings |
+| **429** | `RESOURCE_EXHAUSTED` | You've exceeded your quota or rate limit for this API | Implement exponential backoff and retry logic; request a quota increase via the Cloud Console if needed |
+| **500** | `INTERNAL` | An unexpected error occurred on Google's servers | Retry the request with exponential backoff; if the error persists, check the [Google Cloud Status](https://status.cloud.google.com) page |
+
+<Note>
+  All Google API error responses include a JSON body with a `code`, `message`, and `status` field. Always log the full error response body — not just the HTTP status code — to get the most actionable diagnostic information.
+</Note>
+
+## Can't Sign In
+
+If you're unable to sign in to your Google Account, work through the following steps in order:
+
+<Steps>
+  <Step title="Check Caps Lock and keyboard layout">
+    Passwords are case-sensitive. Make sure Caps Lock is off and that you're using the correct keyboard language layout before re-entering your password.
+  </Step>
+  <Step title="Use Forgot Password">
+    On the sign-in page, click **Forgot password?**. Google will send a verification code to your recovery email address or phone number. Enter the code to verify your identity and create a new password.
+  </Step>
+  <Step title="Check your two-step verification method">
+    If you've enabled 2-Step Verification (2SV) and aren't receiving your authentication code, make sure your phone has signal and that the Google Authenticator app (or other TOTP app) is showing the correct time-synced code. If you've lost access to your 2SV device, use a saved backup code or request account recovery at [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery).
+  </Step>
+  <Step title="Check for account suspension">
+    If Google detects unusual activity or a policy violation, your account may be temporarily suspended. You'll see a clear message on the sign-in page in this case. Follow the on-screen instructions to appeal the suspension or verify your identity.
+  </Step>
+  <Step title="Try a different browser or device">
+    Browser extensions, cached credentials, or corrupted cookies can sometimes interfere with sign-in. Try signing in from an Incognito/private window or a different browser to rule out a local issue.
+  </Step>
+</Steps>
+
+## Google Drive Sync Issues
+
+If files aren't syncing between your computer and Google Drive, or Drive for Desktop has stopped working, follow these steps:
+
+<AccordionGroup>
+  <Accordion title="Check your storage quota">
+    If your Google Account storage is full, Drive will stop syncing new files and may fail to upload changes. Visit [one.google.com/storage](https://one.google.com/storage) to check your usage. If you're over the limit, delete unneeded files from Gmail, Drive trash, or Google Photos, or upgrade to a Google One plan.
+  </Accordion>
+
+  <Accordion title="Check your internet connection">
+    Drive for Desktop requires a stable internet connection to sync. Confirm you're connected by opening a browser and loading a webpage. If your connection is intermittent, sync will pause and resume automatically once the connection stabilizes.
+  </Accordion>
+
+  <Accordion title="Restart Drive for Desktop">
+    Click the Drive for Desktop icon in your system tray (Windows) or menu bar (macOS), then select **Quit**. Relaunch the app from your Applications folder or Start menu. Restarting the client forces it to re-check sync status and resolve many transient issues.
+  </Accordion>
+
+  <Accordion title="Re-link your Google Account">
+    If the app shows an authentication error, you may need to re-link your account. Open Drive for Desktop preferences, go to **Accounts**, and sign out and back in with your Google Account. This refreshes your credentials without affecting your synced files.
+  </Accordion>
+
+  <Accordion title="Check for file path length or naming issues">
+    Drive for Desktop may refuse to sync files with paths that exceed system limits (260 characters on Windows) or filenames that contain characters unsupported by your operating system. Rename or move problem files to a shorter path and check the Drive for Desktop error log for specific file names.
+  </Accordion>
+</AccordionGroup>
+
+## API Quota Exceeded (429)
+
+Receiving a `429 RESOURCE_EXHAUSTED` error means your application has sent too many requests in too short a time, or has hit its daily quota limit. Here's how to handle it:
+
+### Implement Exponential Backoff
+
+Rather than immediately retrying a failed request, wait a progressively longer interval between each retry. This prevents your client from hammering the API while it's under load and gives quota windows time to reset.
+
+```python
+import time
+import random
+
+def api_request_with_backoff(request_func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return request_func()
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limited. Retrying in {wait:.2f} seconds...")
+                time.sleep(wait)
+            else:
+                raise
+```
+
+### Request a Quota Increase
+
+If your application consistently hits its quota limits, you can request an increase through the Google Cloud Console:
+
+<Steps>
+  <Step title="Open the Cloud Console">
+    Go to [console.cloud.google.com](https://console.cloud.google.com) and select your project.
+  </Step>
+  <Step title="Go to APIs & Services → Quotas & System Limits">
+    Navigate to **APIs & Services** → **Quotas & System Limits** and filter by the API that's being throttled.
+  </Step>
+  <Step title="Select the quota to increase">
+    Find the specific quota (e.g., "Queries per day" or "Requests per minute"), click the checkbox next to it, and then click **Edit quotas**.
+  </Step>
+  <Step title="Submit your request">
+    Enter your desired new quota value and a brief justification. Google typically reviews quota increase requests within 2–3 business days.
+  </Step>
+</Steps>
+
+## Search Results Not Updating
+
+If you've made changes to a webpage and the updates aren't showing up in Google Search results, the delay is almost always due to Google's crawling and indexing pipeline — not an error.
+
+<AccordionGroup>
+  <Accordion title="Understand indexing delays">
+    After Google's crawler (Googlebot) visits a page, it takes additional time for the index to be updated and for those changes to appear in search results. For most sites, this process takes anywhere from a few days to a few weeks. New sites or pages with low authority may take longer to be crawled in the first place.
+  </Accordion>
+
+  <Accordion title="Check Google's cached version">
+    You can see what version of your page Google last indexed by searching `cache:yourdomain.com/page` in Google Search. If the cached version is outdated, Google simply hasn't re-crawled the page yet.
+  </Accordion>
+
+  <Accordion title="Request re-indexing via Search Console">
+    If you need a specific page updated urgently, use the **URL Inspection** tool in [Google Search Console](https://search.google.com/search-console). Paste the URL, then click **Request Indexing** to ask Googlebot to re-crawl it as soon as possible. This doesn't guarantee immediate results, but it prioritizes the URL in the crawl queue.
+  </Accordion>
+
+  <Accordion title="Check your robots.txt and noindex tags">
+    Make sure your page isn't accidentally blocked from indexing. Check that your `robots.txt` file doesn't disallow Googlebot from crawling the URL, and verify there's no `<meta name="robots" content="noindex">` tag on the page. Either of these will prevent your content from appearing in search results.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Requesting re-indexing frequently for the same URL does not speed up the process. Google's indexing pipeline is managed automatically, and submitting duplicate requests won't increase crawl priority further.
+</Warning>

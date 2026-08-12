@@ -1,0 +1,130 @@
+---
+title: "API kont użytkowników: pobieranie profilu i danych tożsamości"
+sidebarTitle: "Accounts API"
+description: "Pobierz profil, adres e-mail, imię i zdjęcie uwierzytelnionego użytkownika przez GET /oauth2/v2/userinfo lub People API, używając tokena OAuth 2.0 typu Bearer."
+---
+
+Google udostępnia dwa uzupełniające się endpointy do odczytu tożsamości i danych profilu uwierzytelnionego użytkownika. Endpoint userinfo OAuth 2.0 zwraca lekkie podsumowanie — adres e-mail, wyświetlaną nazwę, zdjęcie profilowe i ustawienia regionalne — i jest idealny do przepływów logowania. People API oferuje bogatszy, lepiej ustrukturyzowany widok karty kontaktowej użytkownika i sprawdza się, gdy potrzebujesz precyzyjnej kontroli nad polami. Oba endpointy wymagają ważnego tokena dostępu OAuth 2.0 z odpowiednimi zakresami.
+
+<Note>
+  Oba endpointy opisane na tej stronie wymagają ważnego tokena OAuth 2.0 typu Bearer. Klucze API **nie** są akceptowane — te zasoby są powiązane z tożsamością uwierzytelnionego użytkownika. Zobacz [Przewodnik po uwierzytelnianiu](/api/authentication), aby skonfigurować przepływ OAuth.
+</Note>
+
+---
+
+## Pobierz profil bieżącego użytkownika
+
+Pobierz zwięzły profil aktualnie uwierzytelnionego użytkownika.
+
+**Endpoint**
+
+```http
+GET https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**Wymagany zakres:** `openid email profile`
+
+### Przykładowe żądanie
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/oauth2/v2/userinfo"
+```
+
+### Przykładowa odpowiedź
+
+```json
+{
+  "id": "116195079999551234567",
+  "email": "alex@example.com",
+  "name": "Alex Johnson",
+  "given_name": "Alex",
+  "family_name": "Johnson",
+  "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+  "locale": "en"
+}
+```
+
+### Pola odpowiedzi
+
+<ResponseField name="id" type="string">
+  Unikalny, stały identyfikator konta Google użytkownika. Ta wartość nie zmienia się, nawet jeśli użytkownik zaktualizuje swój adres e-mail lub imię.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Podstawowy adres e-mail konta Google użytkownika. Wymaga zakresu `email`.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Pełna wyświetlana nazwa użytkownika w takiej formie, w jakiej pojawia się na jego koncie Google.
+</ResponseField>
+
+<ResponseField name="given_name" type="string">
+  Imię użytkownika. Wymaga zakresu `profile`.
+</ResponseField>
+
+<ResponseField name="family_name" type="string">
+  Nazwisko użytkownika. Wymaga zakresu `profile`.
+</ResponseField>
+
+<ResponseField name="picture" type="string">
+  Adres URL wskazujący na zdjęcie profilowe użytkownika hostowane na serwerach Google. Obraz jest publicznie dostępny, ale może się zmienić, jeśli użytkownik zaktualizuje zdjęcie.
+</ResponseField>
+
+<ResponseField name="locale" type="string">
+  Tag języka BCP 47 reprezentujący preferowany język użytkownika (np. `"en"`, `"fr"`, `"ja"`). Wymaga zakresu `profile`.
+</ResponseField>
+
+---
+
+## Pobierz informacje o użytkowniku przez People API
+
+People API zwraca bogatsze ustrukturyzowane dane i pozwala żądać dokładnie tych pól, których potrzebujesz, za pomocą parametru `personFields`.
+
+**Endpoint**
+
+```http
+GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
+```
+
+**Wymagany zakres:** `https://www.googleapis.com/auth/contacts.readonly`
+
+### Przykładowe żądanie
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses"
+```
+
+### Przykładowa odpowiedź
+
+```json
+{
+  "resourceName": "people/116195079999551234567",
+  "etag": "%EgoBAgkLDg8REhMaAQ==",
+  "names": [
+    {
+      "displayName": "Alex Johnson",
+      "givenName": "Alex",
+      "familyName": "Johnson",
+      "metadata": {
+        "primary": true,
+        "source": { "type": "PROFILE" }
+      }
+    }
+  ],
+  "emailAddresses": [
+    {
+      "value": "alex@example.com",
+      "metadata": {
+        "primary": true,
+        "verified": true
+      }
+    }
+  ]
+}
+```
+
+<Tip>
+  Możesz zażądać dodatkowych `personFields`, takich jak `phoneNumbers`, `addresses`, `birthdays` czy `photos`, dodając je jako listę oddzieloną przecinkami: `?personFields=names,emailAddresses,phoneNumbers`.
+</Tip>

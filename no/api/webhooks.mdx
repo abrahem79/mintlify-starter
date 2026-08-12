@@ -1,0 +1,153 @@
+---
+title: "Google API Webhooks: Abonner på push-varsler"
+sidebarTitle: "Webhooks"
+description: "Registrer Google Drive push-varselkanaler for å motta sanntids webhook-tilbakekall når filer eller ressurser opprettes, oppdateres eller slettes."
+---
+
+I stedet for å kontinuerlig spørre API-et for å sjekke om en ressurs har endret seg, kan du bruke Googles push-varselsystem for å få Google til å ringe serveren din i det øyeblikket en endring skjer. Du registrerer en **watch-kanal** som peker til et HTTPS-endepunkt du kontrollerer; Google sender deretter `POST`-forespørsler til det endepunktet hver gang den overvåkede ressursen opprettes, oppdateres eller slettes. Push-varsler er tilgjengelige for Google Drive, Gmail, Kalender og flere andre API-er.
+
+<Warning>
+  Webhook-endepunktet ditt **må** serveres over HTTPS med et gyldig sertifikat. Google leverer ikke varsler til vanlige HTTP-URL-er. I tillegg må endepunktet ditt svare med HTTP `200 OK` innen **10 sekunder** — svar som får tidsavbrudd, behandles som feil og kan føre til at Google slutter å levere varsler til kanalen.
+</Warning>
+
+---
+
+## Hvordan push-varsler fungerer
+
+Flyten fungerer i fire steg:
+
+1. **Registrer** — applikasjonen din kaller `watch`-metoden på ressursen du vil overvåke, og oppgir endepunkts-URL-en din og en unik kanal-ID.
+2. **Synkroniser** — Google bekrefter kanalen med et første varsel (`X-Goog-Resource-State: sync`).
+3. **Motta** — Google sender en `POST`-forespørsel til endepunktet ditt hver gang ressursen endres.
+4. **Forny eller stopp** — kanaler har en utløpstid. Du må registrere dem på nytt før de utløper, eller eksplisitt stoppe dem når de ikke lenger er nødvendige.
+
+---
+
+## Registrer en watch-kanal
+
+Eksemplet nedenfor registrerer en watch på alle filer i Google Drive. Andre API-er følger samme mønster med forskjellige endepunktsstier.
+
+**Endepunkt**
+
+```http
+POST https://www.googleapis.com/drive/v3/files/watch
+```
+
+### Parametere for forespørselsbody
+
+<ParamField body="id" type="string" required>
+  En UUID eller annen unik streng som du genererer for å identifisere denne kanalen. Google gjentar denne verdien i hvert varsel slik at du kan rute den til riktig handler.
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  Leveringsmekanismen for varsler. Må være `"web_hook"` for HTTPS push-levering.
+</ParamField>
+
+<ParamField body="address" type="string" required>
+  Den fullt kvalifiserte HTTPS-URL-en til webhook-endepunktet ditt. Google vil `POST`-e varsler til denne URL-en.
+</ParamField>
+
+<ParamField body="expiration" type="integer">
+  Et Unix-tidsstempel i **millisekunder** som spesifiserer når kanalen skal utløpe. Hvis den utelates, bruker Google en standard utløpstid (vanligvis opptil 7 dager). Du må registrere kanalen på nytt før denne tiden for å unngå å gå glipp av varsler.
+</ParamField>
+
+### Eksempelforespørsel
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1893456000000
+  }'
+```
+
+### Eksempelsvar
+
+```json
+{
+  "kind": "api#channel",
+  "id": "my-channel-01",
+  "resourceId": "o3hgv1538sdjfh",
+  "resourceUri": "https://www.googleapis.com/drive/v3/files?...",
+  "expiration": "1893456000000"
+}
+```
+
+Lagre `resourceId`-verdien — du trenger den for å stoppe kanalen senere.
+
+---
+
+## Innkommende forespørsels-headere
+
+Når Google leverer et varsel til endepunktet ditt, inkluderer `POST`-forespørselen følgende tilpassede headere:
+
+| Header | Beskrivelse |
+|--------|-------------|
+| `X-Goog-Channel-ID` | Kanalens `id` som du oppga ved registrering. Bruk dette til å identifisere hvilken watch som utløste varselet. |
+| `X-Goog-Resource-State` | Typen endring som skjedde. Vanlige verdier: `sync` (første bekreftelse), `add`, `update`, `remove`, `trash`, `untrash`, `change`. |
+| `X-Goog-Changed` | En kommaseparert liste over egenskaper som endret seg (f.eks. `content,properties`). Til stede for `update`-varsler. |
+| `X-Goog-Resource-ID` | Googles interne identifikator for den overvåkede ressursen. |
+| `X-Goog-Resource-URI` | API-URL-en til ressursen som endret seg. |
+| `X-Goog-Message-Number` | Et monotont økende heltall for hver melding på kanalen. Sync-meldingen er alltid `1`. |
+
+<Note>
+  Varselbody-en er med hensikt **tom** — Google forteller deg at noe har endret seg, men ikke hva som har endret seg. Du bør bruke `X-Goog-Resource-URI`-headeren for å gjøre en oppfølgings-API-forespørsel og hente den oppdaterte ressursen.
+</Note>
+
+---
+
+## Stopp en kanal
+
+For å slutte å motta varsler og frigjøre kanalen før den utløper, send en `POST`-forespørsel til stopp-endepunktet:
+
+```http
+POST https://www.googleapis.com/drive/v3/channels/stop
+```
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/channels/stop" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "resourceId": "o3hgv1538sdjfh"
+  }'
+```
+
+Et vellykket svar returnerer HTTP `204 No Content` med en tom body. Etter å ha stoppet en kanal, slutter Google umiddelbart å levere varsler til endepunktet ditt for den kanalen.
+
+---
+
+## Kanalutløp og fornyelse
+
+Alle watch-kanaler utløper — enten ved `expiration`-tidsstempelet du spesifiserte, eller ved Googles eget maksimum (som varierer per API). Når en kanal utløper, slutter Google å sende varsler, og du vil gå glipp av endringer til du registrerer en ny kanal.
+
+**Anbefalt fornyelsesstrategi:**
+
+1. Lagre `expiration`-verdien som returneres når du registrerer hver kanal.
+2. Planlegg en jobb for å registrere kanalen på nytt minst **24 timer før** den utløper.
+3. Etter vellykket registrering av den nye kanalen, stopp den gamle.
+
+```bash
+# Re-register with a new channel ID and updated expiration
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-02",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1925000000000
+  }'
+```
+
+<Tip>
+  Bruk en UUID-generator (f.eks. `uuidgen` på macOS/Linux) for å produsere unike kanal-ID-er. Å gjenbruke en ID før den forrige kanalen har stoppet, kan resultere i konflikter eller duplikatvarsler.
+</Tip>

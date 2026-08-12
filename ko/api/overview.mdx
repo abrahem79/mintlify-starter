@@ -1,0 +1,109 @@
+---
+title: "Google REST API: 개요 및 시작 가이드"
+sidebarTitle: "개요"
+description: "Google REST API 소개: 모든 서비스의 기본 URL, 버전 관리, 요청 및 응답 형식, 속도 제한, 오류 처리."
+---
+
+Google은 검색과 생산성부터 클라우드 인프라와 머신 러닝에 이르는 모든 것을 지원하는 광범위한 REST API 제품군을 제공합니다. 웹 앱, 모바일 클라이언트, 백엔드 서비스를 구축하든, 이 API들은 표준 HTTP 요청과 JSON을 사용해 Google 플랫폼에 프로그래밍 방식으로 접근할 수 있게 해줍니다. 이 가이드는 첫 호출을 하기 전에 알아두어야 할 기본 개념을 다룹니다.
+
+## 기본 URL
+
+모든 Google REST API는 공통 기본 URL에서 제공됩니다:
+
+```text
+https://www.googleapis.com
+```
+
+일부 API는 전용 호스트 이름(예: `https://people.googleapis.com`)을 갖지만, 대부분은 `https://www.googleapis.com/{api}/{version}/{resource}` 패턴을 따릅니다.
+
+## API 버전 관리
+
+Google API는 **경로 기반 버전 관리**를 사용합니다. 버전 세그먼트는 URL 경로에서 API 이름 바로 뒤에 나타납니다. 예:
+
+| API | 버전이 포함된 엔드포인트 접두사 |
+|-----|-----------------------------|
+| Custom Search | `https://www.googleapis.com/customsearch/v1` |
+| Drive | `https://www.googleapis.com/drive/v3` |
+| OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |
+
+Google이 새 메이저 버전을 릴리스해도, 공식 사용 중단 기한이 발표되기 전까지는 이전 버전이 원래 경로에서 계속 사용 가능합니다. 새 통합에서는 항상 최신 안정 버전을 대상으로 하세요.
+
+## 요청 형식
+
+모든 API 호출은 다음 규칙을 따라야 합니다:
+
+- **메서드** — 작업에 적합한 HTTP 동사(`GET`, `POST`, `PUT`, `PATCH`, `DELETE`)를 사용하세요.
+- **콘텐츠 유형** — 본문을 포함하는 요청에는 `Content-Type: application/json`을 포함하세요.
+- **인증** — 자격 증명은 `Authorization` 헤더에 Bearer 토큰으로, 또는 API 키 인증 요청의 경우 `key` 쿼리 파라미터로 전달하세요:
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+```
+
+- **본문** — 요청 본문은 유효한 JSON이어야 합니다. 불리언 값은 문자열이 아닌 `true`/`false`여야 하며, 타임스탬프는 RFC 3339 형식을 따라야 합니다.
+
+## 응답 형식
+
+성공적인 응답은 HTTP `2xx` 상태 코드와 JSON 본문을 반환합니다. 대부분의 컬렉션 엔드포인트는 표준 봉투(envelope) 형식을 따릅니다:
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "items": [
+    { "id": "1BxiM...", "name": "Report.pdf" }
+  ]
+}
+```
+
+- **`kind`** — 리소스 유형을 식별하는 네임스페이스 문자열(예: `customsearch#search`, `drive#file`).
+- **`items`** — list 작업으로 반환된 리소스 객체 배열.
+- **`nextPageToken`** — 더 많은 결과 페이지가 있을 때 존재하며, 다음 요청에 `pageToken`으로 전달하세요.
+
+## 속도 제한
+
+속도 제한은 API마다 다르며, 프로젝트별 및 사용자별로 적용됩니다. 제한을 초과하면 API는 HTTP `429 Too Many Requests`를 반환합니다. 클라이언트에 지수 백오프와 재시도 로직을 구현해야 합니다.
+
+<Tip>
+  권장 재시도 전략과 대용량 워크로드에 대한 할당량 증가 요청 방법에 대한 안내는 [문제 해결 가이드](/help/troubleshooting)를 참조하세요.
+</Tip>
+
+## 오류 응답
+
+모든 API 오류는 일관된 JSON 구조를 따르므로, 이를 파싱하고 프로그램적으로 처리하기가 쉽습니다:
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+| 필드 | 설명 |
+|-------|-------------|
+| `error.code` | 오류에 대한 HTTP 상태 코드. |
+| `error.message` | 무엇이 잘못되었는지에 대한 사람이 읽을 수 있는 설명. |
+| `error.status` | 기계가 읽을 수 있는 오류 코드 문자열. |
+
+일반적인 status 값에는 `PERMISSION_DENIED`, `NOT_FOUND`, `INVALID_ARGUMENT`, `UNAUTHENTICATED`, `RESOURCE_EXHAUSTED`가 있습니다.
+
+## API 살펴보기
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/api/authentication">
+    API 키, OAuth 2.0 토큰, 서비스 계정으로 인증하는 방법을 배우세요.
+  </Card>
+  <Card title="Search API" icon="magnifying-glass" href="/api/search">
+    Programmable Search Engine을 쿼리하고 구조화된 웹 결과를 조회하세요.
+  </Card>
+  <Card title="Accounts API" icon="user" href="/api/accounts">
+    인증된 사용자의 프로필, 이메일, 신원 데이터를 조회하세요.
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api/webhooks">
+    실시간 리소스 변경 이벤트에 대한 푸시 알림을 구독하세요.
+  </Card>
+</CardGroup>

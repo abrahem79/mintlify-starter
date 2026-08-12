@@ -1,0 +1,109 @@
+---
+title: "API REST de Google: visió general i guia d'inici"
+sidebarTitle: "Visió general"
+description: "Introducció a les API REST de Google: URL base, versionat, format de peticions i respostes, límits de velocitat i gestió d'errors per a tots els serveis."
+---
+
+Google exposa un ampli conjunt d'API REST que impulsen tot, des de la cerca i la productivitat fins a la infraestructura al núvol i l'aprenentatge automàtic. Tant si estàs construint una aplicació web, un client mòbil o un servei de backend, aquestes API et donen accés programàtic a la plataforma de Google mitjançant peticions HTTP estàndard i JSON. Aquesta guia cobreix els conceptes fonamentals que necessites abans de fer la teva primera crida.
+
+## URL base
+
+Totes les API REST de Google es serveixen des d'un URL base comú:
+
+```text
+https://www.googleapis.com
+```
+
+Algunes API tenen noms de host dedicats (per exemple, `https://people.googleapis.com`), però la majoria segueixen el patró `https://www.googleapis.com/{api}/{version}/{resource}`.
+
+## Versionat d'API
+
+Les API de Google utilitzen **versionat basat en la ruta**. El segment de versió apareix immediatament després del nom de l'API a la ruta de l'URL, per exemple:
+
+| API | Prefix d'endpoint amb versió |
+|-----|-----------------------------|
+| Custom Search | `https://www.googleapis.com/customsearch/v1` |
+| Drive | `https://www.googleapis.com/drive/v3` |
+| OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |
+
+Quan Google publica una nova versió principal, la versió anterior segueix disponible a la seva ruta original fins que s'anuncia un termini oficial de desprecació. Apunta sempre a l'última versió estable per a integracions noves.
+
+## Format de petició
+
+Cada crida a l'API ha de seguir aquestes convencions:
+
+- **Mètode** — utilitza el verb HTTP adequat a l'operació (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`).
+- **Tipus de contingut** — inclou `Content-Type: application/json` a les peticions que porten un cos.
+- **Autorització** — passa les credencials a la capçalera `Authorization` com a token Bearer, o mitjançant el paràmetre de consulta `key` per a peticions autenticades amb clau d'API:
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+```
+
+- **Cos** — els cossos de petició han de ser JSON vàlid. Els valors booleans han de ser `true`/`false` (no cadenes) i les marques temporals han de seguir el format RFC 3339.
+
+## Format de resposta
+
+Les respostes correctes retornen codis d'estat HTTP `2xx` i un cos JSON. La majoria d'endpoints de col·lecció segueixen un sobre estàndard:
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "items": [
+    { "id": "1BxiM...", "name": "Report.pdf" }
+  ]
+}
+```
+
+- **`kind`** — una cadena amb espai de noms que identifica el tipus de recurs (p. ex. `customsearch#search`, `drive#file`).
+- **`items`** — una matriu d'objectes de recurs retornats per operacions de llista.
+- **`nextPageToken`** — present quan existeixen més pàgines de resultats; passa'l com a `pageToken` a la petició següent.
+
+## Límits de velocitat
+
+Els límits de velocitat varien segons l'API i s'apliquen per projecte i per usuari. Quan superes un límit, l'API retorna `429 Too Many Requests`. Hauries d'implementar lògica de reintent amb reculada exponencial al teu client.
+
+<Tip>
+  Consulta la [guia de resolució de problemes](/help/troubleshooting) per obtenir estratègies de reintent recomanades i orientació per sol·licitar augments de quota per a càrregues de treball d'alt volum.
+</Tip>
+
+## Respostes d'error
+
+Tots els errors de l'API segueixen una estructura JSON coherent, cosa que facilita analitzar-los i gestionar-los programàticament:
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+| Camp | Descripció |
+|-------|-------------|
+| `error.code` | El codi d'estat HTTP de l'error. |
+| `error.message` | Una descripció llegible del que ha anat malament. |
+| `error.status` | Una cadena de codi d'error llegible per màquina. |
+
+Els valors d'estat habituals inclouen `PERMISSION_DENIED`, `NOT_FOUND`, `INVALID_ARGUMENT`, `UNAUTHENTICATED` i `RESOURCE_EXHAUSTED`.
+
+## Explora l'API
+
+<CardGroup cols={2}>
+  <Card title="Autenticació" icon="key" href="/api/authentication">
+    Aprèn a autenticar-te amb claus d'API, tokens OAuth 2.0 i comptes de servei.
+  </Card>
+  <Card title="API de cerca" icon="magnifying-glass" href="/api/search">
+    Consulta el teu Programmable Search Engine i obtén resultats web estructurats.
+  </Card>
+  <Card title="API de comptes" icon="user" href="/api/accounts">
+    Obtén el perfil, correu electrònic i dades d'identitat de l'usuari autenticat.
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api/webhooks">
+    Subscriu-te a notificacions push per a esdeveniments de canvi de recursos en temps real.
+  </Card>
+</CardGroup>

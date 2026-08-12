@@ -1,0 +1,66 @@
+---
+title: "Google 搜索的工作原理：索引与排序解析"
+sidebarTitle: "搜索"
+description: "了解 Google 如何索引、排序和呈现内容。理解搜索运算符、Custom Search，以及如何将搜索集成到你的应用。"
+---
+
+Google 搜索每年处理数千亿个页面，并回答数万亿次查询，是世界上使用最广泛的信息检索系统。无论你是想改进自己的搜索技巧、优化内容以便 Google 正确呈现，还是把搜索能力直接嵌入到你的产品中，理解搜索的底层运作方式都会带来显著优势。
+
+## 搜索的工作方式
+
+Google 搜索在后台持续运行的三个主要阶段。
+
+**抓取（Crawling）** —— Google 的自动化抓取器（统称 Googlebot）沿着链接遍历整个网络，以发现新的和更新的页面。你可以使用 `robots.txt` 文件和 `<meta name="robots">` 标签来引导抓取器控制哪些内容会被抓取。
+
+**索引（Indexing）** —— 页面被抓取后，Google 会分析其内容——文本、图像、结构化数据等——并将其表示存储在搜索索引中。结构清晰、标题明确、元数据描述性强、schema 标记有效的页面更容易被准确索引。
+
+**排序（Ranking）** —— 当用户提交查询时，Google 的排序系统会评估数百项信号（相关性、页面质量、上下文、时效性等）来排序结果。没有任何单一因素决定排名；算法会整体权衡各种信号，以为该查询呈现最有用的结果。
+
+<Note>
+  Google 不保证会索引每个页面。请使用 Google Search Console 监控收录情况、识别抓取错误，并为重要 URL 请求（重新）索引。
+</Note>
+
+## 搜索运算符
+
+搜索运算符是你直接在 Google 搜索框中输入的特殊命令，用于过滤和缩小结果范围。它们对研究、竞品分析、审计自身网站的收录情况以及调试索引问题都很有用。
+
+| 运算符 | 语法 | 作用 |
+|---|---|---|
+| `site:` | `site:example.com` | 将结果限制在特定域名或子域上的页面。 |
+| `filetype:` | `filetype:pdf` | 返回特定文件类型的结果（pdf、docx、xlsx 等）。 |
+| `intitle:` | `intitle:keyword` | 匹配 HTML `<title>` 标签中包含关键字的页面。 |
+| 精确短语 | `"machine learning"` | 仅返回包含该精确词序的结果。 |
+| 排除词 | `-keyword` | 移除包含指定单词或短语的结果。 |
+
+你可以在单个查询中组合运算符。例如，`site:docs.example.com filetype:pdf -intitle:archive` 会在你的文档子域上查找标题中不含“archive”的 PDF 文件。
+
+<Tip>
+  在运算符前加上 `OR`（大写）以匹配两个条件之一——例如，`site:example.com OR site:example.io` 在一次查询中返回两个域名的结果。
+</Tip>
+
+## 自定义搜索引擎（CSE）
+
+自定义搜索引擎让你能够创建一个范围受限、可定制品牌的搜索体验，只查询你指定的一组网站或页面，而不是整个网络。这对于向你的文档、帮助中心或电商目录添加搜索栏很有用。
+
+**创建自定义搜索引擎：**
+
+1. 前往 [Programmable Search Engine 控制面板](https://programmablesearchengine.google.com/controlpanel/all)。
+2. 点击 **Add**，输入你想要搜索的网站或 URL 模式。
+3. 为你的引擎命名并保存——Google 会生成一个唯一的 **Search Engine ID**（`cx` 参数）来标识你的引擎。
+4. 在 **Look and feel** 下自定义外观和风格，然后将嵌入代码片段复制到你的页面中。
+
+<Note>
+  CSE 结果遵循与常规 Google 搜索相同的索引规则。如果一个页面没有被索引，它也不会出现在你的 CSE 结果中。
+</Note>
+
+## Programmable Search API
+
+Programmable Search JSON API 让你能以编程方式访问自定义搜索引擎的结果，从而在你自己的应用内完全检索、格式化和展示搜索结果——无需嵌入 Google 的 UI。
+
+主要能力包括：
+
+- 查询你的 CSE 并接收包含标题、URL、摘要和丰富元数据的结构化 JSON 响应。
+- 应用 `dateRestrict`、`sort` 和 `filter` 参数，在请求时优化结果。
+- 使用 `searchType=image` 参数在你定义的范围内搜索图片。
+
+有关完整的请求/响应架构、身份验证要求和代码示例，请参阅[搜索 API 参考](/api/search)。

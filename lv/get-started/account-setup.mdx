@@ -1,0 +1,58 @@
+---
+title: "Google konta iestatīšana: API iespējošana un akreditācijas datu iegūšana"
+sidebarTitle: "Konta iestatīšana"
+description: "Izveidojiet Google kontu, iestatiet Cloud konsoles projektu, iespējojiet izvēlētās API un ģenerējiet akreditācijas datus, lai autentificētu savu lietojumprogrammu."
+---
+
+Pirms varat izmantot Google izstrādātāju API, jums nepieciešams Google konts, Cloud projekts, kurā izvietot savus resursus, un akreditācijas datu kopums, ko jūsu lietojumprogramma izmantos autentifikācijai. Šis ceļvedis soli pa solim parāda katru no šiem soļiem, lai jūs būtu gatavs veikt savu pirmo API izsaukumu.
+
+## Iestatīšanas soļi
+
+<Steps>
+  <Step title="Izveidojiet Google kontu">
+    Ja jums vēl nav Google konta, dodieties uz [accounts.google.com/signup](https://accounts.google.com/signup) un aizpildiet reģistrācijas veidlapu. Jūsu Google konts sniedz piekļuvi katram Google pakalpojumam, tostarp Cloud konsolei, Gmail, Drive un visām izstrādātāju API.
+  </Step>
+  <Step title="Dodieties uz Google Cloud konsoli">
+    Pārejiet uz [Google Cloud konsoli](https://console.cloud.google.com) un pierakstieties ar savu Google kontu. Konsole ir jūsu centrālais mezgls Google Cloud projektu pārvaldībai, API iespējošanai un akreditācijas datu izveidei.
+  </Step>
+  <Step title="Izveidojiet projektu">
+    1. Konsoles lapas augšpusē noklikšķiniet uz projektu atlasītāja.
+    2. Noklikšķiniet uz **New Project**.
+    3. Ievadiet aprakstošu **Project name** (piemēram, `my-search-app`).
+    4. Atlasiet **Billing account**, ja tas tiek prasīts, un pēc tam noklikšķiniet uz **Create**.
+
+    Visas API un akreditācijas dati, ko izveidojat, tiks tvēruma noteikti šim projektam, tāpēc ir viegli pārvaldīt lietojumu un rēķinu izrakstīšanu atsevišķi katrai lietojumprogrammai.
+  </Step>
+  <Step title="Iespējojiet API">
+    1. Kreisajā navigācijā dodieties uz **APIs & Services → Library**.
+    2. Meklējiet API, ko vēlaties izmantot (piemēram, **Custom Search API**, **Maps JavaScript API** vai **Gmail API**).
+    3. Noklikšķiniet uz API nosaukuma, pēc tam noklikšķiniet uz **Enable**.
+
+    Atkārtojiet šo soli katrai Google API, kas nepieciešama jūsu lietojumprogrammai. Tikai iespējotās API var saņemt pieprasījumus no jūsu akreditācijas datiem.
+  </Step>
+  <Step title="Izveidojiet akreditācijas datus (API atslēgu)">
+    1. Dodieties uz **APIs & Services → Credentials**.
+    2. Noklikšķiniet uz **Create Credentials** un atlasiet **API key**.
+    3. Google nekavējoties ģenerē jaunu API atslēgu. Noklikšķiniet uz **Copy**, lai to nokopētu uz starpliktuvi.
+    4. Pēc izvēles noklikšķiniet uz **Edit API key**, lai ierobežotu atslēgu konkrētām API vai HTTP atsauces avotiem un IP adresēm — tas ir stingri ieteicams ražošanas lietošanai.
+
+    Uzglabājiet savu API atslēgu drošā vietā, piemēram, vides mainīgajā vai noslēpumu pārvaldniekā.
+  </Step>
+</Steps>
+
+<Note>
+  **Turiet savu API atslēgu slepenībā.** Nekad neievietojiet savu API atslēgu versiju kontrolē vai neatklājiet to klienta puses kodā. Ja jūsu atslēga ir kompromitēta, dodieties uz **APIs & Services → Credentials** Cloud konsolē, dzēsiet ietekmēto atslēgu un nekavējoties ģenerējiet jaunu.
+</Note>
+
+## Nākamie soļi
+
+Tagad, kad jūsu konts un akreditācijas dati ir iestatīti, esat gatavs sākt būvēt.
+
+<CardGroup cols={2}>
+  <Card title="Ātrais sākums" icon="rocket" href="/quickstart">
+    Veiciet savu pirmo API izsaukumu un redziet tiešos meklēšanas rezultātus dažu minūšu laikā
+  </Card>
+  <Card title="Autentifikācija" icon="lock" href="/api/authentication">
+    Uzziniet par API atslēgām, OAuth 2.0 un pakalpojumu kontiem
+  </Card>
+</CardGroup>

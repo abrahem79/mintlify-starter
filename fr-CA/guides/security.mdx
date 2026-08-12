@@ -1,0 +1,72 @@
+---
+title: "Sécurisez votre compte Google et vos identifiants de développeur"
+sidebarTitle: "Sécurité"
+description: "Protégez votre compte Google avec la validation en deux étapes, gérez les restrictions de clés d'API et suivez les bonnes pratiques pour la sécurité des identifiants."
+---
+
+Votre compte Google est la clé de vos courriels, de vos documents, de votre infrastructure infonuagique et de vos identifiants d'API — ce qui en fait l'un des actifs les plus précieux et les plus fréquemment ciblés que vous gérez. Le sécuriser exige à la fois de verrouiller votre compte avec une authentification forte et de traiter les clés d'API et les identifiants de comptes de service dont dépendent vos applications avec le même soin qu'un mot de passe. Ce guide couvre les étapes essentielles pour renforcer les deux.
+
+## Validation en deux étapes
+
+La validation en deux étapes (2SV) ajoute une deuxième preuve d'identité par-dessus votre mot de passe, de sorte qu'un mot de passe volé à lui seul ne suffit pas à accéder à votre compte. Google recommande d'utiliser une application d'authentification comme deuxième facteur, car elle génère des codes hors ligne et n'est pas vulnérable aux attaques par échange de carte SIM comme le SMS.
+
+<Steps>
+  <Step title="Ouvrir Mon compte">
+    Rendez-vous à [myaccount.google.com](https://myaccount.google.com) et connectez-vous si demandé.
+  </Step>
+  <Step title="Aller à Sécurité">
+    Cliquez sur **Sécurité** dans le panneau de navigation de gauche.
+  </Step>
+  <Step title="Lancer la configuration de la validation en deux étapes">
+    Sous la section **Comment vous vous connectez à Google**, cliquez sur **Validation en deux étapes**, puis sur **Commencer**.
+  </Step>
+  <Step title="Choisir votre deuxième facteur">
+    Google vous proposera la méthode la plus forte disponible pour votre compte. Pour une sécurité optimale, choisissez **Application d'authentification** — numérisez le code QR avec Google Authenticator ou toute application compatible TOTP (Authy, 1Password, etc.). Vous pouvez aussi utiliser une clé de sécurité matérielle (FIDO2/WebAuthn) pour une protection encore plus forte.
+  </Step>
+  <Step title="Confirmer et enregistrer les codes de secours">
+    Complétez l'invite de validation, puis téléchargez et rangez vos **codes de secours** dans un endroit sécurisé. Ces codes à usage unique vous permettent de retrouver l'accès si vous perdez votre appareil de deuxième facteur.
+  </Step>
+</Steps>
+
+## Restrictions de clés d'API
+
+Une clé d'API non restreinte peut être utilisée par quiconque l'obtient, depuis n'importe quelle application, pour appeler toute API Google activée dans votre projet. Les restrictions réduisent le rayon d'impact si une clé est un jour exposée.
+
+| Type de restriction | Comment la définir | Exemple |
+|---|---|---|
+| **Référents HTTP** | Dans la console Cloud : **Credentials → Edit key → Application restrictions → HTTP referrers** | N'autoriser que `https://yourdomain.com/*` afin que la clé soit rejetée si elle est utilisée depuis tout autre site |
+| **Adresses IP** | Dans la console Cloud : **Credentials → Edit key → Application restrictions → IP addresses** | N'autoriser que l'IP statique de votre serveur (p. ex. `203.0.113.42`) afin que la clé ne fonctionne que depuis votre arrière-plan |
+| **Restriction d'API** | Dans la console Cloud : **Credentials → Edit key → API restrictions → Restrict key** | Limiter la clé à une seule API (p. ex. Maps JavaScript API) afin qu'elle ne puisse pas appeler Gmail ou Drive |
+
+Appliquez les trois couches dans la mesure du possible : restreignez par référent ou IP *et* verrouillez la clé aux seules API dont elle a besoin.
+
+## Rotation des clés d'API
+
+Même avec des restrictions en place, vous devriez faire tourner les clés périodiquement, ou immédiatement si vous soupçonnez qu'une clé a été compromise.
+
+1. Dans la [console Cloud](https://console.cloud.google.com), allez à **APIs & Services → Credentials**.
+2. Cliquez sur **Create Credentials → API key** pour générer une nouvelle clé avec les mêmes restrictions que l'ancienne.
+3. Mettez à jour la configuration de votre application pour utiliser la nouvelle clé et confirmez que tout fonctionne correctement.
+4. Retournez à la page Credentials, cliquez sur le menu de dépassement (**⋮**) de l'ancienne clé, et sélectionnez **Delete**. L'ancienne clé cessera de fonctionner immédiatement.
+
+Évitez une interruption de service en vous assurant que la nouvelle clé est déployée et vérifiée *avant* de supprimer l'ancienne.
+
+## Bilan de sécurité
+
+Le Bilan de sécurité de Google vous donne un aperçu personnalisé de la posture de sécurité de votre compte en un seul endroit. Rendez-vous à [myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup) pour examiner :
+
+- **Événements de sécurité récents** — connexions inhabituelles ou changements de mot de passe.
+- **Vos appareils** — chaque appareil actuellement connecté à votre compte, avec l'option de retirer ceux que vous ne reconnaissez pas.
+- **Accès des applications tierces** — applications et services qui ont reçu un accès OAuth à votre compte, afin que vous puissiez révoquer ceux que vous n'utilisez plus.
+- **État de la validation en deux étapes** — confirmation que votre deuxième facteur est actif et quelle méthode vous utilisez.
+- **Paramètres Gmail et Drive** — adresses de transfert, comptes délégués et paramètres de partage qui pourraient exposer vos données.
+
+Effectuez le Bilan de sécurité au moins une fois par trimestre, et immédiatement après toute compromission suspectée du compte.
+
+<Warning>
+Ne validez jamais de clés d'API, de secrets clients OAuth ou de fichiers JSON de comptes de service dans du code source — pas même dans un dépôt privé. L'historique Git est permanent, les dépôts peuvent être rendus publics par accident et des scanneurs automatisés collectent en continu des identifiants dans les dépôts publics. Stockez plutôt les secrets dans des variables d'environnement ou un gestionnaire de secrets dédié, et ajoutez les motifs de fichiers d'identifiants (p. ex., `*.json`, `.env`) à votre `.gitignore` avant votre premier commit.
+</Warning>
+
+<Tip>
+Pour les charges de production, utilisez [Google Cloud Secret Manager](https://cloud.google.com/secret-manager) pour stocker, versionner et auditer l'accès aux identifiants. Secret Manager s'intègre nativement à Cloud Run, Cloud Functions et GKE au moyen de liaisons IAM, afin que vos services puissent récupérer les secrets à l'exécution sans jamais les écrire sur disque ni les intégrer aux images de conteneur.
+</Tip>

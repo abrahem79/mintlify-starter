@@ -1,47 +1,77 @@
 ---
-title: "クイックスタート"
-description: "成功への最短経路をガイドとともに始めましょう"
+title: "クイックスタート: サインインして最初の Google API 呼び出しを行う"
+sidebarTitle: "クイックスタート"
+description: "Google にサインインし、Cloud Console から API 認証情報を取得して、初めてのライブ検索 API リクエストを実行するまでを 10 分以内で完了します。"
 ---
 
-あなたの製品を使い始める方法を説明してください。最初にすべきことは何ですか？前提条件はありますか？
-
-クイックスタートは、ゼロから製品を使い始められる状態まで導くものです。ユーザーはすぐに成果を得られ、何が達成できるのかを実感できます。
+このクイックスタートでは、Google へのサインイン、API 認証情報の取得、そして初めての API リクエスト実行までを 10 分以内でご案内します。完了する頃には、ご自身のアプリケーションに組み込めるライブ検索結果を返す、動作するAPI 呼び出しが手に入ります。
 
 ## 前提条件
 
-始める前に、以下が必要です：
+始める前に、以下のものをご用意ください:
 
-- 要件その 1（例：Node.js 18 以降、無料アカウント、API キー）
-- 要件その 2（例：対応デバイス、対応ブラウザ、対応オペレーティングシステム）
+- **Google アカウント** — まだお持ちでない場合は [無料で作成](https://accounts.google.com/signup) してください。
+- **基本的な HTTP の知識** — GET/POST リクエストの送信と JSON レスポンスの読み取りに慣れていること。
+- コマンドラインターミナル、または [curl](https://curl.se/) や [Postman](https://www.postman.com/) などの HTTP クライアント。
 
-## はじめましょう
+## 手順
 
 <Steps>
-  <Step title="インストール">
-    製品のインストール方法またはサインアップ方法を説明します。
+  <Step title="サインイン">
+    [accounts.google.com](https://accounts.google.com) にアクセスし、Google アカウントでサインインします。初めての場合は、先にアカウント作成フローを完了してください。
+  </Step>
+  <Step title="API 認証情報を取得する">
+    1. [Google Cloud Console](https://console.cloud.google.com) を開きます。
+    2. 新しいプロジェクトを作成する(または既存のプロジェクトを選択)します。
+    3. **APIs & Services → Library** に移動し、**Custom Search API** を有効化します。
+    4. **APIs & Services → Credentials** に移動し、**Create Credentials → API key** をクリックします。
+    5. 新しい API キーをコピーし、安全な場所に保管します。
+    6. [programmablesearchengine.google.com](https://programmablesearchengine.google.com) で Programmable Search Engine を作成し、**Search Engine ID**(`cx`)をコピーします。
+  </Step>
+  <Step title="初めてのリクエストを行う">
+    以下のコマンドの `YOUR_API_KEY` と `YOUR_SEARCH_ENGINE_ID` を、コピーした値に置き換えて、ターミナルで実行します:
 
     ```bash
-    npm install your-package
+    curl -X GET "https://www.googleapis.com/customsearch/v1?q=hello+world&key=YOUR_API_KEY&cx=YOUR_SEARCH_ENGINE_ID"
     ```
   </Step>
-  <Step title="設定">
-    初回使用前に必要なセットアップや設定について説明します。
+  <Step title="レスポンスを確認する">
+    リクエストが成功すると、検索メタデータと結果の配列を含む JSON オブジェクトが返されます。以下のようなレスポンスが得られるはずです:
 
-    ```bash
-    your-cli init
+    ```json
+    {
+      "kind": "customsearch#search",
+      "url": {
+        "type": "application/json",
+        "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&..."
+      },
+      "queries": {
+        "request": [
+          {
+            "title": "Google Custom Search - hello world",
+            "totalResults": "4970000000",
+            "searchTerms": "hello world",
+            "count": 10,
+            "startIndex": 1
+          }
+        ]
+      },
+      "items": [
+        {
+          "kind": "customsearch#result",
+          "title": "Hello, World! – Wikipedia",
+          "htmlTitle": "\u003cb\u003eHello, World!\u003c/b\u003e – Wikipedia",
+          "link": "https://en.wikipedia.org/wiki/%22Hello,_World!%22_program",
+          "snippet": "A \"Hello, World!\" program is generally a simple computer program that outputs the phrase \"Hello, World!\" to a display device."
+        }
+      ]
+    }
     ```
-  </Step>
-  <Step title="実行">
-    ユーザーが動作を確認するために最初に行うことを示します。
 
-    ```bash
-    your-cli start
-    ```
+    `items` 配列には検索結果が入っています。各オブジェクトにはページタイトル、URL(`link`)、そして UI にそのまま表示できる短い `snippet` が含まれています。
   </Step>
 </Steps>
 
 <Tip>
-  ユーザーがヘルプを得られる手段を提供してください。サポートページへのリンク、カスタマーサポート担当者とのチャット、製品のフォーラムなどが考えられます。
-
-  例：お困りですか？[support@yourcompany.com](mailto:support@yourcompany.com) までお問い合わせください。
+  上記の例では、認証にシンプルな API キーを使用しています。Google API は、ユーザーデータにアクセスするリクエストのために OAuth 2.0 もサポートしています。対応するすべての認証方式の詳しい解説は、[認証ガイド](/api/authentication) を参照してください。
 </Tip>

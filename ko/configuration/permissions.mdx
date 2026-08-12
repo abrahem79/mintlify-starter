@@ -1,0 +1,133 @@
+---
+title: "Google 앱 권한 및 서드파티 접근 관리"
+sidebarTitle: "권한"
+description: "서드파티 앱 접근을 검토하고 취소하며, Google Workspace 공유 정책을 관리하고, 연결된 애플리케이션에 대한 API 스코프를 제어하세요."
+---
+
+Google 계정으로 서드파티 앱과 서비스에 로그인하거나 데이터에 접근하도록 승인하면, 해당 앱은 계정의 특정 부분에 접근 권한을 부여하는 권한 토큰을 받게 됩니다. 시간이 지남에 따라, 더 이상 사용하지 않는 앱을 포함해 수십 개의 연결된 앱이 누적될 수 있습니다. 불필요한 권한을 정기적으로 검토하고 취소하는 것은 계정 보안과 개인 정보를 보호하는 가장 효과적인 방법 중 하나입니다.
+
+## 연결된 앱 보기
+
+현재 Google 계정에 접근할 수 있는 모든 앱을 계정 대시보드의 **보안** 섹션에서 볼 수 있습니다.
+
+<Steps>
+  <Step title="Google 계정 열기">
+    [myaccount.google.com](https://myaccount.google.com)으로 이동해 로그인하세요.
+  </Step>
+  <Step title="보안으로 이동">
+    왼쪽 사이드바에서 **보안**을 클릭하세요.
+  </Step>
+  <Step title="계정 접근 권한이 있는 서드파티 앱 열기">
+    **서드파티 앱 및 서비스와의 연결** 섹션으로 스크롤하고 **모든 연결 보기**를 클릭하세요.
+  </Step>
+  <Step title="목록 검토">
+    접근 권한이 부여된 모든 앱과 마지막 접근 날짜, 각 앱이 보유한 권한을 함께 볼 수 있습니다.
+  </Step>
+</Steps>
+
+<Note>
+  "Google로 로그인"을 사용해 로그인한 앱은 프로그래밍 방식으로 API 접근 권한이 부여된 앱과 함께 여기 표시됩니다. 두 유형 모두 같은 페이지에서 검토하고 취소할 수 있습니다.
+</Note>
+
+## 접근 취소
+
+앱을 더 이상 사용하지 않거나 연결된 앱이 낯설다면 즉시 접근 권한을 취소해야 합니다.
+
+<Steps>
+  <Step title="연결된 앱으로 이동">
+    [myaccount.google.com](https://myaccount.google.com)에서 서드파티 앱 아래의 **보안** → **모든 연결 보기**로 이동하세요.
+  </Step>
+  <Step title="제거할 앱 선택">
+    접근을 취소하려는 앱을 클릭하세요.
+  </Step>
+  <Step title="권한 검토">
+    앱에 부여된 스코프 목록을 읽어 보세요. 이는 앱이 접근할 수 있는 데이터를 정확히 보여줍니다.
+  </Step>
+  <Step title="모든 연결 삭제 클릭">
+    **[앱 이름]과의 모든 연결 삭제**를 클릭하고 프롬프트가 나타나면 확인하세요.
+  </Step>
+  <Step title="제거 확인">
+    앱은 더 이상 연결된 앱 목록에 나타나지 않으며 취소된 토큰으로 계정에 접근할 수 없습니다.
+  </Step>
+</Steps>
+
+<Warning>
+  접근을 취소하면 앱의 액세스 토큰이 즉시 무효화됩니다 — 앱은 더 이상 Google 데이터를 읽거나 쓸 수 없습니다. 그러나 앱이 이미 자체 시스템에 다운로드하거나 저장한 데이터는 자동으로 삭제되지 않습니다. 앱의 자체 개인 정보 보호 설정을 확인하거나 개발자에게 데이터 삭제를 요청하세요.
+</Warning>
+
+## OAuth 스코프
+
+OAuth 스코프는 앱이 Google 계정으로 무엇을 할 수 있는지 정확하게 정의합니다. 앱이 접근을 요청할 때, 특정 기능에 매핑되는 스코프 문자열 목록을 지정합니다. 서드파티 애플리케이션에 접근 권한을 부여하기 전에 항상 요청된 스코프를 검토해야 합니다.
+
+스코프 문자열은 다음 형식을 따릅니다:
+
+```text
+https://www.googleapis.com/auth/[service].[permission-level]
+```
+
+예를 들어:
+
+```text
+https://www.googleapis.com/auth/drive.readonly
+```
+
+이 스코프는 앱이 Google Drive의 파일을 읽을 수 있게 하지만, 만들거나 수정하거나 삭제하는 것은 허용하지 않습니다.
+
+### 일반적인 OAuth 스코프
+
+| 스코프 | 접근 수준 | 앱이 할 수 있는 것 |
+|---|---|---|
+| `https://www.googleapis.com/auth/drive.readonly` | 읽기 전용 | Drive의 파일 보기 및 다운로드 |
+| `https://www.googleapis.com/auth/drive` | 전체 접근 | Drive의 모든 파일을 만들고 편집하고 삭제 |
+| `https://www.googleapis.com/auth/gmail.readonly` | 읽기 전용 | 모든 Gmail 메시지 및 설정 읽기 |
+| `https://www.googleapis.com/auth/gmail.send` | 전송 전용 | 여러분을 대신해 이메일 전송 |
+| `https://www.googleapis.com/auth/gmail.modify` | 읽기/쓰기 | 이메일을 읽고, 보내고, 삭제하고, 관리 |
+| `https://www.googleapis.com/auth/calendar.readonly` | 읽기 전용 | 캘린더 이벤트 보기 |
+| `https://www.googleapis.com/auth/calendar` | 전체 접근 | 캘린더 이벤트를 만들고, 편집하고, 삭제 |
+| `https://www.googleapis.com/auth/userinfo.email` | 프로필 | 이메일 주소에 접근 |
+| `https://www.googleapis.com/auth/userinfo.profile` | 프로필 | 기본 프로필 정보에 접근 |
+| `openid` | 신원 | OpenID Connect를 통해 신원 확인 |
+
+<Warning>
+  애플리케이션을 완전히 신뢰하고 해당 수준의 접근이 명확히 필요하지 않는 한 `https://www.googleapis.com/auth/drive` 또는 `https://www.googleapis.com/auth/gmail.modify` 같은 광범위한 스코프를 부여하지 마세요. 항상 앱의 기능을 충족하는 가장 제한적인 스코프를 선호하세요. Drive에서 파일을 읽기만 하면 되는 앱은 절대 전체 Drive 쓰기 접근을 요청해서는 안 됩니다.
+</Warning>
+
+<Tip>
+  Google API로 자체 애플리케이션을 구축할 때는 최소 권한 원칙을 따르세요: 앱이 진정으로 필요한 스코프만 요청하세요. 이는 사용자 신뢰를 쌓고 앱의 자격 증명이 노출되었을 때 보안 위험을 줄여줍니다.
+</Tip>
+
+## Workspace 관리자 권한
+
+Google Workspace 조직을 관리하는 경우, 사용자가 어떤 서드파티 앱을 자신의 업무 계정에 연결할 수 있는지 통제하기 위한 추가 컨트롤이 있습니다. 이러한 설정은 **Google 관리 콘솔**에서 관리됩니다.
+
+<Steps>
+  <Step title="관리 콘솔 열기">
+    Workspace 관리자 자격 증명으로 [admin.google.com](https://admin.google.com)에 로그인하세요.
+  </Step>
+  <Step title="보안 → API 컨트롤로 이동">
+    **보안** → **접근 및 데이터 관리** → **API 컨트롤**로 이동하세요.
+  </Step>
+  <Step title="도메인 전체 앱 접근 관리">
+    **서드파티 앱 접근 관리**를 클릭해 조직의 사용자가 연결한 모든 OAuth 앱을 확인하세요.
+  </Step>
+  <Step title="앱 신뢰 설정 구성">
+    각 앱에 대해 신뢰 수준을 설정할 수 있습니다:
+    - **신뢰됨** — 사용자가 요청된 모든 스코프를 부여할 수 있음
+    - **제한됨** — 사용자가 제한되지 않음으로 표시된 Google 서비스에만 접근을 부여할 수 있음
+    - **차단됨** — 조직의 어떤 사용자도 이 앱을 연결할 수 없음
+  </Step>
+  <Step title="조직 전체 기본값 설정">
+    **앱 접근 제어** 아래에서, 사용자가 기본적으로 신뢰되지 않은 앱에 접근을 부여할 수 있는지 여부를 구성하세요.
+  </Step>
+</Steps>
+
+| 관리자 컨트롤 | 설명 |
+|---|---|
+| **앱별 신뢰 수준** | 조직에 대해 개별 OAuth 앱을 세부적으로 허용하거나 차단 |
+| **도메인 전체 위임** | 서비스 계정이 사용자를 대신해 조직 전체 접근을 갖도록 부여 |
+| **앱 접근 제어 기본값** | 신뢰되지 않은 서드파티 앱에 대한 조직 전체 정책 설정 |
+| **감사 로그** | 어떤 사용자가 언제 어떤 앱을 승인했는지 검토 |
+
+<Note>
+  도메인 전체 위임(DWD)은 서비스 계정에 조직의 어떤 사용자든 가장할 수 있는 권한을 부여합니다. 반드시 필요할 때만 DWD를 사용하고, 어떤 서비스 계정에 이러한 수준의 접근이 부여되어 있는지 정기적으로 감사하세요.
+</Note>

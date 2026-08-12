@@ -1,0 +1,145 @@
+---
+title: "Google のサインイン、ドライブ、API エラーのトラブルシューティング"
+sidebarTitle: "トラブルシューティング"
+description: "Google のサインイン失敗、ドライブ同期の問題、API エラーコード、クォータ制限、検索インデックスの遅延など、よくある問題を診断して修正します。"
+---
+
+Google のような信頼できるサービスでも、API が想定外のエラーコードを返す、同期が動かなくなる、サインインが完了しないなど、時に問題が発生することがあります。このガイドでは、Google 製品と開発者プラットフォーム全体にわたる最も一般的な問題を、それぞれを診断して解決するための明確な手順とともに順を追って説明します。
+
+<Tip>
+  個別の問題をトラブルシューティングする前に、[Google Workspace ステータスダッシュボード](https://www.google.com/appsstatus) を確認し、1 つ以上の Google サービスに影響を与えるアクティブな障害があるかどうかを確認してください。多くのサインイン、同期、API の問題は、自然に解決する一時的なインフラインシデントが原因です。
+</Tip>
+
+## API エラーコード
+
+Google API がエラーを返すとき、HTTP ステータスコードとエラーメッセージを合わせて見ると、何が問題だったかが正確に分かります。以下の表では、最も一般的なエラーレスポンスとその対処方法を扱います。
+
+| HTTP ステータス | エラーコード | 意味 | 修正方法 |
+|---|---|---|---|
+| **400** | `INVALID_ARGUMENT` | リクエストが不正な形式か、無効なパラメーターを含んでいる | API リファレンスに照らしてリクエストボディとクエリパラメーターを確認し、必須フィールドの欠落や不正なデータ型がないかチェックする |
+| **401** | `UNAUTHENTICATED` | リクエストに有効な認証情報がない | OAuth トークンを更新するか、API キーがリクエストヘッダーに含まれているか確認する。認証情報が期限切れでないことを確認する |
+| **403** | `PERMISSION_DENIED` | 認証されたアカウントがこの操作を実行する権限を持っていない | 必要な OAuth スコープが付与されており、API が Cloud プロジェクトで有効化されていることを確認する。リソースの共有設定も確認する |
+| **429** | `RESOURCE_EXHAUSTED` | この API のクォータまたはレート制限を超えた | 指数バックオフとリトライロジックを実装する。必要に応じて Cloud Console 経由でクォータ増加を要求する |
+| **500** | `INTERNAL` | Google のサーバーで想定外のエラーが発生した | 指数バックオフでリクエストをリトライする。エラーが続く場合は [Google Cloud Status](https://status.cloud.google.com) ページを確認する |
+
+<Note>
+  すべての Google API のエラーレスポンスには、`code`、`message`、`status` フィールドを含む JSON ボディが含まれます。最も有用な診断情報を得るために、HTTP ステータスコードだけでなく、エラーレスポンスボディ全体を必ずログに記録してください。
+</Note>
+
+## サインインできない
+
+Google アカウントにサインインできない場合は、以下のステップを順番に実行してください。
+
+<Steps>
+  <Step title="Caps Lock とキーボード配列を確認する">
+    パスワードは大文字と小文字を区別します。パスワードを再入力する前に、Caps Lock がオフになっていること、正しいキーボード言語配列を使っていることを確認してください。
+  </Step>
+  <Step title="パスワードをお忘れの場合を使う">
+    サインインページで **パスワードをお忘れの場合** をクリックします。Google は復元用のメールアドレスまたは電話番号に確認コードを送信します。コードを入力して本人確認を行い、新しいパスワードを作成してください。
+  </Step>
+  <Step title="2 段階認証の方法を確認する">
+    2 段階認証プロセス (2SV) を有効にしていて認証コードが届かない場合、電話に電波があり、Google Authenticator アプリ（または他の TOTP アプリ）が時刻同期された正しいコードを表示していることを確認してください。2SV デバイスへのアクセスを失った場合は、保存されているバックアップコードを使うか、[accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery) でアカウント復元を依頼します。
+  </Step>
+  <Step title="アカウントの停止をチェックする">
+    Google が異常なアクティビティやポリシー違反を検出すると、アカウントが一時的に停止される場合があります。この場合、サインインページに明確なメッセージが表示されます。画面の指示に従って停止に対して異議申し立てをするか、本人確認を行ってください。
+  </Step>
+  <Step title="別のブラウザまたはデバイスを試す">
+    ブラウザ拡張機能、キャッシュされた認証情報、破損したクッキーがサインインを妨げることがあります。ローカルの問題を切り分けるには、シークレット/プライベートウィンドウや別のブラウザからサインインを試してください。
+  </Step>
+</Steps>
+
+## Google ドライブの同期の問題
+
+コンピューターと Google ドライブの間でファイルが同期しない、または Drive for Desktop が動かなくなった場合は、以下の手順に従ってください。
+
+<AccordionGroup>
+  <Accordion title="ストレージクォータを確認する">
+    Google アカウントのストレージがいっぱいだと、ドライブは新しいファイルの同期を停止し、変更のアップロードに失敗する場合があります。[one.google.com/storage](https://one.google.com/storage) にアクセスして使用状況を確認してください。上限を超えている場合は、Gmail、ドライブのゴミ箱、Google フォトから不要なファイルを削除するか、Google One プランにアップグレードしてください。
+  </Accordion>
+
+  <Accordion title="インターネット接続を確認する">
+    Drive for Desktop は同期のために安定したインターネット接続を必要とします。ブラウザを開いて Web ページを読み込み、接続を確認してください。接続が断続的な場合、同期は自動的に一時停止され、接続が安定すると再開されます。
+  </Accordion>
+
+  <Accordion title="Drive for Desktop を再起動する">
+    システムトレイ（Windows）またはメニューバー（macOS）の Drive for Desktop アイコンをクリックし、**終了** を選択します。アプリケーションフォルダまたはスタートメニューから再起動します。クライアントを再起動すると、同期状態が再確認され、多くの一時的な問題が解決します。
+  </Accordion>
+
+  <Accordion title="Google アカウントを再リンクする">
+    アプリが認証エラーを表示する場合は、アカウントを再リンクする必要があるかもしれません。Drive for Desktop の設定を開き、**アカウント** に移動して、Google アカウントからサインアウトして再サインインします。これにより、同期されているファイルに影響を与えることなく認証情報が更新されます。
+  </Accordion>
+
+  <Accordion title="ファイルパスの長さや命名の問題を確認する">
+    Drive for Desktop は、システム制限を超えるパス（Windows では 260 文字）や、OS でサポートされていない文字を含むファイル名の同期を拒否する場合があります。問題のあるファイルの名前を変更するか、より短いパスに移動し、Drive for Desktop のエラーログで具体的なファイル名を確認してください。
+  </Accordion>
+</AccordionGroup>
+
+## API クォータ超過 (429)
+
+`429 RESOURCE_EXHAUSTED` エラーを受け取ることは、アプリケーションが短時間に送信したリクエストが多すぎるか、1 日のクォータ制限に達したことを意味します。以下は対処方法です。
+
+### 指数バックオフを実装する
+
+失敗したリクエストをすぐに再試行するのではなく、各リトライの間に徐々に長い間隔を空けてください。これにより、API が負荷を受けている間にクライアントが叩き続けるのを防ぎ、クォータウィンドウのリセットまで時間を与えます。
+
+```python
+import time
+import random
+
+def api_request_with_backoff(request_func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return request_func()
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limited. Retrying in {wait:.2f} seconds...")
+                time.sleep(wait)
+            else:
+                raise
+```
+
+### クォータ増加を要求する
+
+アプリケーションが継続的にクォータ制限に達する場合は、Google Cloud Console を通じて増加を要求できます。
+
+<Steps>
+  <Step title="Cloud Console を開く">
+    [console.cloud.google.com](https://console.cloud.google.com) にアクセスし、プロジェクトを選択します。
+  </Step>
+  <Step title="APIs & Services → Quotas & System Limits に移動する">
+    **APIs & Services** → **Quotas & System Limits** に移動し、スロットリングされている API でフィルタリングします。
+  </Step>
+  <Step title="増加させるクォータを選ぶ">
+    特定のクォータ（例: 「Queries per day」または「Requests per minute」）を見つけ、その隣のチェックボックスをクリックしてから、**Edit quotas** をクリックします。
+  </Step>
+  <Step title="リクエストを送信する">
+    希望する新しいクォータ値と簡単な理由を入力します。Google は通常、クォータ増加のリクエストを 2〜3 営業日以内にレビューします。
+  </Step>
+</Steps>
+
+## 検索結果が更新されない
+
+Web ページに変更を加えたが Google の検索結果に反映されていない場合、遅延はほぼ常にエラーではなく、Google のクロールとインデックス化のパイプラインが原因です。
+
+<AccordionGroup>
+  <Accordion title="インデックス化の遅延を理解する">
+    Google のクローラー (Googlebot) がページを訪問した後、インデックスが更新され、その変更が検索結果に反映されるまでに追加の時間がかかります。ほとんどのサイトでは、このプロセスに数日から数週間かかります。新しいサイトや権威の低いページは、そもそもクロールされるまでにより時間がかかる場合があります。
+  </Accordion>
+
+  <Accordion title="Google のキャッシュされたバージョンを確認する">
+    Google 検索で `cache:yourdomain.com/page` と検索すると、Google が最後にインデックス化したページのバージョンを確認できます。キャッシュされたバージョンが古い場合、Google はまだページを再クロールしていないだけです。
+  </Accordion>
+
+  <Accordion title="Search Console 経由で再インデックスを依頼する">
+    特定のページを緊急に更新する必要がある場合は、[Google Search Console](https://search.google.com/search-console) の **URL 検査** ツールを使用します。URL を貼り付けて、**インデックス登録をリクエスト** をクリックし、Googlebot にできるだけ早くページを再クロールするよう依頼します。これで即時の結果は保証されませんが、クロールキュー内でその URL が優先されます。
+  </Accordion>
+
+  <Accordion title="robots.txt と noindex タグを確認する">
+    ページが誤ってインデックス化からブロックされていないかを確認してください。`robots.txt` ファイルが Googlebot による URL のクロールを許可していないことを確認し、ページに `<meta name="robots" content="noindex">` タグがないことを確認します。いずれかがあると、コンテンツは検索結果に表示されません。
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  同じ URL の再インデックスを頻繁に要求してもプロセスは高速化されません。Google のインデックス化パイプラインは自動的に管理されており、重複したリクエストを送信してもクロールの優先度がさらに上がることはありません。
+</Warning>

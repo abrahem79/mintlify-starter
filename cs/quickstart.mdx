@@ -1,47 +1,77 @@
 ---
-title: "Rychlý start"
-description: "Začněte s průvodcem po nejrychlejší cestě k úspěšnému výsledku"
+title: "Rychlý start: Přihlaste se a proveďte první volání Google API"
+sidebarTitle: "Rychlý start"
+description: "Přihlaste se ke Googlu, získejte přihlašovací údaje k API z Cloud Console a proveďte svůj první živý požadavek na vyhledávací API — vše za méně než 10 minut."
 ---
 
-Popište, jak někdo začíná používat váš produkt. Co je první věc, kterou musí udělat? Jsou nějaké předpoklady?
-
-Rychlý start by měl uživatele provést od nuly až po používání vašeho produktu. Získají rychlý úspěch a představu o tom, čeho mohou dosáhnout.
+Tento rychlý start vás provede přihlášením ke Googlu, získáním přihlašovacích údajů k API a odesláním prvního požadavku na API — to vše za méně než 10 minut. Na konci budete mít funkční volání API vracející živé výsledky vyhledávání, na kterém můžete stavět ve své vlastní aplikaci.
 
 ## Předpoklady
 
-Než začnete, musíte mít:
+Než začnete, ujistěte se, že máte následující:
 
-- Požadavek jedna (například Node.js 18+, bezplatný účet, API klíč)
-- Požadavek dva (například kompatibilní zařízení, kompatibilní prohlížeč, kompatibilní operační systém)
+- **Účet Google** — [vytvořte si jej zdarma](https://accounts.google.com/signup), pokud jej ještě nemáte.
+- **Základní znalost HTTP** — obeznámenost s odesíláním požadavků GET/POST a čtením odpovědí JSON.
+- Terminál příkazového řádku nebo HTTP klienta, jako je [curl](https://curl.se/) nebo [Postman](https://www.postman.com/).
 
-## Začínáme
+## Kroky
 
 <Steps>
-  <Step title="Instalace">
-    Popište, jak nainstalovat váš produkt nebo se zaregistrovat.
+  <Step title="Přihlaste se">
+    Přejděte na [accounts.google.com](https://accounts.google.com) a přihlaste se svým účtem Google. Pokud tak činíte poprvé, dokončete nejprve proces vytvoření účtu.
+  </Step>
+  <Step title="Získejte přihlašovací údaje k API">
+    1. Otevřete [Google Cloud Console](https://console.cloud.google.com).
+    2. Vytvořte nový projekt (nebo vyberte existující).
+    3. Přejděte do **APIs & Services → Library** a aktivujte **Custom Search API**.
+    4. Přejděte do **APIs & Services → Credentials** a klikněte na **Create Credentials → API key**.
+    5. Zkopírujte svůj nový klíč API a uložte jej na bezpečné místo.
+    6. Vytvořte Programmable Search Engine na [programmablesearchengine.google.com](https://programmablesearchengine.google.com) a zkopírujte si **Search Engine ID** (`cx`).
+  </Step>
+  <Step title="Odešlete svůj první požadavek">
+    V níže uvedeném příkazu nahraďte `YOUR_API_KEY` a `YOUR_SEARCH_ENGINE_ID` hodnotami, které jste zkopírovali, a poté jej spusťte v terminálu:
 
     ```bash
-    npm install your-package
+    curl -X GET "https://www.googleapis.com/customsearch/v1?q=hello+world&key=YOUR_API_KEY&cx=YOUR_SEARCH_ENGINE_ID"
     ```
   </Step>
-  <Step title="Konfigurace">
-    Popište případné nastavení nebo konfiguraci potřebnou před prvním použitím.
+  <Step title="Zkontrolujte odpověď">
+    Úspěšný požadavek vrátí objekt JSON obsahující metadata vyhledávání a pole výsledků. Měli byste vidět odpověď podobnou této:
 
-    ```bash
-    your-cli init
+    ```json
+    {
+      "kind": "customsearch#search",
+      "url": {
+        "type": "application/json",
+        "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&..."
+      },
+      "queries": {
+        "request": [
+          {
+            "title": "Google Custom Search - hello world",
+            "totalResults": "4970000000",
+            "searchTerms": "hello world",
+            "count": 10,
+            "startIndex": 1
+          }
+        ]
+      },
+      "items": [
+        {
+          "kind": "customsearch#result",
+          "title": "Hello, World! – Wikipedia",
+          "htmlTitle": "\u003cb\u003eHello, World!\u003c/b\u003e – Wikipedia",
+          "link": "https://en.wikipedia.org/wiki/%22Hello,_World!%22_program",
+          "snippet": "A \"Hello, World!\" program is generally a simple computer program that outputs the phrase \"Hello, World!\" to a display device."
+        }
+      ]
+    }
     ```
-  </Step>
-  <Step title="Spusťte to">
-    Ukažte první věc, kterou uživatel udělá, aby viděl, že to funguje.
 
-    ```bash
-    your-cli start
-    ```
+    Pole `items` obsahuje vaše výsledky vyhledávání. Každý objekt zahrnuje název stránky, URL (`link`) a krátký úryvek (`snippet`), který můžete přímo zobrazit ve svém uživatelském rozhraní.
   </Step>
 </Steps>
 
 <Tip>
-  Poskytněte lidem způsob, jak získat pomoc. Může to být odkaz na stránku podpory, chat s pracovníkem zákaznické podpory nebo fórum pro váš produkt.
-
-  Příklad: Potřebujete pomoc? Kontaktujte nás na [support@yourcompany.com](mailto:support@yourcompany.com).
+  Výše uvedený příklad používá pro autentizaci jednoduchý klíč API. Rozhraní Google API také podporují OAuth 2.0 pro požadavky, které přistupují k uživatelským datům. Úplný přehled všech podporovaných metod autentizace najdete v [průvodci autentizací](/api/authentication).
 </Tip>

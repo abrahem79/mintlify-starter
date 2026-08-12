@@ -1,0 +1,58 @@
+---
+title: "Google Account Setup: Enable APIs and Get Credentials"
+sidebarTitle: "Account Setup"
+description: "Create a Google Account, set up a Cloud Console project, enable your chosen APIs, and generate credentials to authenticate your application."
+---
+
+Before you can use Google's developer APIs, you need a Google Account, a Cloud project to house your resources, and a set of credentials your application will use to authenticate. This guide walks you through each of those steps so you're ready to make your first API call.
+
+## Setup Steps
+
+<Steps>
+  <Step title="Create a Google Account">
+    If you don't already have a Google Account, go to [accounts.google.com/signup](https://accounts.google.com/signup) and complete the registration form. Your Google Account gives you access to every Google service, including the Cloud Console, Gmail, Drive, and all developer APIs.
+  </Step>
+  <Step title="Go to Google Cloud Console">
+    Navigate to the [Google Cloud Console](https://console.cloud.google.com) and sign in with your Google Account. The Console is your central hub for managing Google Cloud projects, enabling APIs, and creating credentials.
+  </Step>
+  <Step title="Create a Project">
+    1. Click the project selector at the top of the Console page.
+    2. Click **New Project**.
+    3. Enter a descriptive **Project name** (for example, `my-search-app`).
+    4. Select a **Billing account** if prompted, then click **Create**.
+
+    All the APIs and credentials you create will be scoped to this project, making it easy to manage usage and billing separately for each application.
+  </Step>
+  <Step title="Enable APIs">
+    1. In the left-hand navigation, go to **APIs & Services → Library**.
+    2. Search for the API you want to use (for example, **Custom Search API**, **Maps JavaScript API**, or **Gmail API**).
+    3. Click the API name, then click **Enable**.
+
+    Repeat this step for every Google API your application needs. Only enabled APIs can receive requests from your credentials.
+  </Step>
+  <Step title="Create Credentials (API Key)">
+    1. Go to **APIs & Services → Credentials**.
+    2. Click **Create Credentials** and select **API key**.
+    3. Google generates a new API key immediately. Click **Copy** to copy it to your clipboard.
+    4. Optionally, click **Edit API key** to restrict the key to specific APIs or to HTTP referrers and IP addresses — this is strongly recommended for production use.
+
+    Store your API key in a secure location such as an environment variable or a secrets manager.
+  </Step>
+</Steps>
+
+<Note>
+  **Keep your API key secret.** Never commit your API key to source control or expose it in client-side code. If your key is compromised, go to **APIs & Services → Credentials** in the Cloud Console, delete the affected key, and generate a new one immediately.
+</Note>
+
+## Next Steps
+
+Now that your account and credentials are set up, you're ready to start building.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Make your first API call and see live search results in minutes
+  </Card>
+  <Card title="Authentication" icon="lock" href="/api/authentication">
+    Learn about API keys, OAuth 2.0, and service accounts
+  </Card>
+</CardGroup>

@@ -1,0 +1,153 @@
+---
+title: "Webhooks d'API Google : abonnement aux notifications poussées"
+sidebarTitle: "Webhooks"
+description: "Enregistrez des canaux de notification poussée Google Drive pour recevoir des rappels webhook en temps réel lorsque des fichiers ou ressources sont créés, mis à jour ou supprimés."
+---
+
+Plutôt que d'interroger l'API à répétition pour vérifier si une ressource a changé, vous pouvez utiliser le système de notifications poussées de Google pour que Google appelle votre serveur au moment où un changement se produit. Vous enregistrez un **canal de surveillance** (« watch channel ») qui pointe vers un point de terminaison HTTPS que vous contrôlez; Google envoie ensuite des requêtes `POST` à ce point de terminaison chaque fois que la ressource surveillée est créée, mise à jour ou supprimée. Les notifications poussées sont disponibles pour Google Drive, Gmail, Calendar et plusieurs autres API.
+
+<Warning>
+  Votre point de terminaison webhook **doit** être servi via HTTPS avec un certificat valide. Google ne livre pas de notifications à des URL HTTP simples. De plus, votre point de terminaison doit répondre par HTTP `200 OK` en moins de **10 secondes** — les réponses qui expirent sont considérées comme des échecs et peuvent amener Google à cesser de livrer des notifications au canal.
+</Warning>
+
+---
+
+## Fonctionnement des notifications poussées
+
+Le flux se déroule en quatre étapes :
+
+1. **Enregistrement** — votre application appelle la méthode `watch` sur la ressource que vous voulez surveiller, en fournissant l'URL de votre point de terminaison et un identifiant de canal unique.
+2. **Synchronisation** — Google confirme le canal par une notification initiale (`X-Goog-Resource-State: sync`).
+3. **Réception** — Google envoie une requête `POST` à votre point de terminaison chaque fois que la ressource change.
+4. **Renouvellement ou arrêt** — les canaux ont une date d'expiration. Vous devez les réenregistrer avant qu'ils n'expirent, ou les arrêter explicitement lorsqu'ils ne sont plus nécessaires.
+
+---
+
+## Enregistrer un canal de surveillance
+
+L'exemple ci-dessous enregistre une surveillance sur tous les fichiers de Google Drive. Les autres API suivent le même modèle avec des chemins de point de terminaison différents.
+
+**Point de terminaison**
+
+```http
+POST https://www.googleapis.com/drive/v3/files/watch
+```
+
+### Paramètres du corps de la requête
+
+<ParamField body="id" type="string" required>
+  Un UUID ou une autre chaîne unique que vous générez pour identifier ce canal. Google renvoie cette valeur dans chaque notification pour vous permettre de la router vers le bon gestionnaire.
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  Le mécanisme de livraison des notifications. Doit être `"web_hook"` pour une livraison poussée par HTTPS.
+</ParamField>
+
+<ParamField body="address" type="string" required>
+  L'URL HTTPS entièrement qualifiée de votre point de terminaison webhook. Google effectuera des requêtes `POST` vers cette URL.
+</ParamField>
+
+<ParamField body="expiration" type="integer">
+  Un horodatage Unix en **millisecondes** indiquant quand le canal doit expirer. Si omis, Google applique une expiration par défaut (généralement jusqu'à 7 jours). Vous devez réenregistrer le canal avant cette échéance pour ne pas manquer de notifications.
+</ParamField>
+
+### Exemple de requête
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1893456000000
+  }'
+```
+
+### Exemple de réponse
+
+```json
+{
+  "kind": "api#channel",
+  "id": "my-channel-01",
+  "resourceId": "o3hgv1538sdjfh",
+  "resourceUri": "https://www.googleapis.com/drive/v3/files?...",
+  "expiration": "1893456000000"
+}
+```
+
+Conservez la valeur `resourceId` — vous en aurez besoin pour arrêter le canal plus tard.
+
+---
+
+## En-têtes des requêtes entrantes
+
+Lorsque Google livre une notification à votre point de terminaison, la requête `POST` inclut les en-têtes personnalisés suivants :
+
+| En-tête | Description |
+|--------|-------------|
+| `X-Goog-Channel-ID` | L'`id` du canal que vous avez précisé lors de l'enregistrement. Utilisez-le pour identifier quelle surveillance a déclenché la notification. |
+| `X-Goog-Resource-State` | Le type de changement survenu. Valeurs courantes : `sync` (confirmation initiale), `add`, `update`, `remove`, `trash`, `untrash`, `change`. |
+| `X-Goog-Changed` | Une liste séparée par des virgules des propriétés qui ont changé (p. ex. `content,properties`). Présent pour les notifications `update`. |
+| `X-Goog-Resource-ID` | L'identifiant interne de Google pour la ressource surveillée. |
+| `X-Goog-Resource-URI` | L'URL API de la ressource qui a changé. |
+| `X-Goog-Message-Number` | Un entier croissant de façon monotone pour chaque message du canal. Le message de synchronisation est toujours `1`. |
+
+<Note>
+  Le corps de la notification est intentionnellement **vide** — Google vous indique qu'il y a eu un changement, mais pas lequel. Vous devriez utiliser l'en-tête `X-Goog-Resource-URI` pour effectuer une requête API de suivi et récupérer la ressource mise à jour.
+</Note>
+
+---
+
+## Arrêter un canal
+
+Pour cesser de recevoir des notifications et libérer le canal avant son expiration, envoyez une requête `POST` au point de terminaison d'arrêt :
+
+```http
+POST https://www.googleapis.com/drive/v3/channels/stop
+```
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/channels/stop" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "resourceId": "o3hgv1538sdjfh"
+  }'
+```
+
+Une réponse réussie renvoie HTTP `204 No Content` avec un corps vide. Après l'arrêt d'un canal, Google cesse immédiatement de livrer des notifications à votre point de terminaison pour ce canal.
+
+---
+
+## Expiration et renouvellement du canal
+
+Tous les canaux de surveillance expirent — soit à l'horodatage `expiration` que vous avez précisé, soit au maximum de Google (qui varie selon l'API). Une fois qu'un canal expire, Google cesse d'envoyer des notifications et vous manquerez les changements jusqu'à ce que vous enregistriez un nouveau canal.
+
+**Stratégie de renouvellement recommandée :**
+
+1. Stockez la valeur `expiration` renvoyée à l'enregistrement de chaque canal.
+2. Planifiez une tâche pour réenregistrer le canal au moins **24 heures avant** son expiration.
+3. Après avoir enregistré le nouveau canal avec succès, arrêtez l'ancien.
+
+```bash
+# Re-register with a new channel ID and updated expiration
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-02",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1925000000000
+  }'
+```
+
+<Tip>
+  Utilisez un générateur d'UUID (p. ex. `uuidgen` sur macOS/Linux) pour produire des identifiants de canal uniques. Réutiliser un identifiant avant que le canal précédent ne se soit arrêté peut entraîner des conflits ou des notifications en double.
+</Tip>

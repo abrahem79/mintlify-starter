@@ -1,0 +1,130 @@
+---
+title: "Lietotāja konta API: profila un identitātes datu iegūšana"
+sidebarTitle: "Kontu API"
+description: "Iegūstiet autentificētā lietotāja profilu, e-pastu, vārdu un fotoattēlu, izmantojot GET /oauth2/v2/userinfo vai People API ar OAuth 2.0 Bearer marķieri."
+---
+
+Google nodrošina divus papildinošus galapunktus autentificētā lietotāja identitātes un profila datu lasīšanai. OAuth 2.0 lietotāja informācijas galapunkts sniedz vieglu kopsavilkumu — e-pastu, attēlojamo vārdu, profila attēlu un lokalizāciju — un ir ideāli piemērots pierakstīšanās plūsmām. People API piedāvā bagātāku, strukturētāku skatu uz lietotāja kontaktu ierakstu un ir piemērots, kad nepieciešama detalizēta lauku kontrole. Abiem galapunktiem nepieciešams derīgs OAuth 2.0 piekļuves marķieris ar atbilstošiem tvērumiem.
+
+<Note>
+  Abiem šajā lapā aprakstītajiem galapunktiem ir nepieciešams derīgs OAuth 2.0 Bearer marķieris. API atslēgas **netiek** akceptētas — šie resursi ir saistīti ar autentificēta lietotāja identitāti. Skatiet [Autentifikācijas ceļvedi](/api/authentication), lai iestatītu savu OAuth plūsmu.
+</Note>
+
+---
+
+## Iegūt pašreizējā lietotāja profilu
+
+Iegūstiet kompaktu pašlaik autentificētā lietotāja profilu.
+
+**Galapunkts**
+
+```http
+GET https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**Nepieciešamais tvērums:** `openid email profile`
+
+### Pieprasījuma piemērs
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/oauth2/v2/userinfo"
+```
+
+### Atbildes piemērs
+
+```json
+{
+  "id": "116195079999551234567",
+  "email": "alex@example.com",
+  "name": "Alex Johnson",
+  "given_name": "Alex",
+  "family_name": "Johnson",
+  "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+  "locale": "en"
+}
+```
+
+### Atbildes lauki
+
+<ResponseField name="id" type="string">
+  Lietotāja unikālais, stabilais Google konta ID. Šī vērtība nemainās, pat ja lietotājs atjaunina savu e-pasta adresi vai vārdu.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Lietotāja Google konta galvenā e-pasta adrese. Nepieciešams tvērums `email`.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Lietotāja pilnais attēlojamais vārds, kā tas parādās viņa Google kontā.
+</ResponseField>
+
+<ResponseField name="given_name" type="string">
+  Lietotāja priekšvārds. Nepieciešams tvērums `profile`.
+</ResponseField>
+
+<ResponseField name="family_name" type="string">
+  Lietotāja uzvārds. Nepieciešams tvērums `profile`.
+</ResponseField>
+
+<ResponseField name="picture" type="string">
+  URL, kas norāda uz lietotāja profila fotoattēlu, kas mitināts Google serveros. Attēls ir publiski pieejams, bet var mainīties, ja lietotājs atjaunina savu fotoattēlu.
+</ResponseField>
+
+<ResponseField name="locale" type="string">
+  BCP 47 valodas tags, kas apzīmē lietotāja vēlamo valodu (piemēram, `"en"`, `"fr"`, `"ja"`). Nepieciešams tvērums `profile`.
+</ResponseField>
+
+---
+
+## Iegūt lietotāja informāciju, izmantojot People API
+
+People API atgriež bagātākus strukturētus datus un ļauj pieprasīt tieši tos laukus, kas jums nepieciešami, izmantojot parametru `personFields`.
+
+**Galapunkts**
+
+```http
+GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
+```
+
+**Nepieciešamais tvērums:** `https://www.googleapis.com/auth/contacts.readonly`
+
+### Pieprasījuma piemērs
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses"
+```
+
+### Atbildes piemērs
+
+```json
+{
+  "resourceName": "people/116195079999551234567",
+  "etag": "%EgoBAgkLDg8REhMaAQ==",
+  "names": [
+    {
+      "displayName": "Alex Johnson",
+      "givenName": "Alex",
+      "familyName": "Johnson",
+      "metadata": {
+        "primary": true,
+        "source": { "type": "PROFILE" }
+      }
+    }
+  ],
+  "emailAddresses": [
+    {
+      "value": "alex@example.com",
+      "metadata": {
+        "primary": true,
+        "verified": true
+      }
+    }
+  ]
+}
+```
+
+<Tip>
+  Varat pieprasīt papildu `personFields`, piemēram, `phoneNumbers`, `addresses`, `birthdays` un `photos`, pievienojot tos kā ar komatiem atdalītu sarakstu: `?personFields=names,emailAddresses,phoneNumbers`.
+</Tip>

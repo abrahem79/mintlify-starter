@@ -1,0 +1,145 @@
+---
+title: "Resol problemes d'inici de sessió, Drive i errors d'API de Google"
+sidebarTitle: "Resolució de problemes"
+description: "Diagnostica i soluciona problemes habituals amb errors d'inici de sessió de Google, problemes de sincronització de Drive, codis d'error d'API, límits de quota i retards d'indexació de Search."
+---
+
+Fins i tot serveis fiables com Google poden trobar-se ocasionalment amb problemes: ja sigui una API que retorna codis d'error inesperats, una sincronització que ha deixat de funcionar o un inici de sessió que no acaba. Aquesta guia t'orienta pels problemes més habituals dels productes de Google i de la plataforma de desenvolupador, amb passos clars per diagnosticar i resoldre cadascun.
+
+<Tip>
+  Abans de resoldre problemes individuals, comprova el [Tauler d'estat de Google Workspace](https://www.google.com/appsstatus) per veure si hi ha una interrupció activa que afecti un o més serveis de Google. Molts problemes d'inici de sessió, sincronització i API són causats per incidents d'infraestructura temporals que es resolen per si sols.
+</Tip>
+
+## Codis d'error d'API
+
+Quan una API de Google retorna un error, el codi d'estat HTTP i el missatge d'error junts et diuen exactament què ha anat malament. La taula següent cobreix les respostes d'error més habituals i com abordar-les:
+
+| Estat HTTP | Codi d'error | Significat | Com solucionar-ho |
+|---|---|---|---|
+| **400** | `INVALID_ARGUMENT` | La petició estava mal formada o contenia un paràmetre no vàlid | Revisa el cos de la petició i els paràmetres de consulta amb la referència de l'API; comprova si falten camps obligatoris o hi ha tipus de dades incorrectes |
+| **401** | `UNAUTHENTICATED` | La petició no té credencials d'autenticació vàlides | Refresca el token OAuth o verifica que la teva clau d'API està inclosa a les capçaleres de la petició; assegura't que les credencials no han caducat |
+| **403** | `PERMISSION_DENIED` | El compte autenticat no té permís per realitzar aquesta acció | Comprova que l'àmbit OAuth necessari està concedit i que l'API està activada al teu projecte de Cloud; verifica la configuració de compartició del recurs |
+| **429** | `RESOURCE_EXHAUSTED` | Has superat la teva quota o límit de velocitat per a aquesta API | Implementa reculada exponencial i lògica de reintent; sol·licita un augment de quota via la Cloud Console si és necessari |
+| **500** | `INTERNAL` | S'ha produït un error inesperat als servidors de Google | Torna a intentar la petició amb reculada exponencial; si l'error persisteix, comprova la pàgina de [Google Cloud Status](https://status.cloud.google.com) |
+
+<Note>
+  Totes les respostes d'error de l'API de Google inclouen un cos JSON amb un camp `code`, `message` i `status`. Enregistra sempre el cos complet de la resposta d'error —no només el codi d'estat HTTP— per obtenir la informació de diagnòstic més accionable.
+</Note>
+
+## No pots iniciar sessió
+
+Si no pots iniciar sessió al teu compte de Google, treballa pels següents passos en ordre:
+
+<Steps>
+  <Step title="Comprova Bloq. maj. i la distribució del teclat">
+    Les contrasenyes distingeixen entre majúscules i minúscules. Assegura't que Bloq. maj. estigui desactivat i que estiguis utilitzant la distribució d'idioma de teclat correcta abans de tornar a introduir la teva contrasenya.
+  </Step>
+  <Step title="Utilitza Contrasenya oblidada">
+    A la pàgina d'inici de sessió, fes clic a **Contrasenya oblidada?**. Google enviarà un codi de verificació a la teva adreça de correu electrònic o número de telèfon de recuperació. Introdueix el codi per verificar la teva identitat i crea una nova contrasenya.
+  </Step>
+  <Step title="Comprova el teu mètode de verificació en dos passos">
+    Si has activat la verificació en dos passos (2SV) i no reps el codi d'autenticació, assegura't que el teu telèfon té senyal i que l'aplicació Google Authenticator (o una altra aplicació TOTP) mostra el codi correcte sincronitzat en el temps. Si has perdut l'accés al teu dispositiu de 2SV, utilitza un codi de còpia de seguretat desat o sol·licita la recuperació del compte a [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery).
+  </Step>
+  <Step title="Comprova si el compte està suspès">
+    Si Google detecta activitat inusual o una violació de política, el teu compte pot ser suspès temporalment. En aquest cas veuràs un missatge clar a la pàgina d'inici de sessió. Segueix les instruccions de la pantalla per apel·lar la suspensió o verificar la teva identitat.
+  </Step>
+  <Step title="Prova un navegador o dispositiu diferent">
+    Les extensions del navegador, les credencials en memòria cau o les galetes corruptes de vegades poden interferir amb l'inici de sessió. Prova d'iniciar sessió des d'una finestra d'incògnit/privada o un navegador diferent per descartar un problema local.
+  </Step>
+</Steps>
+
+## Problemes de sincronització de Google Drive
+
+Si els fitxers no se sincronitzen entre el teu ordinador i Google Drive, o Drive per a Escriptori ha deixat de funcionar, segueix aquests passos:
+
+<AccordionGroup>
+  <Accordion title="Comprova la teva quota d'emmagatzematge">
+    Si l'emmagatzematge del teu compte de Google està ple, Drive deixarà de sincronitzar nous fitxers i pot fallar en pujar canvis. Visita [one.google.com/storage](https://one.google.com/storage) per comprovar el teu ús. Si has superat el límit, elimina fitxers innecessaris de Gmail, la paperera de Drive o Google Photos, o actualitza a un pla de Google One.
+  </Accordion>
+
+  <Accordion title="Comprova la teva connexió a Internet">
+    Drive per a Escriptori requereix una connexió a Internet estable per sincronitzar. Confirma que estàs connectat obrint un navegador i carregant una pàgina web. Si la teva connexió és intermitent, la sincronització es pausarà i es reprendrà automàticament un cop la connexió s'estabilitzi.
+  </Accordion>
+
+  <Accordion title="Reinicia Drive per a Escriptori">
+    Fes clic a la icona de Drive per a Escriptori a la safata del sistema (Windows) o a la barra de menú (macOS) i selecciona **Surt**. Torna a llançar l'aplicació des de la teva carpeta d'Aplicacions o del menú Inici. Reiniciar el client el força a tornar a comprovar l'estat de sincronització i resol molts problemes transitoris.
+  </Accordion>
+
+  <Accordion title="Torna a vincular el teu compte de Google">
+    Si l'aplicació mostra un error d'autenticació, potser cal que tornis a vincular el teu compte. Obre les preferències de Drive per a Escriptori, vés a **Comptes** i tanca la sessió i torna a iniciar-la amb el teu compte de Google. Això refresca les teves credencials sense afectar els fitxers sincronitzats.
+  </Accordion>
+
+  <Accordion title="Comprova problemes de longitud o denominació de la ruta del fitxer">
+    Drive per a Escriptori pot rebutjar sincronitzar fitxers amb rutes que superin els límits del sistema (260 caràcters a Windows) o noms de fitxer que continguin caràcters no admesos pel teu sistema operatiu. Reanomena o mou els fitxers problemàtics a una ruta més curta i revisa el registre d'errors de Drive per a Escriptori per veure noms de fitxer específics.
+  </Accordion>
+</AccordionGroup>
+
+## Quota d'API superada (429)
+
+Rebre un error `429 RESOURCE_EXHAUSTED` significa que la teva aplicació ha enviat massa peticions en massa poc temps, o ha arribat al seu límit de quota diària. Aquí tens com gestionar-ho:
+
+### Implementa reculada exponencial
+
+En lloc de tornar a intentar immediatament una petició fallida, espera un interval progressivament més llarg entre cada reintent. Això evita que el teu client bombardegi l'API mentre està sota càrrega i dona temps a les finestres de quota per restablir-se.
+
+```python
+import time
+import random
+
+def api_request_with_backoff(request_func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return request_func()
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limited. Retrying in {wait:.2f} seconds...")
+                time.sleep(wait)
+            else:
+                raise
+```
+
+### Sol·licita un augment de quota
+
+Si la teva aplicació arriba constantment als seus límits de quota, pots sol·licitar un augment a través de la Google Cloud Console:
+
+<Steps>
+  <Step title="Obre la Cloud Console">
+    Vés a [console.cloud.google.com](https://console.cloud.google.com) i selecciona el teu projecte.
+  </Step>
+  <Step title="Vés a APIs & Services → Quotas & System Limits">
+    Navega a **APIs & Services** → **Quotas & System Limits** i filtra per l'API que està sent limitada.
+  </Step>
+  <Step title="Selecciona la quota per augmentar">
+    Troba la quota específica (p. ex., "Queries per day" o "Requests per minute"), fes clic a la casella de selecció al costat i, després, fes clic a **Edit quotas**.
+  </Step>
+  <Step title="Envia la teva sol·licitud">
+    Introdueix el nou valor de quota desitjat i una breu justificació. Google normalment revisa les sol·licituds d'augment de quota en 2–3 dies laborables.
+  </Step>
+</Steps>
+
+## Els resultats de cerca no s'actualitzen
+
+Si has fet canvis a una pàgina web i les actualitzacions no apareixen als resultats de Google Search, el retard gairebé sempre és degut al canonade de rastreig i indexació de Google, no a un error.
+
+<AccordionGroup>
+  <Accordion title="Entén els retards d'indexació">
+    Després que el rastrejador de Google (Googlebot) visiti una pàgina, cal temps addicional perquè l'índex s'actualitzi i perquè aquests canvis apareguin als resultats de cerca. Per a la majoria de llocs, aquest procés triga d'uns quants dies a unes quantes setmanes. Els llocs nous o les pàgines amb poca autoritat poden trigar més temps a ser rastrejats en primer lloc.
+  </Accordion>
+
+  <Accordion title="Comprova la versió en memòria cau de Google">
+    Pots veure quina versió de la teva pàgina va indexar Google per última vegada cercant `cache:yourdomain.com/page` a Google Search. Si la versió en memòria cau està desactualitzada, Google simplement encara no ha tornat a rastrejar la pàgina.
+  </Accordion>
+
+  <Accordion title="Sol·licita reindexació via Search Console">
+    Si necessites una pàgina específica actualitzada amb urgència, utilitza l'eina **Inspecció d'URL** a [Google Search Console](https://search.google.com/search-console). Enganxa l'URL i, després, fes clic a **Sol·licita indexació** per demanar a Googlebot que la torni a rastrejar tan aviat com sigui possible. Això no garanteix resultats immediats, però prioritza l'URL a la cua de rastreig.
+  </Accordion>
+
+  <Accordion title="Comprova el teu robots.txt i les etiquetes noindex">
+    Assegura't que la teva pàgina no estigui bloquejada accidentalment de la indexació. Comprova que el teu fitxer `robots.txt` no impedeixi que Googlebot rastregi l'URL i verifica que no hi hagi cap etiqueta `<meta name="robots" content="noindex">` a la pàgina. Qualsevol d'aquestes dues coses impedirà que el teu contingut aparegui als resultats de cerca.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Sol·licitar reindexació freqüentment per al mateix URL no accelera el procés. El canonade d'indexació de Google es gestiona automàticament i enviar sol·licituds duplicades no augmentarà encara més la prioritat de rastreig.
+</Warning>

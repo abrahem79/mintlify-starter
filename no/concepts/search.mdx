@@ -1,0 +1,66 @@
+---
+title: "Slik fungerer Google Søk: Indeksering og rangering forklart"
+sidebarTitle: "Søk"
+description: "Lær hvordan Google indekserer, rangerer og bringer frem innhold. Forstå søkeoperatorer, Custom Search, og hvordan du integrerer søk i appen din."
+---
+
+Google Søk behandler hundrevis av milliarder sider og svarer på trillioner av spørringer hvert år, noe som gjør det til verdens mest brukte informasjonsinnhentingssystem. Enten du forbedrer din egen søketeknikk, optimaliserer innhold slik at Google presenterer det riktig, eller bygger inn søkefunksjonalitet direkte i produktet ditt, gir det å forstå hvordan Søk fungerer under panseret deg en betydelig fordel.
+
+## Slik fungerer Søk
+
+Google Søk opererer i tre brede stadier som kjører kontinuerlig i bakgrunnen.
+
+**Kravling** — Googles automatiserte krawlere (samlet kjent som Googlebot) følger lenker over nettet for å oppdage nye og oppdaterte sider. Du kan veilede krawlere ved hjelp av en `robots.txt`-fil og `<meta name="robots">`-tagger for å kontrollere hva som hentes.
+
+**Indeksering** — Når en side er kravlet, analyserer Google innholdet — tekst, bilder, strukturerte data og mer — og lagrer en representasjon av det i søkeindeksen. Godt strukturerte sider med klare overskrifter, beskrivende metadata og gyldig skjemamarkering er lettere å indeksere nøyaktig.
+
+**Rangering** — Når en bruker sender inn en spørring, evaluerer Googles rangeringssystemer hundrevis av signaler (relevans, sidekvalitet, kontekst, ferskhet og andre) for å bestille resultater. Ingen enkeltfaktor bestemmer rangering; algoritmen veier signaler helhetlig for å bringe frem det mest nyttige resultatet for den spørringen.
+
+<Note>
+  Google garanterer ikke indeksering for hver side. Bruk Google Search Console for å overvåke dekning, identifisere kravlfeil og be om (re)indeksering av viktige URL-er.
+</Note>
+
+## Søkeoperatorer
+
+Søkeoperatorer er spesielle kommandoer du skriver direkte inn i Google Søk-boksen for å filtrere og begrense resultater. De er nyttige for forskning, konkurranseanalyse, revisjon av eget nettsteds tilstedeværelse og feilsøking av indekseringsproblemer.
+
+| Operator | Syntaks | Hva den gjør |
+|---|---|---|
+| `site:` | `site:example.com` | Begrenser resultater til sider på et spesifikt domene eller subdomene. |
+| `filetype:` | `filetype:pdf` | Returnerer resultater av en spesifikk filtype (pdf, docx, xlsx, osv.). |
+| `intitle:` | `intitle:keyword` | Matcher sider som inneholder nøkkelordet i sin HTML `<title>`-tagg. |
+| Eksakt frase | `"machine learning"` | Returnerer bare resultater som inneholder den eksakte ordsekvensen. |
+| Ekskluder term | `-keyword` | Fjerner resultater som inneholder det spesifiserte ordet eller frasen. |
+
+Du kan kombinere operatorer i en enkelt spørring. For eksempel finner `site:docs.example.com filetype:pdf -intitle:archive` PDF-filer på docs-subdomenet ditt som ikke har "archive" i tittelen.
+
+<Tip>
+  Sett et prefiks til en operator med `OR` (store bokstaver) for å matche en av to betingelser — for eksempel returnerer `site:example.com OR site:example.io` resultater fra begge domener i én spørring.
+</Tip>
+
+## Custom Search Engine (CSE)
+
+En Custom Search Engine lar deg opprette en avgrenset, merkevaret søkeopplevelse som spør et spesifikt sett med nettsteder eller sider i stedet for hele nettet. Dette er nyttig for å legge til en søkefelt i dokumentasjonen din, hjelpesenteret eller e-handelskatalogen.
+
+**For å opprette en Custom Search Engine:**
+
+1. Gå til [Programmable Search Engine Control Panel](https://programmablesearchengine.google.com/controlpanel/all).
+2. Klikk **Add** og skriv inn nettstedene eller URL-mønstrene du vil søke.
+3. Gi motoren din et navn og lagre den — Google genererer en unik **Search Engine ID** (`cx`-parameter) som identifiserer motoren din.
+4. Tilpass utseende og følelse under **Look and feel**, og kopier deretter innebyggingssnippet inn i siden din.
+
+<Note>
+  CSE-resultater respekterer de samme indekseringsreglene som vanlig Google Søk. Hvis en side ikke er indeksert, vil den heller ikke vises i CSE-resultatene dine.
+</Note>
+
+## Programmable Search API
+
+Programmable Search JSON API gir deg programmatisk tilgang til dine Custom Search Engine-resultater, slik at du kan hente, formatere og vise søkeresultater helt innenfor din egen applikasjon — uten å bygge inn Googles UI.
+
+Viktige egenskaper inkluderer:
+
+- Spør etter din CSE og motta strukturerte JSON-svar som inneholder titler, URL-er, utdrag og rik metadata.
+- Bruk `dateRestrict`-, `sort`- og `filter`-parametere for å avgrense resultater ved forespørselstid.
+- Bruk `searchType=image`-parameteren for å søke etter bilder innenfor det definerte omfanget ditt.
+
+For fullstendige forespørsels-/svarskjemaer, autentiseringskrav og kodeeksempler, se [Søke-API-referansen](/api/search).

@@ -1,0 +1,82 @@
+---
+title: "Integrer Google API-er og -tjenester i applikasjonen din"
+sidebarTitle: "Integrasjoner"
+description: "Koble Google API-er til appen din med OAuth 2.0, API-nøkler og tjenestekontoer. Trinnvis oppsett for vanlige integrasjonsmønstre."
+---
+
+Google eksponerer de fleste av sine kjernetjenester — Drive, Gmail, Sheets, Calendar, Maps og mer — gjennom REST API-er som enhver applikasjon kan kalle. Før du skriver din første API-forespørsel, må du bestemme hvordan appen din skal autentisere: med en enkel API-nøkkel for offentlige data, OAuth 2.0 for handlinger på vegne av en innlogget bruker, eller en tjenestekonto for automatiserte server-til-server-arbeidsflyter. Denne veiledningen forklarer hvert alternativ og leder deg gjennom oppsettsstegene for hver.
+
+## Velg autentiseringsmetode
+
+Den riktige autentiseringsmetoden avhenger av hva integrasjonen din gjør og hvis data den får tilgang til.
+
+| Autentiseringsmetode | Typisk brukstilfelle | Når du skal bruke | Krever brukersamtykke |
+|---|---|---|---|
+| **API-nøkkel** | Lese offentlige data (f.eks. Maps, YouTube-metadata) | Appen din får tilgang til ikke-sensitive, offentlig tilgjengelige ressurser | Nei |
+| **OAuth 2.0** | Handle på vegne av en innlogget Google-bruker | Appen din leser eller skriver en brukers Drive-filer, Gmail, Kalender, osv. | Ja — brukeren må gi tillatelse |
+| **Tjenestekonto** | Server-til-server-automatisering uten involvert menneskelig bruker | Backend-jobber, datapipelines, tilgang til ressurser organisasjonen din eier | Nei |
+
+## OAuth 2.0-flyt
+
+OAuth 2.0 er standarden for å la brukere gi applikasjonen din begrenset tilgang til Google-dataene sine uten å dele passordet sitt. Følg disse stegene for å implementere Authorization Code-flyten.
+
+<Steps>
+  <Step title="Opprett en OAuth-klient-ID i Cloud Console">
+    Åpne [Google Cloud Console](https://console.cloud.google.com), naviger til **APIs & Services → Credentials**, og klikk **Create Credentials → OAuth client ID**. Velg **Web application** (eller plattformen som samsvarer med appen din) og legg til dine autoriserte omdirigerings-URI-er.
+  </Step>
+  <Step title="Konfigurer samtykkeskjermen">
+    Gå til **APIs & Services → OAuth consent screen**. Fyll inn appnavnet, support-e-post og tilgangsområdene appen din vil be om. Tilgangsområder definerer nøyaktig hvilke Google-data appen din kan få tilgang til — be bare om det minimumet appen din trenger.
+  </Step>
+  <Step title="Omdiriger brukere til Googles autorisasjons-URL">
+    Når en bruker vil koble til Google-kontoen sin, omdiriger dem til Googles autorisasjonsendepunkt med `client_id`, forespurt `scope`, `redirect_uri` og `response_type=code`. Google vil vise samtykkeskjermen du konfigurerte.
+  </Step>
+  <Step title="Bytt autorisasjonskoden mot tokens">
+    Etter at brukeren godkjenner, omdirigerer Google tilbake til `redirect_uri` med en kortlivet `code`-parameter. Gjør en server-side POST-forespørsel til `https://oauth2.googleapis.com/token` med koden, `client_id`, `client_secret` og `redirect_uri` for å motta en `access_token` og (hvis du ba om `offline`-tilgang) en `refresh_token`.
+  </Step>
+  <Step title="Kall API-et med en Bearer-token">
+    Inkluder `access_token` i `Authorization`-headeren for hver API-forespørsel. Tilgangstokens utløper etter én time — bruk `refresh_token` for å hente en ny automatisk uten å be brukeren igjen.
+  </Step>
+</Steps>
+
+## Tjenestekontoer
+
+En tjenestekonto er en spesiell Google-konto som tilhører applikasjonen din i stedet for en individuell bruker. Den autentiserer med en privat nøkkel, noe som gjør den ideell for backend-tjenester, planlagte jobber og enhver arbeidsflyt der det ikke er en interaktiv bruker.
+
+1. I Cloud Console, gå til **IAM & Admin → Service Accounts** og klikk **Create Service Account**.
+2. Gi kontoen et beskrivende navn, og gi den eventuelt en IAM-rolle som gjenspeiler minimumstillatelsene den trenger.
+3. Åpne tjenestekontoen, gå til **Keys**-fanen, klikk **Add Key → Create new key**, og velg **JSON**. Last ned nøkkelfilen umiddelbart — du kan ikke laste den ned igjen.
+4. Lagre JSON-nøkkelen sikkert (se [Sikkerhetsveiledningen](/guides/security) for beste praksiser) og last den inn i server-side-koden din ved hjelp av det riktige Google-klientbiblioteket.
+
+For å la en tjenestekonto få tilgang til en spesifikk Google Drive-mappe eller Sheets-fil, del den ressursen med tjenestekontoens e-postadresse (synlig i Cloud Console) nøyaktig som du ville delt med en menneskelig bruker.
+
+## Kalle API-er
+
+Når du har en tilgangstoken, legg den ved som en `Bearer`-token i `Authorization`-headeren for HTTP-forespørselen din. Her er et eksempel som lister filer i en brukers Google Drive:
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+Erstatt `YOUR_ACCESS_TOKEN` med tokenen du mottok fra OAuth-flyten eller fra å signere en JWT med tjenestekontonøkkelen din. Svaret er et JSON-objekt som inneholder listen over filer den autentiserte prinsipalen har tilgang til.
+
+<Note>
+For den fullstendige referansen på token-tilgangsområder, oppdateringsflyter og håndtering av token-tilbakekalling, se [Autentiserings-API-referansen](/api/authentication).
+</Note>
+
+## Populære integrasjoner
+
+<CardGroup cols={2}>
+  <Card title="Google Drive API" icon="hard-drive">
+    Last opp, last ned, organiser og del filer og mapper i Google Drive. Støtter fortsettbare opplastinger, filmetadata-spørringer og administrasjon av delingstillatelser.
+  </Card>
+  <Card title="Gmail API" icon="envelope">
+    Les, send og administrer e-postmeldinger og -tråder programmatisk. Ideell for å bygge e-postautomatisering, inntak av supporttilfeller eller tilpassede innboksklienter.
+  </Card>
+  <Card title="Google Sheets API" icon="table">
+    Les og skriv regnearkdata, formater celler og administrer navngitte områder. Ofte brukt til lett datalagring, rapporteringsdashboards og skjema-til-ark-pipelines.
+  </Card>
+  <Card title="Google Kalender API" icon="calendar">
+    Opprett, oppdater og slett kalenderhendelser og administrer deltakere. Bruk den til å synkronisere planleggingssystemer, sende møteinvitasjoner eller bygge tilgjengelighetsverktøy.
+  </Card>
+</CardGroup>

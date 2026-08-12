@@ -1,0 +1,130 @@
+---
+title: "واجهة حساب المستخدم البرمجية: استرداد بيانات الملف الشخصي والهوية"
+sidebarTitle: "واجهة الحسابات البرمجية"
+description: "استرد الملف الشخصي للمستخدم المصادَق عليه، والبريد الإلكتروني، والاسم، والصورة عبر GET /oauth2/v2/userinfo أو People API باستخدام رمز Bearer الخاص بـ OAuth 2.0."
+---
+
+يوفر Google نقطتَي نهاية متكاملتين لقراءة هوية وبيانات الملف الشخصي للمستخدم المصادَق عليه. تمنحك نقطة نهاية userinfo الخاصة بـ OAuth 2.0 ملخصًا خفيفًا — البريد الإلكتروني، اسم العرض، صورة الملف الشخصي، والإعدادات المحلية — وهي مثالية لتدفقات تسجيل الدخول. وتقدم People API عرضًا أكثر ثراءً وأكثر تنظيمًا لسجل جهة اتصال المستخدم، وهي مناسبة عندما تحتاج إلى تحكم دقيق في الحقول. تتطلب كلتا النقطتين رمز وصول OAuth 2.0 صالحًا بالنطاقات المناسبة.
+
+<Note>
+  تتطلب كلتا نقطتَي النهاية الموضحتين في هذه الصفحة رمز Bearer صالحًا لـ OAuth 2.0. مفاتيح API **غير** مقبولة — هذه الموارد مرتبطة بهوية مستخدم مصادَق عليه. راجع [دليل المصادقة](/api/authentication) لإعداد تدفق OAuth الخاص بك.
+</Note>
+
+---
+
+## الحصول على الملف الشخصي للمستخدم الحالي
+
+استرد ملفًا شخصيًا مضغوطًا للمستخدم المصادَق عليه حاليًا.
+
+**نقطة النهاية**
+
+```http
+GET https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**النطاق المطلوب:** `openid email profile`
+
+### مثال على الطلب
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/oauth2/v2/userinfo"
+```
+
+### مثال على الاستجابة
+
+```json
+{
+  "id": "116195079999551234567",
+  "email": "alex@example.com",
+  "name": "Alex Johnson",
+  "given_name": "Alex",
+  "family_name": "Johnson",
+  "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+  "locale": "en"
+}
+```
+
+### حقول الاستجابة
+
+<ResponseField name="id" type="string">
+  المعرّف الفريد والثابت لحساب Google الخاص بالمستخدم. لا تتغير هذه القيمة حتى إذا قام المستخدم بتحديث عنوان بريده الإلكتروني أو اسمه.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  عنوان البريد الإلكتروني الأساسي لحساب Google الخاص بالمستخدم. يتطلب النطاق `email`.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  اسم العرض الكامل للمستخدم كما يظهر في حساب Google الخاص به.
+</ResponseField>
+
+<ResponseField name="given_name" type="string">
+  الاسم الأول (المعطى) للمستخدم. يتطلب النطاق `profile`.
+</ResponseField>
+
+<ResponseField name="family_name" type="string">
+  الاسم الأخير (العائلي) للمستخدم. يتطلب النطاق `profile`.
+</ResponseField>
+
+<ResponseField name="picture" type="string">
+  عنوان URL يشير إلى صورة الملف الشخصي للمستخدم المستضافة على خوادم Google. الصورة متاحة للجميع ولكنها قد تتغير إذا قام المستخدم بتحديث صورته.
+</ResponseField>
+
+<ResponseField name="locale" type="string">
+  علامة اللغة وفق BCP 47 التي تمثل اللغة المفضلة للمستخدم (مثل `"en"`، `"fr"`، `"ja"`). يتطلب النطاق `profile`.
+</ResponseField>
+
+---
+
+## الحصول على معلومات المستخدم عبر People API
+
+تعيد People API بيانات منظمة أكثر ثراءً وتتيح لك طلب الحقول التي تحتاجها بالضبط باستخدام معامل `personFields`.
+
+**نقطة النهاية**
+
+```http
+GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
+```
+
+**النطاق المطلوب:** `https://www.googleapis.com/auth/contacts.readonly`
+
+### مثال على الطلب
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses"
+```
+
+### مثال على الاستجابة
+
+```json
+{
+  "resourceName": "people/116195079999551234567",
+  "etag": "%EgoBAgkLDg8REhMaAQ==",
+  "names": [
+    {
+      "displayName": "Alex Johnson",
+      "givenName": "Alex",
+      "familyName": "Johnson",
+      "metadata": {
+        "primary": true,
+        "source": { "type": "PROFILE" }
+      }
+    }
+  ],
+  "emailAddresses": [
+    {
+      "value": "alex@example.com",
+      "metadata": {
+        "primary": true,
+        "verified": true
+      }
+    }
+  ]
+}
+```
+
+<Tip>
+  يمكنك طلب حقول `personFields` إضافية مثل `phoneNumbers` و`addresses` و`birthdays` و`photos` بإلحاقها كقائمة مفصولة بفواصل: `?personFields=names,emailAddresses,phoneNumbers`.
+</Tip>

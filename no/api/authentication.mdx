@@ -1,0 +1,134 @@
+---
+title: "Autentisering av Google API: Nøkler, OAuth 2.0, tjenestekontoer"
+sidebarTitle: "Autentisering"
+description: "Autentiser Google API-forespørsler ved å bruke API-nøkler for offentlige data, OAuth 2.0 Bearer-tokens for brukerdata, eller tjenestekontoer for tilgang server-til-server."
+---
+
+Hver forespørsel du gjør til et Google REST API må autentiseres. Google støtter tre primære autentiseringsmekanismer: API-nøkler for tilgang til offentlige data, OAuth 2.0 Bearer-tokens for å handle på vegne av en bruker, og tjenestekonto-legitimasjon for server-til-server-integrasjoner. Å velge riktig mekanisme avhenger av hvilke data du trenger tilgang til, og om en menneskelig bruker er involvert i flyten.
+
+## API-nøkler
+
+API-nøkler er den enkleste autentiseringsmetoden. De identifiserer prosjektet ditt overfor Google, men bærer ingen brukerkontekst, så de er bare egnet for API-er som får tilgang til **offentlig tilgjengelige data** (for eksempel Programmable Search API).
+
+Send API-nøkkelen din som en `key`-spørringsparameter på hver forespørsel:
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**Eksempel med curl:**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  Generer og administrer API-nøklene dine i [Google Cloud Console](https://console.cloud.google.com/apis/credentials). Begrens hver nøkkel til spesifikke API-er og henviser-URL-er for å begrense skadeomfanget hvis den noen gang skulle bli eksponert.
+</Tip>
+
+## OAuth 2.0 Bearer-tokens
+
+Når applikasjonen din må få tilgang til eller endre **brukereide data** — som filer i Google Drive, Gmail-meldinger eller Kalender-hendelser — må du bruke OAuth 2.0. Etter at brukeren fullfører OAuth-samtykkeflyten, mottar applikasjonen din en tilgangstoken som du inkluderer i `Authorization`-headeren i hver forespørsel.
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Tilgangstokens utløper etter **3600 sekunder (1 time)** som standard. Applikasjonen din bør lagre den medfølgende oppdateringstokenen og bruke den til å hente en ny tilgangstoken uten å be brukeren igjen. Se [Token-oppdatering](#token-refresh) nedenfor for detaljer.
+
+**Eksempel med curl:**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## Tjenestekonto-legitimasjon
+
+Tjenestekontoer er spesielle Google-kontoer som tilhører en applikasjon i stedet for en individuell bruker. De er designet for **server-til-server**-scenarioer — for eksempel en backend-jobb som leser fra Google Sheets etter en tidsplan uten noen brukerinteraksjon.
+
+For å autentisere som en tjenestekonto:
+
+1. I [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts), opprett en tjenestekonto og last ned JSON-nøkkelfilen.
+2. Gi tjenestekontoen de IAM-rollene den trenger (f.eks. `roles/drive.reader`).
+3. Bruk et Google-klientbibliotek eller en signert JWT for å bytte nøkkelen mot en kortlivet tilgangstoken.
+
+**Eksempel: bytt en tjenestekontonøkkel mot en tilgangstoken ved å bruke curl**
+
+```bash
+# 1. Install the google-auth-library or use the oauth2 token endpoint directly.
+# Below shows the two-legged JWT flow at its simplest using Python's google-auth library.
+# Install: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+Når du har tilgangstokenen, send den som en Bearer-token på nøyaktig samme måte som du ville gjort med OAuth 2.0:
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  Lagre JSON-nøkkelfilen for tjenestekontoen din sikkert, og forplikt den aldri til kildekontroll. Roter nøkler umiddelbart hvis du mistenker at de har blitt eksponert.
+</Warning>
+
+## Tilgangsområder
+
+OAuth 2.0-tilgangsområder definerer nøyaktig hvilke tillatelser en tilgangstoken gir. Du ber om tilgangsområder under autorisasjonstrinnet, og brukeren ser dem listet opp på Googles samtykkeskjerm. Be bare om de tilgangsområdene applikasjonen din faktisk trenger — å be om for brede tilgangsområder undergraver brukertilliten og kan bli avvist under app-verifisering.
+
+| Tilgangsområde | Tilgang gitt |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | Skrivebeskyttet tilgang til alle filer i brukerens Google Drive. |
+| `https://www.googleapis.com/auth/drive` | Full lese- og skrivetilgang til brukerens Google Drive. |
+| `https://www.googleapis.com/auth/gmail.readonly` | Skrivebeskyttet tilgang til brukerens Gmail-meldinger og innstillinger. |
+| `https://www.googleapis.com/auth/calendar` | Full lese- og skrivetilgang til brukerens Google Kalender. |
+| `openid` | Autentiser brukeren og hent en stabil bruker-ID via OpenID Connect. |
+| `email` | Få tilgang til brukerens primære Google-konto e-postadresse. |
+| `profile` | Få tilgang til brukerens grunnleggende profilinformasjon (navn, bilde, lokalitet). |
+
+## Token-oppdatering
+
+Når en tilgangstoken utløper, bytt oppdateringstokenen din mot en ny ved å sende en `POST`-forespørsel til Googles token-endepunkt:
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+Et vellykket svar inneholder den nye tilgangstokenen sammen med utløpstiden:
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| Felt | Beskrivelse |
+|-------|-------------|
+| `access_token` | Den nye Bearer-tokenen som skal brukes i påfølgende API-forespørsler. |
+| `expires_in` | Sekunder til tokenen utløper (vanligvis `3600`). |
+| `token_type` | Alltid `"Bearer"`. |
+
+Lagre den nye `access_token` og erstatt den forrige i applikasjonen din. Oppdateringstokenen selv forblir gyldig til brukeren tilbakekaller tilgang eller den på annen måte blir ugyldiggjort av Google.
+
+<Warning>
+  Bygg aldri OAuth `client_secret` inn i klientside-kode (JavaScript-bunter, mobilapper eller offentlige repositorier). Hvis den blir eksponert, kan en angriper etterligne applikasjonen din, kapre OAuth-flyter og få tilgang til brukerdata på dine vegne. Utfør alltid token-utveksling på en sikker backend-server.
+</Warning>

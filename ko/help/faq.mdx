@@ -1,0 +1,45 @@
+---
+title: "Google 서비스 FAQ: 계정, API, 결제 및 개인 정보 보호"
+sidebarTitle: "FAQ"
+description: "Google 계정, 저장 용량 할당량, Workspace, API 키, 결제, 데이터 개인 정보 보호, 개발자 속도 제한에 관한 자주 묻는 질문에 대한 답변."
+---
+
+새로운 Google 사용자든 Google API를 다루는 숙련된 개발자든, 계정, 저장 용량, 결제, 접근 컨트롤이 어떻게 작동하는지에 관한 질문을 마주하기 마련입니다. 이 페이지는 Google의 소비자 제품, Workspace 앱, 개발자 플랫폼 전반에 걸쳐 자주 묻는 질문에 대한 답변을 모아 놓았으므로 — 여러 도움말 센터를 뒤지지 않고 빠르게 답을 얻을 수 있습니다.
+
+<AccordionGroup>
+  <Accordion title="Google 비밀번호를 어떻게 재설정하나요?">
+    [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery)의 계정 복구 페이지에서 Google 비밀번호를 재설정할 수 있습니다. 계정과 연결된 이메일 주소를 입력하고 프롬프트를 따르세요 — Google이 복구 이메일이나 전화번호로 인증 코드를 보냅니다. 확인되면 새 비밀번호를 만들 수 있습니다. 모든 복구 옵션에 접근할 수 없게 되었다면, Google은 계정 히스토리를 기반으로 신원을 확인하는 질문을 받는 신원 확인 프로세스를 제공합니다.
+  </Accordion>
+
+  <Accordion title="왜 API 키가 작동하지 않나요?">
+    API 키가 작동을 멈추는 가장 흔한 이유는 현재 환경과 일치하지 않는 특정 IP 주소나 리퍼러로 키가 제한되었거나, 키가 Google Cloud 프로젝트에서 필요한 API를 활성화하지 않았거나, 키가 삭제되거나 재생성되었기 때문입니다. [Google Cloud Console](https://console.cloud.google.com)을 열고 **APIs & Services → Credentials**로 이동해 키의 제한과 상태를 확인하세요. 또한 **APIs & Services → Enabled APIs & services** 아래에서 대상 API(예: Maps JavaScript API, Sheets API)가 활성화되어 있는지 확인하세요.
+  </Accordion>
+
+  <Accordion title="Google 저장 용량 할당량에는 무엇이 포함되나요?">
+    15GB의 무료 Google 저장 용량은 Gmail(이메일과 첨부 파일), Google Drive(업로드된 파일), Google Photos(백업된 이미지와 동영상)에서 공유됩니다. Google 네이티브 형식으로 만들어진 Google Docs, Sheets, Slides, Forms, Drawings는 할당량에 포함되지 **않습니다**. 그러나 `.docx`, `.xlsx`, `.pdf` 같은 다른 형식으로 Drive에 업로드된 파일은 저장 용량을 소비합니다. 현재 사용량과 세부 내역은 [one.google.com/storage](https://one.google.com/storage)에서 확인할 수 있습니다.
+  </Accordion>
+
+  <Accordion title="Google 계정을 어떻게 삭제하나요?">
+    계정 설정의 **데이터 및 개인 정보 보호** 섹션에서 Google 계정을 영구적으로 삭제할 수 있습니다. [myaccount.google.com](https://myaccount.google.com)으로 이동해 **데이터 및 개인 정보 보호**를 클릭하고, **더 많은 옵션**으로 스크롤한 다음 **Google 계정 삭제**를 클릭하세요. Google이 먼저 Google Takeout을 사용해 데이터 사본을 다운로드하도록 요청합니다. 삭제는 영구적이라는 점에 유의하세요 — Gmail, Drive 파일 및 관련된 모든 데이터가 손실되며 유예 기간이 만료된 후에는 복구할 수 없습니다.
+  </Accordion>
+
+  <Accordion title="Google API를 무료로 사용할 수 있나요?">
+    많은 Google API가 넉넉한 사용 한도의 무료 등급을 제공합니다 — 예를 들어 Maps JavaScript API는 월 $200 크레딧을 포함하고, Google Sheets API 호출은 프로젝트별로 설정된 사용 한도까지 무료입니다. 그러나 대용량 사용, 특정 프리미엄 API(예: Google Maps Routes Preferred), 엔터프라이즈급 기능은 Google Cloud에서 결제 계정 설정이 필요합니다. 특정 API의 가격은 [cloud.google.com/pricing](https://cloud.google.com/pricing) 또는 개별 API의 문서 페이지에서 검토할 수 있습니다.
+  </Accordion>
+
+  <Accordion title="Google 문서의 소유권을 어떻게 이전하나요?">
+    Google 문서, 스프레드시트 또는 슬라이드의 소유권을 이전하려면 파일을 열고 오른쪽 상단의 **공유**를 클릭하세요. 소유권을 이전하려는 사람(이미 접근 권한이 있어야 함)을 찾아 이름 옆의 드롭다운을 클릭하고 **소유권 이전**을 선택하세요. 수신자는 이메일 알림을 받고 이전을 수락해야 합니다. 소유권은 동일한 Google Workspace 조직 내의 다른 사용자에게만 이전할 수 있거나, 개인 계정의 경우 다른 Google 계정 소유자에게만 이전할 수 있다는 점에 유의하세요.
+  </Accordion>
+
+  <Accordion title="Gmail에서 스팸이나 피싱 이메일은 어떻게 신고하나요?">
+    Gmail에서 스팸 이메일을 신고하려면 메시지를 열고 이메일 오른쪽 상단의 **점 세 개 메뉴**(⋮)를 클릭한 다음 **스팸 신고** 또는 **피싱 신고**를 선택하세요. 피싱을 신고하면 이메일이 Google에 검토를 위해 전송되며 다른 사용자를 유사한 공격으로부터 보호하는 데 도움이 됩니다. Gmail은 또한 자동으로 이메일을 받은편지함에서 이동시킵니다. 회사나 기관을 사칭하는 피싱 이메일을 받으면 추가로 [Google Safe Browsing 팀](https://safebrowsing.google.com/safebrowsing/report_phish/)에 신고할 수 있습니다.
+  </Accordion>
+
+  <Accordion title="Google Search API의 속도 제한은 무엇인가요?">
+    Google Custom Search JSON API는 무료로 하루 최대 **100회의 검색 쿼리**를 허용하며, 추가 쿼리는 1,000회당 $5(하루 최대 10,000회까지)로 제공됩니다. 이는 Programmable Search Engine API에 적용됩니다 — Google Search Console API나 다른 검색 관련 API를 사용하는 경우 한도가 다르며 별도로 문서화되어 있습니다. [Google Cloud Console](https://console.cloud.google.com)의 **APIs & Services → Quotas**에서 사용량을 모니터링하고 요청 할당량을 구성할 수 있습니다. 매우 대용량의 검색이 필요한 경우 Google은 Google Cloud를 통해 엔터프라이즈급 옵션을 제공합니다.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  찾고 있는 답을 찾을 수 없나요? 제품별 지원 문서를 위해 [Google 도움말 센터](https://support.google.com)를 방문하거나, 탐색 메뉴의 **지원** 아래에서 Google 계정에서 Google 지원에 직접 문의하세요.
+</Note>

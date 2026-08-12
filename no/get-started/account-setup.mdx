@@ -1,0 +1,58 @@
+---
+title: "Google-kontooppsett: Aktiver API-er og få legitimasjon"
+sidebarTitle: "Kontooppsett"
+description: "Opprett en Google-konto, sett opp et Cloud Console-prosjekt, aktiver de valgte API-ene, og generer legitimasjon for å autentisere applikasjonen din."
+---
+
+Før du kan bruke Googles utvikler-API-er, trenger du en Google-konto, et Cloud-prosjekt for å huse ressursene dine, og et sett med legitimasjon applikasjonen din vil bruke for å autentisere. Denne veiledningen leder deg gjennom hvert av disse stegene, slik at du er klar til å gjøre ditt første API-kall.
+
+## Oppsettssteg
+
+<Steps>
+  <Step title="Opprett en Google-konto">
+    Hvis du ikke allerede har en Google-konto, gå til [accounts.google.com/signup](https://accounts.google.com/signup) og fullfør registreringsskjemaet. Google-kontoen din gir deg tilgang til alle Google-tjenester, inkludert Cloud Console, Gmail, Drive og alle utvikler-API-er.
+  </Step>
+  <Step title="Gå til Google Cloud Console">
+    Naviger til [Google Cloud Console](https://console.cloud.google.com) og logg inn med Google-kontoen din. Konsollen er ditt sentrale nav for å administrere Google Cloud-prosjekter, aktivere API-er og opprette legitimasjon.
+  </Step>
+  <Step title="Opprett et prosjekt">
+    1. Klikk prosjektvelgeren øverst på Console-siden.
+    2. Klikk **New Project**.
+    3. Skriv inn et beskrivende **Project name** (for eksempel `my-search-app`).
+    4. Velg en **Billing account** hvis du blir bedt om det, og klikk deretter **Create**.
+
+    Alle API-er og legitimasjon du oppretter vil være knyttet til dette prosjektet, noe som gjør det enkelt å administrere bruk og fakturering separat for hver applikasjon.
+  </Step>
+  <Step title="Aktiver API-er">
+    1. I navigasjonen til venstre, gå til **APIs & Services → Library**.
+    2. Søk etter API-et du vil bruke (for eksempel **Custom Search API**, **Maps JavaScript API** eller **Gmail API**).
+    3. Klikk API-navnet, og klikk deretter **Enable**.
+
+    Gjenta dette steget for hvert Google API applikasjonen din trenger. Bare aktiverte API-er kan motta forespørsler fra legitimasjonen din.
+  </Step>
+  <Step title="Opprett legitimasjon (API-nøkkel)">
+    1. Gå til **APIs & Services → Credentials**.
+    2. Klikk **Create Credentials** og velg **API key**.
+    3. Google genererer en ny API-nøkkel umiddelbart. Klikk **Copy** for å kopiere den til utklippstavlen din.
+    4. Alternativt, klikk **Edit API key** for å begrense nøkkelen til spesifikke API-er eller til HTTP-henvisere og IP-adresser — dette anbefales sterkt for produksjonsbruk.
+
+    Lagre API-nøkkelen din på et sikkert sted, som en miljøvariabel eller en hemmelighetsadministrator.
+  </Step>
+</Steps>
+
+<Note>
+  **Hold API-nøkkelen din hemmelig.** Forplikt aldri API-nøkkelen din til kildekontroll eller eksponer den i klientside-kode. Hvis nøkkelen din er kompromittert, gå til **APIs & Services → Credentials** i Cloud Console, slett den berørte nøkkelen, og generer en ny umiddelbart.
+</Note>
+
+## Neste steg
+
+Nå som kontoen og legitimasjonen din er satt opp, er du klar til å begynne å bygge.
+
+<CardGroup cols={2}>
+  <Card title="Hurtigstart" icon="rocket" href="/quickstart">
+    Gjør ditt første API-kall og se live søkeresultater på noen få minutter
+  </Card>
+  <Card title="Autentisering" icon="lock" href="/api/authentication">
+    Lær om API-nøkler, OAuth 2.0 og tjenestekontoer
+  </Card>
+</CardGroup>

@@ -1,0 +1,134 @@
+---
+title: "Autentizace Google API: klíče, OAuth 2.0, servisní účty"
+sidebarTitle: "Autentizace"
+description: "Autentizujte požadavky Google API pomocí klíčů API pro veřejná data, tokenů OAuth 2.0 Bearer pro uživatelská data nebo servisních účtů pro přístup mezi servery."
+---
+
+Každý požadavek, který odešlete na Google REST API, musí být autentizován. Google podporuje tři hlavní autentizační mechanismy: klíče API pro přístup k veřejným datům, tokeny OAuth 2.0 Bearer pro jednání jménem uživatele a přihlašovací údaje servisních účtů pro integrace mezi servery. Výběr správného mechanismu závisí na tom, k jakým datům potřebujete přistupovat a zda je v procesu zapojen lidský uživatel.
+
+## Klíče API
+
+Klíče API jsou nejjednodušší metodou autentizace. Identifikují váš projekt vůči Googlu, ale nenesou žádný uživatelský kontext, takže jsou vhodné pouze pro API, která přistupují k **veřejně dostupným datům** (například Programmable Search API).
+
+Předejte svůj klíč API jako parametr dotazu `key` při každém požadavku:
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**Příklad s curl:**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  Generujte a spravujte své klíče API v [Google Cloud Console](https://console.cloud.google.com/apis/credentials). Každý klíč omezte na konkrétní API a URL referrerů, abyste v případě jeho vyzrazení omezili dopad.
+</Tip>
+
+## Tokeny OAuth 2.0 Bearer
+
+Když vaše aplikace potřebuje přistupovat k **datům vlastněným uživatelem** nebo je upravovat — například soubory na Disku Google, zprávy v Gmailu nebo události v Kalendáři — musíte použít OAuth 2.0. Po dokončení procesu udělení souhlasu OAuth ze strany uživatele obdrží vaše aplikace přístupový token, který zahrnete do hlavičky `Authorization` každého požadavku.
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Přístupové tokeny standardně vyprší po **3600 sekundách (1 hodině)**. Vaše aplikace by měla ukládat doprovodný obnovovací token a používat jej k získání nového přístupového tokenu, aniž by se uživatele znovu ptala. Podrobnosti viz [Obnovení tokenu](#token-refresh) níže.
+
+**Příklad s curl:**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## Přihlašovací údaje servisního účtu
+
+Servisní účty jsou speciální účty Google, které patří aplikaci, nikoli jednotlivému uživateli. Jsou navrženy pro scénáře **mezi servery** — například pro backendovou úlohu, která pravidelně čte z Tabulek Google bez jakékoli interakce uživatele.
+
+Chcete-li se autentizovat jako servisní účet:
+
+1. V [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts) vytvořte servisní účet a stáhněte si jeho soubor s klíčem JSON.
+2. Přidělte servisnímu účtu role IAM, které potřebuje (např. `roles/drive.reader`).
+3. K výměně klíče za krátkodobě platný přístupový token použijte klientskou knihovnu Googlu nebo podepsaný JWT.
+
+**Příklad: výměna klíče servisního účtu za přístupový token pomocí curl**
+
+```bash
+# 1. Install the google-auth-library or use the oauth2 token endpoint directly.
+# Below shows the two-legged JWT flow at its simplest using Python's google-auth library.
+# Install: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+Jakmile máte přístupový token, předejte jej jako Bearer token přesně tak, jak byste to udělali s OAuth 2.0:
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  Soubor s klíčem JSON servisního účtu ukládejte bezpečně a nikdy jej neukládejte do systému správy verzí. V případě podezření na vyzrazení klíče je okamžitě obnovte.
+</Warning>
+
+## Rozsahy (scopes)
+
+Rozsahy OAuth 2.0 přesně definují, jaká oprávnění přístupový token uděluje. Rozsahy si vyžádáte během kroku autorizace a uživatel je uvidí uvedené na obrazovce souhlasu Googlu. Vyžádejte si pouze ty rozsahy, které vaše aplikace skutečně potřebuje — vyžádání příliš širokých rozsahů podkopává důvěru uživatelů a může být zamítnuto při ověření aplikace.
+
+| Rozsah | Udělený přístup |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | Přístup ke všem souborům na Disku Google uživatele pouze pro čtení. |
+| `https://www.googleapis.com/auth/drive` | Úplný přístup pro čtení a zápis na Disk Google uživatele. |
+| `https://www.googleapis.com/auth/gmail.readonly` | Přístup ke zprávám a nastavení Gmailu uživatele pouze pro čtení. |
+| `https://www.googleapis.com/auth/calendar` | Úplný přístup pro čtení a zápis do Kalendáře Google uživatele. |
+| `openid` | Autentizace uživatele a získání stabilního ID uživatele prostřednictvím OpenID Connect. |
+| `email` | Přístup k primární e-mailové adrese účtu Google uživatele. |
+| `profile` | Přístup k základním profilovým informacím uživatele (jméno, fotografie, lokalizace). |
+
+## Obnovení tokenu
+
+Když přístupový token vyprší, vyměňte svůj obnovovací token za nový odesláním požadavku `POST` na tokenový koncový bod Googlu:
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+Úspěšná odpověď obsahuje nový přístupový token spolu s jeho vypršením:
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| Pole | Popis |
+|-------|-------------|
+| `access_token` | Nový Bearer token pro použití v následných požadavcích API. |
+| `expires_in` | Počet sekund do vypršení tokenu (obvykle `3600`). |
+| `token_type` | Vždy `"Bearer"`. |
+
+Uložte nový `access_token` a nahraďte jím předchozí ve své aplikaci. Samotný obnovovací token zůstává platný, dokud uživatel neodvolá přístup nebo dokud jej Google jinak neznehodnotí.
+
+<Warning>
+  Nikdy nevkládejte svůj OAuth `client_secret` do kódu na straně klienta (JavaScriptové balíčky, mobilní aplikace nebo veřejné repozitáře). Pokud dojde k jeho vyzrazení, útočník může vydávat vaši aplikaci za svou, unášet toky OAuth a přistupovat k uživatelským datům vaším jménem. Výměnu tokenů vždy provádějte na zabezpečeném backendovém serveru.
+</Warning>

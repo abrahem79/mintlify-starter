@@ -1,0 +1,134 @@
+---
+title: "Autenticació de l'API de Google: claus, OAuth 2.0 i comptes de servei"
+sidebarTitle: "Autenticació"
+description: "Autentica peticions a l'API de Google amb claus d'API per a dades públiques, tokens Bearer OAuth 2.0 per a dades d'usuari o comptes de servei per a accés servidor a servidor."
+---
+
+Totes les peticions que facis a una API REST de Google han d'estar autenticades. Google admet tres mecanismes d'autenticació principals: claus d'API per accedir a dades públiques, tokens Bearer OAuth 2.0 per actuar en nom d'un usuari i credencials de compte de servei per a integracions servidor a servidor. Escollir el mecanisme adequat depèn de quines dades necessites accedir i si un usuari humà participa en el flux.
+
+## Claus d'API
+
+Les claus d'API són el mètode d'autenticació més senzill. Identifiquen el teu projecte davant Google però no porten cap context d'usuari, així que només són adequades per a API que accedeixen a **dades disponibles públicament** (com ara la Programmable Search API).
+
+Passa la teva clau d'API com a paràmetre de consulta `key` a cada petició:
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**Exemple amb curl:**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  Genera i gestiona les teves claus d'API a la [Google Cloud Console](https://console.cloud.google.com/apis/credentials). Restringeix cada clau a API específiques i URL de referència per limitar el radi d'impacte si mai queda exposada.
+</Tip>
+
+## Tokens Bearer OAuth 2.0
+
+Quan la teva aplicació necessita accedir o modificar **dades propietat de l'usuari** —com ara fitxers a Google Drive, missatges de Gmail o esdeveniments de Calendar— has d'utilitzar OAuth 2.0. Després que l'usuari completi el flux de consentiment OAuth, la teva aplicació rep un token d'accés que incloràs a la capçalera `Authorization` de cada petició.
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Els tokens d'accés caduquen al cap de **3600 segons (1 hora)** per defecte. La teva aplicació hauria de desar el token de refresc que l'acompanya i utilitzar-lo per obtenir un nou token d'accés sense tornar a demanar-ho a l'usuari. Consulta [Refresc de tokens](#token-refresh) més avall per a més detalls.
+
+**Exemple amb curl:**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## Credencials de compte de servei
+
+Els comptes de servei són comptes de Google especials que pertanyen a una aplicació en lloc d'a un usuari individual. Estan dissenyats per a escenaris **servidor a servidor**, per exemple, un procés en segon pla que llegeix de Google Sheets segons una planificació sense cap interacció d'usuari.
+
+Per autenticar-te com a compte de servei:
+
+1. A la [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts), crea un compte de servei i descarrega el seu fitxer de clau JSON.
+2. Concedeix al compte de servei els rols d'IAM que necessita (p. ex. `roles/drive.reader`).
+3. Utilitza una biblioteca client de Google o un JWT signat per bescanviar la clau per un token d'accés de curta durada.
+
+**Exemple: bescanviar una clau de compte de servei per un token d'accés amb curl**
+
+```bash
+# 1. Install the google-auth-library or use the oauth2 token endpoint directly.
+# Below shows the two-legged JWT flow at its simplest using Python's google-auth library.
+# Install: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+Un cop tinguis el token d'accés, passa'l com a token Bearer exactament com faries amb OAuth 2.0:
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  Desa el fitxer de clau JSON del teu compte de servei de manera segura i no el commitis mai al control de codi font. Rota les claus immediatament si sospites que han estat exposades.
+</Warning>
+
+## Àmbits
+
+Els àmbits d'OAuth 2.0 defineixen exactament quins permisos concedeix un token d'accés. Sol·licites els àmbits durant el pas d'autorització i l'usuari els veu llistats a la pantalla de consentiment de Google. Sol·licita només els àmbits que realment necessita la teva aplicació: sol·licitar àmbits massa amplis erosiona la confiança de l'usuari i pot ser rebutjat durant la verificació de l'aplicació.
+
+| Àmbit | Accés concedit |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | Accés només de lectura a tots els fitxers de Google Drive de l'usuari. |
+| `https://www.googleapis.com/auth/drive` | Accés complet de lectura i escriptura a Google Drive de l'usuari. |
+| `https://www.googleapis.com/auth/gmail.readonly` | Accés només de lectura als missatges i configuracions de Gmail de l'usuari. |
+| `https://www.googleapis.com/auth/calendar` | Accés complet de lectura i escriptura a Google Calendar de l'usuari. |
+| `openid` | Autentica l'usuari i obté un ID d'usuari estable mitjançant OpenID Connect. |
+| `email` | Accedeix a l'adreça de correu electrònic principal del compte de Google de l'usuari. |
+| `profile` | Accedeix a la informació bàsica del perfil de l'usuari (nom, foto, configuració regional). |
+
+## Refresc de tokens
+
+Quan un token d'accés caduca, bescanvia el teu token de refresc per un de nou enviant una petició `POST` a l'endpoint de tokens de Google:
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+Una resposta correcta conté el nou token d'accés juntament amb la seva caducitat:
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| Camp | Descripció |
+|-------|-------------|
+| `access_token` | El nou token Bearer per utilitzar en peticions posteriors a l'API. |
+| `expires_in` | Segons fins que el token caduqui (normalment `3600`). |
+| `token_type` | Sempre `"Bearer"`. |
+
+Desa el nou `access_token` i substitueix l'anterior a la teva aplicació. El token de refresc en si continua sent vàlid fins que l'usuari revoqui l'accés o fins que Google l'invalidi d'alguna altra manera.
+
+<Warning>
+  No incrustis mai el teu `client_secret` d'OAuth en codi de client (paquets JavaScript, aplicacions mòbils o repositoris públics). Si queda exposat, un atacant pot suplantar la teva aplicació, segrestar fluxos OAuth i accedir a dades d'usuari en el teu nom. Realitza sempre l'intercanvi de tokens en un servidor de backend segur.
+</Warning>

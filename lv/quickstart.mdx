@@ -1,47 +1,77 @@
 ---
-title: "Ātrais sākums"
-description: "Sāciet ar ceļvedi par ātrāko ceļu uz veiksmīgu rezultātu"
+title: "Ātrais sākums: pierakstīšanās un pirmais Google API izsaukums"
+sidebarTitle: "Ātrais sākums"
+description: "Pierakstieties Google, iegūstiet API akreditācijas datus no Cloud konsoles un veiciet savu pirmo tiešo meklēšanas API pieprasījumu — viss mazāk nekā 10 minūtēs."
 ---
 
-Aprakstiet, kā kāds sāk lietot jūsu produktu. Kas ir pirmais, kas viņiem jādara? Vai ir kādi priekšnosacījumi?
-
-Ātrajam sākumam vajadzētu aizvest lietotāju no nulles līdz jūsu produkta lietošanai. Viņi ātri gūs panākumus un sapratīs, ko var paveikt.
+Šis ātrais sākums soli pa solim parāda, kā pierakstīties Google, iegūt API akreditācijas datus un veikt pirmo API pieprasījumu — viss mazāk nekā 10 minūtēs. Beigās jums būs strādājošs API izsaukums, kas atgriezīs tiešos meklēšanas rezultātus, uz kuriem varēsit balstīties savā lietojumprogrammā.
 
 ## Priekšnosacījumi
 
-Pirms sākat, jums ir nepieciešams:
+Pirms sākat, pārliecinieties, ka jums ir šāds:
 
-- Pirmā prasība (piemēram, Node.js 18+, bezmaksas konts, API atslēga)
-- Otrā prasība (piemēram, saderīga ierīce, saderīgs pārlūks, saderīga operētājsistēma)
+- **Google konts** — [izveidojiet to bez maksas](https://accounts.google.com/signup), ja tāda vēl nav.
+- **Pamatzināšanas par HTTP** — pazīstams ar GET/POST pieprasījumu veikšanu un JSON atbilžu lasīšanu.
+- Komandrindas terminālis vai HTTP klients, piemēram, [curl](https://curl.se/) vai [Postman](https://www.postman.com/).
 
-## Sāciet darbu
+## Soļi
 
 <Steps>
-  <Step title="Instalēšana">
-    Aprakstiet, kā instalēt jūsu produktu vai reģistrēties.
+  <Step title="Pierakstieties">
+    Dodieties uz [accounts.google.com](https://accounts.google.com) un pierakstieties ar savu Google kontu. Ja tā ir pirmā reize, pirms turpināt, pabeidziet konta izveides plūsmu.
+  </Step>
+  <Step title="Iegūstiet API akreditācijas datus">
+    1. Atveriet [Google Cloud konsoli](https://console.cloud.google.com).
+    2. Izveidojiet jaunu projektu (vai atlasiet esošu).
+    3. Dodieties uz **APIs & Services → Library** un iespējojiet **Custom Search API**.
+    4. Dodieties uz **APIs & Services → Credentials** un noklikšķiniet uz **Create Credentials → API key**.
+    5. Nokopējiet jauno API atslēgu un saglabājiet to drošā vietā.
+    6. Izveidojiet Programmable Search Engine vietnē [programmablesearchengine.google.com](https://programmablesearchengine.google.com) un nokopējiet savu **Search Engine ID** (`cx`).
+  </Step>
+  <Step title="Veiciet savu pirmo pieprasījumu">
+    Zemāk esošajā komandā aizstājiet `YOUR_API_KEY` un `YOUR_SEARCH_ENGINE_ID` ar nokopētajām vērtībām un pēc tam palaidiet to savā terminālī:
 
     ```bash
-    npm install your-package
+    curl -X GET "https://www.googleapis.com/customsearch/v1?q=hello+world&key=YOUR_API_KEY&cx=YOUR_SEARCH_ENGINE_ID"
     ```
   </Step>
-  <Step title="Konfigurēšana">
-    Aprakstiet iestatīšanu vai konfigurāciju, kas nepieciešama pirms pirmās lietošanas.
+  <Step title="Pārbaudiet atbildi">
+    Veiksmīgs pieprasījums atgriež JSON objektu, kas satur meklēšanas metadatus un rezultātu masīvu. Jums vajadzētu redzēt šādu atbildi:
 
-    ```bash
-    your-cli init
+    ```json
+    {
+      "kind": "customsearch#search",
+      "url": {
+        "type": "application/json",
+        "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&..."
+      },
+      "queries": {
+        "request": [
+          {
+            "title": "Google Custom Search - hello world",
+            "totalResults": "4970000000",
+            "searchTerms": "hello world",
+            "count": 10,
+            "startIndex": 1
+          }
+        ]
+      },
+      "items": [
+        {
+          "kind": "customsearch#result",
+          "title": "Hello, World! – Wikipedia",
+          "htmlTitle": "\u003cb\u003eHello, World!\u003c/b\u003e – Wikipedia",
+          "link": "https://en.wikipedia.org/wiki/%22Hello,_World!%22_program",
+          "snippet": "A \"Hello, World!\" program is generally a simple computer program that outputs the phrase \"Hello, World!\" to a display device."
+        }
+      ]
+    }
     ```
-  </Step>
-  <Step title="Palaidiet to">
-    Parādiet pirmo darbību, ko lietotājs veic, lai redzētu, ka viss darbojas.
 
-    ```bash
-    your-cli start
-    ```
+    Masīvs `items` satur jūsu meklēšanas rezultātus. Katrs objekts ietver lapas nosaukumu, URL (`link`) un īsu fragmentu `snippet`, ko varat tieši parādīt savā lietotāja saskarnē.
   </Step>
 </Steps>
 
 <Tip>
-  Piedāvājiet cilvēkiem veidu, kā saņemt palīdzību. Tā var būt saite uz atbalsta lapu, saruna ar klientu atbalsta pārstāvi vai forums par jūsu produktu.
-
-  Piemērs: Vai nepieciešama palīdzība? Sazinieties ar mums, rakstot uz [support@yourcompany.com](mailto:support@yourcompany.com).
+  Iepriekš minētajā piemērā autentifikācijai tiek izmantota vienkārša API atslēga. Google API atbalsta arī OAuth 2.0 pieprasījumiem, kas piekļūst lietotāja datiem. Skatiet [Autentifikācijas ceļvedi](/api/authentication), lai iegūtu pilnīgu pārskatu par visām atbalstītajām autentifikācijas metodēm.
 </Tip>

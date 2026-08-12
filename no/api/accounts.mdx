@@ -1,0 +1,130 @@
+---
+title: "Bruker-konto-API: Hent profil- og identitetsdata"
+sidebarTitle: "Kontoer-API"
+description: "Hent den autentiserte brukerens profil, e-post, navn og bilde via GET /oauth2/v2/userinfo eller People API med en OAuth 2.0 Bearer-token."
+---
+
+Google tilbyr to komplementære endepunkter for å lese den autentiserte brukerens identitet og profildata. OAuth 2.0 userinfo-endepunktet gir deg et lett sammendrag — e-post, visningsnavn, profilbilde og lokalitet — og er ideelt for påloggingsflyter. People API tilbyr en rikere, mer strukturert visning av brukerens kontaktoppføring og passer når du trenger detaljert feltkontroll. Begge endepunkter krever en gyldig OAuth 2.0-tilgangstoken med de riktige tilgangsområdene.
+
+<Note>
+  Begge endepunkter beskrevet på denne siden krever en gyldig OAuth 2.0 Bearer-token. API-nøkler aksepteres **ikke** — disse ressursene er knyttet til en autentisert brukeridentitet. Se [Autentiseringsveiledningen](/api/authentication) for å sette opp OAuth-flyten din.
+</Note>
+
+---
+
+## Hent gjeldende brukerprofil
+
+Hent en kompakt profil for den for øyeblikket autentiserte brukeren.
+
+**Endepunkt**
+
+```http
+GET https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**Nødvendig tilgangsområde:** `openid email profile`
+
+### Eksempelforespørsel
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/oauth2/v2/userinfo"
+```
+
+### Eksempelsvar
+
+```json
+{
+  "id": "116195079999551234567",
+  "email": "alex@example.com",
+  "name": "Alex Johnson",
+  "given_name": "Alex",
+  "family_name": "Johnson",
+  "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+  "locale": "en"
+}
+```
+
+### Svarfelt
+
+<ResponseField name="id" type="string">
+  Brukerens unike, stabile Google-konto-ID. Denne verdien endres ikke selv om brukeren oppdaterer e-postadressen eller navnet sitt.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Brukerens primære Google-konto e-postadresse. Krever tilgangsområdet `email`.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Brukerens fulle visningsnavn slik det vises på Google-kontoen deres.
+</ResponseField>
+
+<ResponseField name="given_name" type="string">
+  Brukerens fornavn. Krever tilgangsområdet `profile`.
+</ResponseField>
+
+<ResponseField name="family_name" type="string">
+  Brukerens etternavn. Krever tilgangsområdet `profile`.
+</ResponseField>
+
+<ResponseField name="picture" type="string">
+  En URL som peker til brukerens profilbilde hostet på Googles servere. Bildet er offentlig tilgjengelig, men kan endres hvis brukeren oppdaterer bildet sitt.
+</ResponseField>
+
+<ResponseField name="locale" type="string">
+  BCP 47-språktaggen som representerer brukerens foretrukne språk (f.eks. `"en"`, `"fr"`, `"ja"`). Krever tilgangsområdet `profile`.
+</ResponseField>
+
+---
+
+## Hent brukerinfo via People API
+
+People API returnerer rikere strukturert data og lar deg be om nøyaktig de feltene du trenger ved å bruke `personFields`-parameteren.
+
+**Endepunkt**
+
+```http
+GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
+```
+
+**Nødvendig tilgangsområde:** `https://www.googleapis.com/auth/contacts.readonly`
+
+### Eksempelforespørsel
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses"
+```
+
+### Eksempelsvar
+
+```json
+{
+  "resourceName": "people/116195079999551234567",
+  "etag": "%EgoBAgkLDg8REhMaAQ==",
+  "names": [
+    {
+      "displayName": "Alex Johnson",
+      "givenName": "Alex",
+      "familyName": "Johnson",
+      "metadata": {
+        "primary": true,
+        "source": { "type": "PROFILE" }
+      }
+    }
+  ],
+  "emailAddresses": [
+    {
+      "value": "alex@example.com",
+      "metadata": {
+        "primary": true,
+        "verified": true
+      }
+    }
+  ]
+}
+```
+
+<Tip>
+  Du kan be om ytterligere `personFields` som `phoneNumbers`, `addresses`, `birthdays` og `photos` ved å legge dem til som en kommaseparert liste: `?personFields=names,emailAddresses,phoneNumbers`.
+</Tip>

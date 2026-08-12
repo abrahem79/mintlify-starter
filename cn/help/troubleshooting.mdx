@@ -1,0 +1,145 @@
+---
+title: "排查 Google 登录、Drive 及 API 错误"
+sidebarTitle: "故障排除"
+description: "诊断并修复 Google 登录失败、Drive 同步问题、API 错误代码、配额限制和 Search 索引延迟等常见问题。"
+---
+
+即便是像 Google 这样可靠的服务偶尔也会遇到问题——无论是 API 返回意外错误代码、同步停止工作，还是登录无法通过。本指南将带你了解 Google 产品和开发者平台中最常见的问题，并提供清晰的步骤来诊断和解决每一个。
+
+<Tip>
+  在排查具体问题之前，请查看 [Google Workspace 状态仪表板](https://www.google.com/appsstatus)，看看是否有影响一个或多个 Google 服务的正在进行的中断。许多登录、同步和 API 问题是由暂时的基础设施事件引起的，会自行解决。
+</Tip>
+
+## API 错误代码
+
+当 Google API 返回错误时，HTTP 状态码和错误消息共同告诉你到底出了什么问题。下表涵盖了最常见的错误响应及处理方式：
+
+| HTTP 状态 | 错误代码 | 含义 | 如何修复 |
+|---|---|---|---|
+| **400** | `INVALID_ARGUMENT` | 请求格式错误或包含无效参数 | 对照 API 参考检查请求体和查询参数；检查是否缺少必填字段或数据类型不正确 |
+| **401** | `UNAUTHENTICATED` | 请求缺少有效的身份验证凭据 | 刷新你的 OAuth 令牌或验证 API 密钥已包含在请求头中；确保凭据未过期 |
+| **403** | `PERMISSION_DENIED` | 已认证账户无权执行此操作 | 检查是否已授予所需的 OAuth 作用域并且在 Cloud 项目中启用了 API；验证资源的共享设置 |
+| **429** | `RESOURCE_EXHAUSTED` | 你已超过此 API 的配额或速率限制 | 实现指数退避和重试逻辑；如有需要，通过 Cloud Console 申请配额提升 |
+| **500** | `INTERNAL` | Google 服务器上发生意外错误 | 使用指数退避重试请求；如果错误持续存在，请查看 [Google Cloud 状态](https://status.cloud.google.com) 页面 |
+
+<Note>
+  所有 Google API 错误响应都包含带有 `code`、`message` 和 `status` 字段的 JSON 主体。始终记录完整的错误响应主体——而不仅仅是 HTTP 状态码——以获取最具可操作性的诊断信息。
+</Note>
+
+## 无法登录
+
+如果你无法登录 Google 账户，请按顺序执行以下步骤：
+
+<Steps>
+  <Step title="检查大写锁定和键盘布局">
+    密码区分大小写。在重新输入密码之前，确保大写锁定已关闭并且你使用的是正确的键盘语言布局。
+  </Step>
+  <Step title="使用忘记密码">
+    在登录页面，点击 **Forgot password?**。Google 会将验证码发送到你的备用邮箱或电话号码。输入验证码以确认你的身份并创建新密码。
+  </Step>
+  <Step title="检查你的两步验证方法">
+    如果你已启用两步验证 (2SV) 且未收到身份验证代码，请确保你的手机有信号，并且 Google Authenticator 应用（或其他 TOTP 应用）显示的是正确的时间同步代码。如果你无法访问 2SV 设备，请使用保存的备用代码或在 [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery) 请求账户恢复。
+  </Step>
+  <Step title="检查账户是否被暂停">
+    如果 Google 检测到异常活动或违反策略，你的账户可能会被临时暂停。在这种情况下，你将在登录页面看到明确的消息。按照屏幕上的说明申诉暂停或验证你的身份。
+  </Step>
+  <Step title="尝试不同的浏览器或设备">
+    浏览器扩展程序、缓存的凭据或损坏的 cookie 有时会干扰登录。请尝试从隐身/无痕窗口或不同的浏览器登录，以排除本地问题。
+  </Step>
+</Steps>
+
+## Google Drive 同步问题
+
+如果文件在你的计算机和 Google Drive 之间无法同步，或者 Drive for Desktop 停止工作，请按以下步骤操作：
+
+<AccordionGroup>
+  <Accordion title="检查你的存储配额">
+    如果你的 Google 账户存储空间已满，Drive 将停止同步新文件，并可能无法上传更改。请访问 [one.google.com/storage](https://one.google.com/storage) 查看用量。如果你已超出上限，请从 Gmail、Drive 回收站或 Google Photos 中删除不需要的文件，或升级到 Google One 套餐。
+  </Accordion>
+
+  <Accordion title="检查你的网络连接">
+    Drive for Desktop 需要稳定的网络连接才能同步。请打开浏览器加载一个网页来确认连接情况。如果你的连接不稳定，同步将暂停，并在连接恢复稳定后自动恢复。
+  </Accordion>
+
+  <Accordion title="重启 Drive for Desktop">
+    点击系统托盘（Windows）或菜单栏（macOS）中的 Drive for Desktop 图标，然后选择 **Quit**。从应用程序文件夹或开始菜单重新启动应用。重启客户端会强制它重新检查同步状态并解决许多临时问题。
+  </Accordion>
+
+  <Accordion title="重新链接你的 Google 账户">
+    如果应用显示身份验证错误，你可能需要重新链接你的账户。打开 Drive for Desktop 偏好设置，前往 **Accounts**，退出并使用你的 Google 账户重新登录。这会刷新你的凭据，而不会影响已同步的文件。
+  </Accordion>
+
+  <Accordion title="检查文件路径长度或命名问题">
+    Drive for Desktop 可能拒绝同步路径超出系统限制（Windows 上为 260 个字符）的文件，或包含操作系统不支持的字符的文件名。请将有问题的文件重命名或移动到较短的路径，并检查 Drive for Desktop 的错误日志以获取具体文件名。
+  </Accordion>
+</AccordionGroup>
+
+## API 配额超限 (429)
+
+收到 `429 RESOURCE_EXHAUSTED` 错误意味着你的应用在过短的时间内发送了过多的请求，或者达到了每日配额限制。以下是处理方法：
+
+### 实现指数退避
+
+与其在请求失败后立即重试，不如在每次重试之间等待逐渐延长的间隔。这可以防止你的客户端在 API 处于负载下时不断轰炸它，并给配额窗口重置的时间。
+
+```python
+import time
+import random
+
+def api_request_with_backoff(request_func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return request_func()
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limited. Retrying in {wait:.2f} seconds...")
+                time.sleep(wait)
+            else:
+                raise
+```
+
+### 申请配额提升
+
+如果你的应用持续达到配额限制，你可以通过 Google Cloud Console 申请提升：
+
+<Steps>
+  <Step title="打开 Cloud Console">
+    前往 [console.cloud.google.com](https://console.cloud.google.com) 并选择你的项目。
+  </Step>
+  <Step title="前往 APIs & Services → Quotas & System Limits">
+    导航到 **APIs & Services** → **Quotas & System Limits**，并按被限流的 API 进行过滤。
+  </Step>
+  <Step title="选择要提升的配额">
+    找到具体的配额（例如 "Queries per day" 或 "Requests per minute"），勾选它旁边的复选框，然后点击 **Edit quotas**。
+  </Step>
+  <Step title="提交你的申请">
+    输入你期望的新配额值和简短的理由。Google 通常在 2–3 个工作日内审核配额提升申请。
+  </Step>
+</Steps>
+
+## 搜索结果未更新
+
+如果你更改了网页但更新没有出现在 Google Search 结果中，此延迟几乎总是由于 Google 的抓取和索引流程——而不是错误。
+
+<AccordionGroup>
+  <Accordion title="了解索引延迟">
+    Google 的爬虫（Googlebot）访问页面后，索引更新以及这些更改出现在搜索结果中还需要额外时间。对于大多数网站，这个过程需要几天到几周不等。新站点或权威度较低的页面首次被抓取可能需要更长时间。
+  </Accordion>
+
+  <Accordion title="查看 Google 的缓存版本">
+    你可以通过在 Google Search 中搜索 `cache:yourdomain.com/page` 来查看 Google 上次索引的页面版本。如果缓存版本过时，说明 Google 只是尚未重新抓取该页面。
+  </Accordion>
+
+  <Accordion title="通过 Search Console 请求重新索引">
+    如果你需要紧急更新特定页面，请使用 [Google Search Console](https://search.google.com/search-console) 中的 **URL Inspection** 工具。粘贴 URL，然后点击 **Request Indexing** 请求 Googlebot 尽快重新抓取。这不能保证立即出结果，但会将该 URL 在抓取队列中优先处理。
+  </Accordion>
+
+  <Accordion title="检查你的 robots.txt 和 noindex 标签">
+    确保你的页面没有意外地被禁止索引。检查你的 `robots.txt` 文件是否阻止 Googlebot 抓取该 URL，并验证页面上没有 `<meta name="robots" content="noindex">` 标签。这两者之一都会阻止你的内容出现在搜索结果中。
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  为同一 URL 频繁请求重新索引并不会加快该流程。Google 的索引流程是自动管理的，提交重复请求不会进一步提升抓取优先级。
+</Warning>

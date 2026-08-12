@@ -1,0 +1,130 @@
+---
+title: "用户账户 API：获取个人资料和身份数据"
+sidebarTitle: "Accounts API"
+description: "通过 GET /oauth2/v2/userinfo 或 People API，使用 OAuth 2.0 Bearer 令牌获取已认证用户的个人资料、电子邮箱、姓名和头像。"
+---
+
+Google 提供了两个互补的端点，用于读取已认证用户的身份和个人资料数据。OAuth 2.0 userinfo 端点提供轻量级的摘要——电子邮箱、显示名称、头像和语言区域——非常适合登录流程。People API 提供对用户联系人记录更丰富、更结构化的视图，适用于需要精细字段控制的场景。两个端点都需要有效的 OAuth 2.0 访问令牌以及相应的作用域。
+
+<Note>
+  本页面描述的两个端点都需要有效的 OAuth 2.0 Bearer 令牌。**不接受** API 密钥——这些资源与已认证的用户身份关联。请参阅 [身份验证指南](/api/authentication) 来设置你的 OAuth 流程。
+</Note>
+
+---
+
+## 获取当前用户资料
+
+获取当前已认证用户的紧凑个人资料。
+
+**端点**
+
+```http
+GET https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**所需作用域：** `openid email profile`
+
+### 示例请求
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/oauth2/v2/userinfo"
+```
+
+### 示例响应
+
+```json
+{
+  "id": "116195079999551234567",
+  "email": "alex@example.com",
+  "name": "Alex Johnson",
+  "given_name": "Alex",
+  "family_name": "Johnson",
+  "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+  "locale": "en"
+}
+```
+
+### 响应字段
+
+<ResponseField name="id" type="string">
+  用户唯一且稳定的 Google 账户 ID。即使用户更新电子邮箱地址或姓名，此值也不会改变。
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  用户的主 Google 账户电子邮箱地址。需要 `email` 作用域。
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  用户在其 Google 账户上显示的完整名称。
+</ResponseField>
+
+<ResponseField name="given_name" type="string">
+  用户的名（given name）。需要 `profile` 作用域。
+</ResponseField>
+
+<ResponseField name="family_name" type="string">
+  用户的姓（family name）。需要 `profile` 作用域。
+</ResponseField>
+
+<ResponseField name="picture" type="string">
+  指向托管在 Google 服务器上的用户头像的 URL。该图像可以公开访问，但如果用户更新头像则可能会变化。
+</ResponseField>
+
+<ResponseField name="locale" type="string">
+  表示用户首选语言的 BCP 47 语言标签（例如 `"en"`、`"fr"`、`"ja"`）。需要 `profile` 作用域。
+</ResponseField>
+
+---
+
+## 通过 People API 获取用户信息
+
+People API 返回更丰富的结构化数据，并允许你使用 `personFields` 参数精确请求所需字段。
+
+**端点**
+
+```http
+GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
+```
+
+**所需作用域：** `https://www.googleapis.com/auth/contacts.readonly`
+
+### 示例请求
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses"
+```
+
+### 示例响应
+
+```json
+{
+  "resourceName": "people/116195079999551234567",
+  "etag": "%EgoBAgkLDg8REhMaAQ==",
+  "names": [
+    {
+      "displayName": "Alex Johnson",
+      "givenName": "Alex",
+      "familyName": "Johnson",
+      "metadata": {
+        "primary": true,
+        "source": { "type": "PROFILE" }
+      }
+    }
+  ],
+  "emailAddresses": [
+    {
+      "value": "alex@example.com",
+      "metadata": {
+        "primary": true,
+        "verified": true
+      }
+    }
+  ]
+}
+```
+
+<Tip>
+  你可以通过以逗号分隔的列表方式追加额外的 `personFields`，如 `phoneNumbers`、`addresses`、`birthdays` 和 `photos`：`?personFields=names,emailAddresses,phoneNumbers`。
+</Tip>

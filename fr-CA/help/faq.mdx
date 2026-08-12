@@ -1,0 +1,45 @@
+---
+title: "FAQ des services Google : comptes, API, facturation et confidentialité"
+sidebarTitle: "FAQ"
+description: "Réponses aux questions courantes sur les comptes Google, les quotas de stockage, Workspace, les clés d'API, la facturation, la confidentialité des données et les limites de débit pour développeurs."
+---
+
+Que vous soyez un nouvel utilisateur Google ou un développeur chevronné travaillant avec les API Google, vous risquez de vous poser des questions sur le fonctionnement des comptes, du stockage, de la facturation et des contrôles d'accès. Cette page rassemble les réponses aux questions les plus fréquentes à travers les produits grand public de Google, les applications Workspace et la plateforme pour développeurs — afin que vous obteniez des réponses rapides sans fouiller dans plusieurs centres d'aide.
+
+<AccordionGroup>
+  <Accordion title="Comment réinitialiser mon mot de passe Google?">
+    Vous pouvez réinitialiser votre mot de passe Google depuis la page de récupération de compte à [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery). Saisissez l'adresse courriel associée à votre compte et suivez les instructions — Google enverra un code de vérification à votre courriel ou numéro de téléphone de récupération. Une fois vérifié, vous pourrez créer un nouveau mot de passe. Si vous avez perdu l'accès à toutes les options de récupération, Google propose un processus de vérification d'identité où on vous posera des questions pour confirmer votre identité en fonction de l'historique de votre compte.
+  </Accordion>
+
+  <Accordion title="Pourquoi ma clé d'API ne fonctionne-t-elle pas?">
+    Les raisons les plus fréquentes pour lesquelles une clé d'API cesse de fonctionner sont : la clé a été restreinte à des adresses IP ou à des référents précis qui ne correspondent pas à votre environnement actuel, la clé n'a pas l'API nécessaire activée dans votre projet Google Cloud, ou la clé a été supprimée ou régénérée. Ouvrez la [console Google Cloud](https://console.cloud.google.com), accédez à **APIs & Services → Credentials** et vérifiez les restrictions et l'état de votre clé. Confirmez aussi que l'API cible (p. ex. Maps JavaScript API, Sheets API) est activée sous **APIs & Services → Enabled APIs & services**.
+  </Accordion>
+
+  <Accordion title="Qu'est-ce qui compte dans mon quota de stockage Google?">
+    Vos 15 Go de stockage Google gratuit sont partagés entre Gmail (courriels et pièces jointes), Google Drive (fichiers téléversés) et Google Photos (images et vidéos sauvegardées). Les Google Docs, Sheets, Slides, Forms et Drawings créés nativement dans les formats Google ne comptent **pas** dans votre quota. Cependant, les fichiers téléversés dans Drive dans d'autres formats — comme `.docx`, `.xlsx` ou `.pdf` — consomment du stockage. Vous pouvez vérifier votre utilisation actuelle et sa répartition à [one.google.com/storage](https://one.google.com/storage).
+  </Accordion>
+
+  <Accordion title="Comment supprimer mon compte Google?">
+    Vous pouvez supprimer définitivement votre compte Google depuis la section **Données et confidentialité** des paramètres de votre compte. Rendez-vous à [myaccount.google.com](https://myaccount.google.com), cliquez sur **Données et confidentialité**, faites défiler jusqu'à **Autres options** et cliquez sur **Supprimer votre compte Google**. Google vous demandera d'abord de télécharger une copie de vos données à l'aide de Google Takeout. Notez que la suppression est permanente — vos courriels Gmail, vos fichiers Drive et toutes les données associées seront perdus et ne pourront pas être récupérés après l'expiration du délai de grâce.
+  </Accordion>
+
+  <Accordion title="Puis-je utiliser les API Google gratuitement?">
+    Beaucoup d'API Google offrent un niveau gratuit avec des limites d'utilisation généreuses — par exemple, l'API Maps JavaScript comprend 200 $ par mois en crédits gratuits, et les appels à l'API Google Sheets sont gratuits jusqu'aux limites d'utilisation définies par projet. Cependant, l'utilisation à grand volume, certaines API premium (comme Google Maps Routes Preferred) et les fonctionnalités de qualité entreprise requièrent la configuration d'un compte de facturation dans Google Cloud. Vous pouvez consulter les tarifs de toute API précise à [cloud.google.com/pricing](https://cloud.google.com/pricing) ou dans la page de documentation de l'API en question.
+  </Accordion>
+
+  <Accordion title="Comment transférer la propriété d'un Google Doc?">
+    Pour transférer la propriété d'un Google Doc, Sheet ou Slide, ouvrez le fichier et cliquez sur **Partager** dans le coin supérieur droit. Trouvez la personne à qui vous voulez transférer la propriété (elle doit déjà avoir accès), cliquez sur le menu déroulant à côté de son nom et sélectionnez **Transférer la propriété**. Le destinataire recevra une notification par courriel et devra accepter le transfert. Notez que vous ne pouvez transférer la propriété qu'à un autre utilisateur au sein de la même organisation Google Workspace, ou, pour les comptes personnels, à un autre titulaire de compte Google.
+  </Accordion>
+
+  <Accordion title="Comment signaler un courriel indésirable ou d'hameçonnage dans Gmail?">
+    Pour signaler un courriel indésirable dans Gmail, ouvrez le message, cliquez sur le **menu à trois points** (⋮) en haut à droite du courriel, et sélectionnez **Signaler comme spam** ou **Signaler comme hameçonnage**. Signaler l'hameçonnage envoie le courriel à Google pour examen et aide à protéger d'autres utilisateurs contre des attaques semblables. Gmail déplacera aussi automatiquement le courriel hors de votre boîte de réception. Si vous recevez des courriels d'hameçonnage qui usurpent l'identité d'une entreprise ou d'une institution, vous pouvez aussi les signaler à l'équipe [Google Safe Browsing](https://safebrowsing.google.com/safebrowsing/report_phish/).
+  </Accordion>
+
+  <Accordion title="Quelles sont les limites de débit de l'API Google Search?">
+    L'API Google Custom Search JSON permet jusqu'à **100 requêtes de recherche par jour** gratuitement, avec des requêtes supplémentaires disponibles à 5 $ par tranche de 1000 requêtes (jusqu'à 10 000 par jour). Cela s'applique à l'API Programmable Search Engine — si vous utilisez l'API Google Search Console ou d'autres API liées à la recherche, les limites diffèrent et sont documentées séparément. Vous pouvez surveiller votre utilisation et configurer les quotas de requêtes dans la [console Google Cloud](https://console.cloud.google.com) sous **APIs & Services → Quotas**. Pour des besoins de recherche à très grand volume, Google propose des options de niveau entreprise via Google Cloud.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Vous ne trouvez pas la réponse que vous cherchez? Visitez le [centre d'aide Google](https://support.google.com) pour la documentation d'assistance propre à chaque produit, ou contactez directement l'assistance Google depuis votre compte Google sous **Assistance** dans le menu de navigation.
+</Note>

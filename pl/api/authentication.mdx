@@ -1,0 +1,134 @@
+---
+title: "Uwierzytelnianie API Google: klucze, OAuth 2.0, konta usługi"
+sidebarTitle: "Uwierzytelnianie"
+description: "Uwierzytelniaj żądania do API Google za pomocą kluczy API do danych publicznych, tokenów OAuth 2.0 Bearer do danych użytkownika lub kont usługi do dostępu server-to-server."
+---
+
+Każde żądanie kierowane do REST API Google musi być uwierzytelnione. Google obsługuje trzy główne mechanizmy uwierzytelniania: klucze API do dostępu do danych publicznych, tokeny OAuth 2.0 typu Bearer do działań w imieniu użytkownika oraz poświadczenia konta usługi do integracji server-to-server. Wybór właściwego mechanizmu zależy od tego, do jakich danych potrzebujesz dostępu i czy w przepływie uczestniczy człowiek.
+
+## Klucze API
+
+Klucze API to najprostsza metoda uwierzytelniania. Identyfikują one Twój projekt wobec Google, ale nie niosą żadnego kontekstu użytkownika, dlatego nadają się wyłącznie do interfejsów API, które uzyskują dostęp do **publicznie dostępnych danych** (np. Programmable Search API).
+
+Przekaż swój klucz API jako parametr zapytania `key` w każdym żądaniu:
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**Przykład z curl:**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  Generuj i zarządzaj kluczami API w [Google Cloud Console](https://console.cloud.google.com/apis/credentials). Ogranicz każdy klucz do konkretnych API i adresów URL odsyłających, aby ograniczyć skutki potencjalnego ujawnienia.
+</Tip>
+
+## Tokeny OAuth 2.0 Bearer
+
+Gdy Twoja aplikacja musi uzyskać dostęp do **danych należących do użytkownika** lub je modyfikować — takich jak pliki w Dysku Google, wiadomości w Gmailu czy wydarzenia w Kalendarzu — musisz użyć OAuth 2.0. Po zakończeniu przez użytkownika przepływu zgód OAuth aplikacja otrzymuje token dostępu, który dołącza do nagłówka `Authorization` w każdym żądaniu.
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Domyślnie tokeny dostępu wygasają po **3600 sekundach (1 godzinie)**. Twoja aplikacja powinna przechowywać towarzyszący token odświeżania i używać go do uzyskiwania nowego tokena dostępu bez ponownego proszenia użytkownika. Zobacz [Odświeżanie tokena](#token-refresh) poniżej.
+
+**Przykład z curl:**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## Poświadczenia konta usługi
+
+Konta usługi to specjalne konta Google, które należą do aplikacji, a nie do pojedynczego użytkownika. Są zaprojektowane do scenariuszy **server-to-server** — na przykład zaplecza, które według harmonogramu odczytuje dane z Arkuszy Google bez udziału użytkownika.
+
+Aby uwierzytelnić się jako konto usługi:
+
+1. W [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts) utwórz konto usługi i pobierz jego plik klucza JSON.
+2. Przyznaj kontu usługi role IAM, których potrzebuje (np. `roles/drive.reader`).
+3. Użyj biblioteki klienckiej Google lub podpisanego JWT, aby wymienić klucz na krótkotrwały token dostępu.
+
+**Przykład: wymiana klucza konta usługi na token dostępu za pomocą curl**
+
+```bash
+# 1. Install the google-auth-library or use the oauth2 token endpoint directly.
+# Below shows the two-legged JWT flow at its simplest using Python's google-auth library.
+# Install: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+Gdy już masz token dostępu, przekaż go jako token Bearer dokładnie tak, jak w przypadku OAuth 2.0:
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  Przechowuj plik klucza JSON konta usługi bezpiecznie i nigdy nie umieszczaj go w systemie kontroli wersji. Rotuj klucze natychmiast, jeśli podejrzewasz, że zostały ujawnione.
+</Warning>
+
+## Zakresy
+
+Zakresy OAuth 2.0 definiują dokładnie, jakie uprawnienia daje token dostępu. Żądasz zakresów na etapie autoryzacji, a użytkownik widzi je wymienione na ekranie zgód Google. Żądaj tylko tych zakresów, których naprawdę potrzebuje Twoja aplikacja — żądanie zbyt szerokich zakresów obniża zaufanie użytkowników i może zostać odrzucone podczas weryfikacji aplikacji.
+
+| Zakres | Przyznany dostęp |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | Dostęp tylko do odczytu do wszystkich plików na Dysku Google użytkownika. |
+| `https://www.googleapis.com/auth/drive` | Pełny dostęp do odczytu i zapisu na Dysku Google użytkownika. |
+| `https://www.googleapis.com/auth/gmail.readonly` | Dostęp tylko do odczytu do wiadomości i ustawień Gmaila użytkownika. |
+| `https://www.googleapis.com/auth/calendar` | Pełny dostęp do odczytu i zapisu w Kalendarzu Google użytkownika. |
+| `openid` | Uwierzytelnia użytkownika i pobiera stabilny identyfikator użytkownika przez OpenID Connect. |
+| `email` | Dostęp do podstawowego adresu e-mail konta Google użytkownika. |
+| `profile` | Dostęp do podstawowych informacji profilowych użytkownika (imię, zdjęcie, ustawienia regionalne). |
+
+## Odświeżanie tokena
+
+Gdy token dostępu wygaśnie, wymień token odświeżania na nowy, wysyłając żądanie `POST` do endpointu tokenów Google:
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+Pomyślna odpowiedź zawiera nowy token dostępu wraz z czasem jego wygaśnięcia:
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| Pole | Opis |
+|-------|-------------|
+| `access_token` | Nowy token Bearer używany w kolejnych żądaniach API. |
+| `expires_in` | Sekundy do wygaśnięcia tokena (zwykle `3600`). |
+| `token_type` | Zawsze `"Bearer"`. |
+
+Zapisz nowy `access_token` i zastąp nim poprzedni w swojej aplikacji. Sam token odświeżania pozostaje ważny do momentu, aż użytkownik odwoła dostęp lub Google go unieważni w inny sposób.
+
+<Warning>
+  Nigdy nie umieszczaj `client_secret` OAuth w kodzie po stronie klienta (bundle'ach JavaScript, aplikacjach mobilnych ani publicznych repozytoriach). Jeśli zostanie ujawniony, atakujący może podszyć się pod Twoją aplikację, przejąć przepływy OAuth i uzyskać dostęp do danych użytkownika w Twoim imieniu. Zawsze wykonuj wymianę tokenów na bezpiecznym serwerze backendowym.
+</Warning>

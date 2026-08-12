@@ -1,0 +1,45 @@
+---
+title: "Google 服务常见问题：账户、API、结算与隐私"
+sidebarTitle: "常见问题"
+description: "关于 Google 账户、存储配额、Workspace、API 密钥、结算、数据隐私和开发者速率限制等常见问题的解答。"
+---
+
+无论你是 Google 新用户还是与 Google API 打交道的老练开发者，都可能遇到关于账户、存储、结算和访问控制运作方式的疑问。本页汇集了 Google 消费者产品、Workspace 应用和开发者平台中最常见问题的答案——让你无需翻遍多个帮助中心就能快速找到答案。
+
+<AccordionGroup>
+  <Accordion title="如何重置我的 Google 密码？">
+    你可以在 [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery) 的账户恢复页面重置 Google 密码。输入与账户关联的邮箱地址并按提示操作——Google 会向你的恢复邮箱或电话号码发送验证码。验证后，你即可创建新密码。如果你无法访问所有恢复选项，Google 提供了一个身份验证流程，会根据你的账户历史提问以确认你的身份。
+  </Accordion>
+
+  <Accordion title="为什么我的 API 密钥不工作？">
+    API 密钥停止工作最常见的原因是：密钥被限制为与当前环境不匹配的特定 IP 地址或引荐来源；密钥没有在你的 Google Cloud 项目中启用所需的 API；或密钥已被删除或重新生成。打开 [Google Cloud Console](https://console.cloud.google.com)，导航到 **APIs & Services → Credentials**，验证密钥的限制和状态。同时确认目标 API（例如 Maps JavaScript API、Sheets API）已在 **APIs & Services → Enabled APIs & services** 下启用。
+  </Accordion>
+
+  <Accordion title="哪些内容会计入我的 Google 存储配额？">
+    你的 15 GB 免费 Google 存储在 Gmail（邮件和附件）、Google Drive（上传的文件）和 Google Photos（备份的图片和视频）之间共享。以 Google 原生格式创建的 Google Docs、Sheets、Slides、Forms 和 Drawings **不**计入你的配额。然而，以其他格式（例如 `.docx`、`.xlsx` 或 `.pdf`）上传到 Drive 的文件会占用存储。你可以在 [one.google.com/storage](https://one.google.com/storage) 查看当前的使用情况和明细。
+  </Accordion>
+
+  <Accordion title="如何删除我的 Google 账户？">
+    你可以在账户设置的**数据和隐私**部分永久删除你的 Google 账户。前往 [myaccount.google.com](https://myaccount.google.com)，点击**数据和隐私**，向下滚动到**更多选项**，然后点击**删除你的 Google 账户**。Google 会要求你先使用 Google Takeout 下载数据副本。请注意，删除是永久性的——你的 Gmail、Drive 文件及所有关联数据都将丢失，宽限期结束后无法恢复。
+  </Accordion>
+
+  <Accordion title="我可以免费使用 Google API 吗？">
+    许多 Google API 提供慷慨用量限制的免费层——例如，Maps JavaScript API 每月包含 200 美元的免费额度，Google Sheets API 调用在项目设定的使用限额内免费。然而，高用量、某些高级 API（例如 Google Maps Routes Preferred）以及企业级功能需要在 Google Cloud 中设置结算账户。你可以在 [cloud.google.com/pricing](https://cloud.google.com/pricing) 或各 API 的文档页面上查看具体 API 的价格。
+  </Accordion>
+
+  <Accordion title="如何转让 Google 文档的所有权？">
+    要转让 Google 文档、表格或幻灯片的所有权，请打开文件并点击右上角的**共享**。找到你想要转让所有权的人（对方必须已有访问权限），点击其名字旁的下拉菜单，选择**转让所有权**。接收者将收到电子邮件通知并必须接受转让。请注意，你只能将所有权转让给同一 Google Workspace 组织内的用户，或者对于个人账户，转让给另一位 Google 账户持有者。
+  </Accordion>
+
+  <Accordion title="如何在 Gmail 中举报垃圾邮件或钓鱼邮件？">
+    要在 Gmail 中举报垃圾邮件，请打开该邮件，点击邮件右上角的**三点菜单**（⋮），选择**举报垃圾邮件**或**举报钓鱼邮件**。举报钓鱼邮件会将邮件发送给 Google 审核，并帮助保护其他用户免受类似攻击。Gmail 还会自动将该邮件移出你的收件箱。如果你收到冒充某公司或机构的钓鱼邮件，还可以另外向 [Google Safe Browsing 团队](https://safebrowsing.google.com/safebrowsing/report_phish/) 举报。
+  </Accordion>
+
+  <Accordion title="Google 搜索 API 的速率限制是什么？">
+    Google Custom Search JSON API 允许每天最多 **100 次免费搜索查询**，超出部分按每 1,000 次查询 5 美元收费（每天最多 10,000 次）。这适用于 Programmable Search Engine API——如果你使用的是 Google Search Console API 或其他与搜索相关的 API，限制不同并有单独的文档说明。你可以在 [Google Cloud Console](https://console.cloud.google.com) 的 **APIs & Services → Quotas** 下监控使用情况并配置请求配额。对于非常高用量的搜索需求，Google 通过 Google Cloud 提供企业级选项。
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  找不到你要的答案？请访问 [Google 帮助中心](https://support.google.com)获取特定产品的支持文档，或从你的 Google 账户导航菜单中的**支持**处直接联系 Google 支持。
+</Note>

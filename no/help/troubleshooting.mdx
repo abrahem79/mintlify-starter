@@ -1,0 +1,145 @@
+---
+title: "Feilsøk Google-pålogging, Drive og API-feil"
+sidebarTitle: "Feilsøking"
+description: "Diagnostiser og fiks vanlige problemer med Google-påloggingsfeil, Drive-synkroniseringsproblemer, API-feilkoder, kvotegrenser og forsinkelser i søkeindeksering."
+---
+
+Selv pålitelige tjenester som Google støter av og til på problemer — enten det er et API som returnerer uventede feilkoder, en synkronisering som sluttet å fungere, eller en pålogging som ikke går gjennom. Denne veiledningen leder deg gjennom de vanligste problemene på tvers av Googles produkter og utviklerplattform, med klare steg for å diagnostisere og løse hver enkelt.
+
+<Tip>
+  Før du feilsøker individuelle problemer, sjekk [Google Workspace Status Dashboard](https://www.google.com/appsstatus) for å se om det er en aktiv driftsstans som påvirker en eller flere Google-tjenester. Mange pålogging-, synkroniserings- og API-problemer skyldes midlertidige infrastrukturhendelser som løser seg selv.
+</Tip>
+
+## API-feilkoder
+
+Når et Google API returnerer en feil, forteller HTTP-statuskoden og feilmeldingen sammen deg nøyaktig hva som gikk galt. Tabellen nedenfor dekker de vanligste feilsvarene og hvordan du adresserer dem:
+
+| HTTP-status | Feilkode | Betydning | Slik fikser du det |
+|---|---|---|---|
+| **400** | `INVALID_ARGUMENT` | Forespørselen var malformert eller inneholdt en ugyldig parameter | Gjennomgå forespørselens body og spørringsparametere mot API-referansen; sjekk for manglende obligatoriske felt eller feil datatyper |
+| **401** | `UNAUTHENTICATED` | Forespørselen mangler gyldig autentiseringslegitimasjon | Oppdater OAuth-tokenen din eller verifiser at API-nøkkelen din er inkludert i forespørselsheaderne; sørg for at legitimasjonen ikke har utløpt |
+| **403** | `PERMISSION_DENIED` | Den autentiserte kontoen har ikke tillatelse til å utføre denne handlingen | Sjekk at det nødvendige OAuth-tilgangsområdet er gitt og at API-et er aktivert i Cloud-prosjektet ditt; verifiser ressursens delingsinnstillinger |
+| **429** | `RESOURCE_EXHAUSTED` | Du har overskredet kvoten eller hastighetsgrensen for dette API-et | Implementer eksponentiell backoff og retry-logikk; be om en kvoteøkning via Cloud Console hvis nødvendig |
+| **500** | `INTERNAL` | En uventet feil oppsto på Googles servere | Prøv forespørselen på nytt med eksponentiell backoff; hvis feilen vedvarer, sjekk siden [Google Cloud Status](https://status.cloud.google.com) |
+
+<Note>
+  Alle Google API-feilsvar inkluderer en JSON-body med feltene `code`, `message` og `status`. Logg alltid hele feilsvarets body — ikke bare HTTP-statuskoden — for å få den mest handlingsrettede diagnostikkinformasjonen.
+</Note>
+
+## Kan ikke logge inn
+
+Hvis du ikke får logget inn på Google-kontoen din, arbeid deg gjennom følgende steg i rekkefølge:
+
+<Steps>
+  <Step title="Sjekk Caps Lock og tastaturoppsett">
+    Passord er versalfølsomme. Sørg for at Caps Lock er av og at du bruker det riktige tastaturspråkoppsettet før du skriver inn passordet på nytt.
+  </Step>
+  <Step title="Bruk Glemt passord">
+    På påloggingssiden, klikk **Forgot password?**. Google vil sende en verifiseringskode til gjenopprettings-e-postadressen eller telefonnummeret ditt. Skriv inn koden for å verifisere identiteten din og opprett et nytt passord.
+  </Step>
+  <Step title="Sjekk 2-trinnsverifiseringsmetoden din">
+    Hvis du har aktivert 2-trinnsverifisering (2SV) og ikke mottar autentiseringskoden din, sørg for at telefonen har signal og at Google Authenticator-appen (eller annen TOTP-app) viser den riktige tidssynkroniserte koden. Hvis du har mistet tilgangen til 2SV-enheten din, bruk en lagret reservekode eller be om kontogjenoppretting på [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery).
+  </Step>
+  <Step title="Sjekk for kontosuspensjon">
+    Hvis Google oppdager uvanlig aktivitet eller et brudd på retningslinjer, kan kontoen din midlertidig bli suspendert. Du vil se en tydelig melding på påloggingssiden i så fall. Følg instruksjonene på skjermen for å anke suspensjonen eller verifisere identiteten din.
+  </Step>
+  <Step title="Prøv en annen nettleser eller enhet">
+    Nettlesertillegg, bufret legitimasjon eller korrupte informasjonskapsler kan noen ganger forstyrre pålogging. Prøv å logge inn fra et Inkognito-/privat vindu eller en annen nettleser for å utelukke et lokalt problem.
+  </Step>
+</Steps>
+
+## Google Drive-synkroniseringsproblemer
+
+Hvis filer ikke synkroniseres mellom datamaskinen din og Google Drive, eller Drive for Desktop har sluttet å fungere, følg disse stegene:
+
+<AccordionGroup>
+  <Accordion title="Sjekk lagringskvoten din">
+    Hvis Google-kontolagringen din er full, vil Drive slutte å synkronisere nye filer og kan mislykkes i å laste opp endringer. Besøk [one.google.com/storage](https://one.google.com/storage) for å sjekke bruken din. Hvis du er over grensen, slett unødvendige filer fra Gmail, Drive-papirkurven eller Google Photos, eller oppgrader til et Google One-abonnement.
+  </Accordion>
+
+  <Accordion title="Sjekk internettforbindelsen din">
+    Drive for Desktop krever en stabil internettforbindelse for å synkronisere. Bekreft at du er tilkoblet ved å åpne en nettleser og laste en nettside. Hvis forbindelsen din er ustabil, vil synkroniseringen pause og gjenoppta automatisk når forbindelsen stabiliserer seg.
+  </Accordion>
+
+  <Accordion title="Start Drive for Desktop på nytt">
+    Klikk Drive for Desktop-ikonet i systemstatusfeltet (Windows) eller menylinjen (macOS), og velg deretter **Quit**. Start appen på nytt fra Applications-mappen eller Start-menyen. Å starte klienten på nytt tvinger den til å sjekke synkroniseringsstatus og løse mange forbigående problemer.
+  </Accordion>
+
+  <Accordion title="Koble Google-kontoen din på nytt">
+    Hvis appen viser en autentiseringsfeil, må du kanskje koble til kontoen din på nytt. Åpne Drive for Desktop-innstillinger, gå til **Accounts**, og logg ut og inn igjen med Google-kontoen din. Dette oppdaterer legitimasjonen din uten å påvirke de synkroniserte filene dine.
+  </Accordion>
+
+  <Accordion title="Sjekk etter problemer med filstilengde eller navngivning">
+    Drive for Desktop kan nekte å synkronisere filer med stier som overskrider systemgrenser (260 tegn på Windows) eller filnavn som inneholder tegn som ikke støttes av operativsystemet ditt. Endre navn eller flytt problemfiler til en kortere sti, og sjekk Drive for Desktop-feilloggen for spesifikke filnavn.
+  </Accordion>
+</AccordionGroup>
+
+## API-kvote overskredet (429)
+
+Å motta en `429 RESOURCE_EXHAUSTED`-feil betyr at applikasjonen din har sendt for mange forespørsler på for kort tid, eller har nådd sin daglige kvotegrense. Slik håndterer du det:
+
+### Implementer eksponentiell backoff
+
+I stedet for å umiddelbart prøve en mislykket forespørsel på nytt, vent et progressivt lengre intervall mellom hvert nytt forsøk. Dette forhindrer at klienten din hamrer på API-et mens det er under belastning, og gir kvotevinduer tid til å tilbakestille.
+
+```python
+import time
+import random
+
+def api_request_with_backoff(request_func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return request_func()
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limited. Retrying in {wait:.2f} seconds...")
+                time.sleep(wait)
+            else:
+                raise
+```
+
+### Be om en kvoteøkning
+
+Hvis applikasjonen din konsekvent når kvotegrensene, kan du be om en økning gjennom Google Cloud Console:
+
+<Steps>
+  <Step title="Åpne Cloud Console">
+    Gå til [console.cloud.google.com](https://console.cloud.google.com) og velg prosjektet ditt.
+  </Step>
+  <Step title="Gå til APIs & Services → Quotas & System Limits">
+    Naviger til **APIs & Services** → **Quotas & System Limits** og filtrer etter API-et som blir strupt.
+  </Step>
+  <Step title="Velg kvoten du vil øke">
+    Finn den spesifikke kvoten (f.eks. "Queries per day" eller "Requests per minute"), klikk avmerkingsboksen ved siden av den, og klikk deretter **Edit quotas**.
+  </Step>
+  <Step title="Send inn forespørselen din">
+    Skriv inn ønsket ny kvoteverdi og en kort begrunnelse. Google gjennomgår vanligvis forespørsler om kvoteøkning innen 2–3 virkedager.
+  </Step>
+</Steps>
+
+## Søkeresultater oppdateres ikke
+
+Hvis du har gjort endringer på en nettside og oppdateringene ikke vises i Google Søk-resultater, skyldes forsinkelsen nesten alltid Googles kravlings- og indekseringspipeline — ikke en feil.
+
+<AccordionGroup>
+  <Accordion title="Forstå indekseringsforsinkelser">
+    Etter at Googles kravler (Googlebot) besøker en side, tar det ytterligere tid før indeksen oppdateres og disse endringene vises i søkeresultatene. For de fleste nettsteder tar denne prosessen alt fra noen få dager til noen få uker. Nye nettsteder eller sider med lav autoritet kan ta lenger tid å bli kravlet i utgangspunktet.
+  </Accordion>
+
+  <Accordion title="Sjekk Googles bufrede versjon">
+    Du kan se hvilken versjon av siden din Google sist indekserte ved å søke `cache:yourdomain.com/page` i Google Søk. Hvis den bufrede versjonen er utdatert, har Google rett og slett ikke kravlet siden på nytt ennå.
+  </Accordion>
+
+  <Accordion title="Be om reindeksering via Search Console">
+    Hvis du trenger en spesifikk side oppdatert raskt, bruk **URL Inspection**-verktøyet i [Google Search Console](https://search.google.com/search-console). Lim inn URL-en, og klikk deretter **Request Indexing** for å be Googlebot om å kravle den på nytt så snart som mulig. Dette garanterer ikke umiddelbare resultater, men det prioriterer URL-en i kravlekøen.
+  </Accordion>
+
+  <Accordion title="Sjekk robots.txt og noindex-tagger">
+    Sørg for at siden din ikke ved et uhell er blokkert fra indeksering. Sjekk at `robots.txt`-filen din ikke forbyr Googlebot fra å kravle URL-en, og verifiser at det ikke er en `<meta name="robots" content="noindex">`-tagg på siden. Enten av disse vil forhindre at innholdet ditt vises i søkeresultatene.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Å be om reindeksering ofte for samme URL fremskynder ikke prosessen. Googles indekseringspipeline administreres automatisk, og innsending av duplikatforespørsler vil ikke øke kravleprioriteten ytterligere.
+</Warning>

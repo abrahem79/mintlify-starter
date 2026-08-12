@@ -1,0 +1,126 @@
+---
+title: "Programmable Search API: クエリと結果の取得"
+sidebarTitle: "Search API"
+description: "GET /customsearch/v1 経由で Google Programmable Search Engine にクエリを送り、タイトル、URL、スニペットを含む構造化 JSON 結果を受け取ります。"
+---
+
+Google Programmable Search API を使用すると、カスタムのウェブ検索をアプリケーションに埋め込むことができます。[Programmable Search Engine コントロールパネル](https://programmablesearchengine.google.com/) で検索エンジンを作成することで、対象とするサイトまたはウェブ全体を定義できます。その後、シンプルな `GET` リクエストでエンジンにクエリを送り、タイトル、URL、スニペットを含む構造化 JSON 結果を受け取り、任意の方法で表示できます。
+
+## エンドポイント
+
+```http
+GET https://www.googleapis.com/customsearch/v1
+```
+
+認証は、`key` クエリパラメーターとして渡す API キー経由で処理されます。このエンドポイントに OAuth トークンは必要ありません。
+
+## クエリパラメーター
+
+<ParamField query="q" type="string" required>
+  検索クエリ文字列。スペースや特殊文字は URL エンコードしてください(例: `climate+change` または `climate%20change`)。
+</ParamField>
+
+<ParamField query="key" type="string" required>
+  プロジェクトの API キー。[Google Cloud Console](https://console.cloud.google.com/apis/credentials) で生成してください。
+</ParamField>
+
+<ParamField query="cx" type="string" required>
+  Programmable Search Engine の一意の識別子。検索エンジンのセットアップページの「Search engine ID」から取得できます。
+</ParamField>
+
+<ParamField query="num" type="integer">
+  1 ページあたりに返す結果数。指定できる値は `1` から `10` までです。デフォルトは `10` です。
+</ParamField>
+
+<ParamField query="start" type="integer">
+  返される最初の結果のインデックス。ページングに使用します。デフォルトは `1`。最大値は `91`(結果 91–100 を返す)です。詳しくは [ページング](#pagination) を参照してください。
+</ParamField>
+
+<ParamField query="lr" type="string">
+  結果を特定の言語で書かれたドキュメントに制限します。`lang_` をプレフィックスとした言語コードを渡します。例えば、英語は `lang_en`、フランス語は `lang_fr` です。
+</ParamField>
+
+<ParamField query="safe" type="string">
+  セーフサーチフィルタリングを有効にします。露骨なコンテンツをフィルタするには `active`、無効化するには `off` を渡します。デフォルトは `off` です。
+</ParamField>
+
+## リクエスト例
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=5"
+```
+
+## レスポンス例
+
+```json
+{
+  "kind": "customsearch#search",
+  "searchInformation": {
+    "totalResults": "12400000",
+    "searchTime": 0.248
+  },
+  "items": [
+    {
+      "title": "Climate Change Overview",
+      "link": "https://example.com/climate",
+      "snippet": "An overview of current climate change research and its global implications for ecosystems and economies."
+    },
+    {
+      "title": "What Is Climate Change? — NASA",
+      "link": "https://climate.nasa.gov/what-is-climate-change/",
+      "snippet": "NASA's guide to the science, causes, and projected impacts of climate change."
+    }
+  ]
+}
+```
+
+## レスポンスフィールド
+
+<ResponseField name="kind" type="string">
+  返されるリソースの型を識別します。検索レスポンスでは常に `"customsearch#search"` です。
+</ResponseField>
+
+<ResponseField name="searchInformation.totalResults" type="string">
+  クエリに一致する結果の推定総数を文字列で返します。これは概算値であり、リクエストごとに変動する可能性があります。
+</ResponseField>
+
+<ResponseField name="searchInformation.searchTime" type="number">
+  Google がクエリを処理するのに要した時間(秒単位)。
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  検索結果オブジェクトの配列。結果が見つからなかった場合、この配列は含まれません。
+</ResponseField>
+
+<ResponseField name="items[].title" type="string">
+  検索結果に表示されるウェブページのタイトル。
+</ResponseField>
+
+<ResponseField name="items[].link" type="string">
+  結果ページの完全な URL。
+</ResponseField>
+
+<ResponseField name="items[].snippet" type="string">
+  クエリ用語がコンテキスト内でどのように出現するかを示す、ページコンテンツからの短い抜粋。
+</ResponseField>
+
+## ページング
+
+Programmable Search API は 1 リクエストにつき最大 **10 件の結果**を返し、クエリごとに合計最大 **100 件の結果**(結果 1–100)をサポートします。結果をページングするには、`start` を `num` の値だけ増やします:
+
+| ページ | `start` | `num` |
+|------|---------|-------|
+| 1 | 1 | 10 |
+| 2 | 11 | 10 |
+| 3 | 21 | 10 |
+| … | … | … |
+| 10 | 91 | 10 |
+
+```bash
+# 2 ページ目の結果を取得
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=10&start=11"
+```
+
+<Note>
+  100 位を超える結果は API 経由でアクセスできません。より深いページングが必要な場合は、追加の用語やフィルタでクエリを絞り込み、最初の 100 件の中で最も関連性の高い結果を浮上させることを検討してください。
+</Note>

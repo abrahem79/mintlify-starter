@@ -1,0 +1,126 @@
+---
+title: "Programmable Search API: vaicājumu veikšana un rezultātu iegūšana"
+sidebarTitle: "Meklēšanas API"
+description: "Veiciet vaicājumus Google Programmable Search Engine, izmantojot GET /customsearch/v1, un saņemiet strukturētus JSON rezultātus, tostarp nosaukumus, URL un fragmentus."
+---
+
+Google Programmable Search API ļauj iegult pielāgotu tīmekļa meklēšanu jūsu lietojumprogrammā. Izveidojot meklēšanas dzinēju [Programmable Search Engine vadības panelī](https://programmablesearchengine.google.com/), jūs nosakāt, kuras vietnes vai visu tīmekli aptver jūsu dzinējs. Pēc tam veicat šī dzinēja vaicājumu, izmantojot vienkāršu `GET` pieprasījumu, un saņemat strukturētus JSON rezultātus — nosaukumus, URL un fragmentus —, ko varat parādīt, kā vēlaties.
+
+## Galapunkts
+
+```http
+GET https://www.googleapis.com/customsearch/v1
+```
+
+Autentifikāciju veic ar API atslēgu, kas nodota kā vaicājuma parametrs `key`. Šim galapunktam OAuth marķieris nav nepieciešams.
+
+## Vaicājuma parametri
+
+<ParamField query="q" type="string" required>
+  Meklēšanas vaicājuma virkne. URL kodējiet atstarpes un īpašos simbolus (piemēram, `climate+change` vai `climate%20change`).
+</ParamField>
+
+<ParamField query="key" type="string" required>
+  Jūsu projekta API atslēga. Ģenerējiet to [Google Cloud konsolē](https://console.cloud.google.com/apis/credentials).
+</ParamField>
+
+<ParamField query="cx" type="string" required>
+  Jūsu Programmable Search Engine unikālais identifikators. Atrodiet to sava meklēšanas dzinēja iestatīšanas lapā zem "Search engine ID".
+</ParamField>
+
+<ParamField query="num" type="integer">
+  Atgriežamo rezultātu skaits vienā lapā. Pieņemamās vērtības ir `1` līdz `10`. Noklusējums ir `10`.
+</ParamField>
+
+<ParamField query="start" type="integer">
+  Pirmā atgriežamā rezultāta indekss, ko izmanto lapošanai. Noklusējums ir `1`. Maksimālā vērtība ir `91` (kas dod rezultātus 91–100). Sīkāku informāciju skatiet sadaļā [Lapošana](#pagination).
+</ParamField>
+
+<ParamField query="lr" type="string">
+  Ierobežo rezultātus līdz dokumentiem, kas rakstīti noteiktā valodā. Nododiet valodas kodu ar prefiksu `lang_`, piemēram, `lang_en` angļu vai `lang_fr` franču valodai.
+</ParamField>
+
+<ParamField query="safe" type="string">
+  Iespējo SafeSearch filtrēšanu. Nododiet `active`, lai filtrētu skaidru saturu, vai `off`, lai atspējotu filtrēšanu. Noklusējums ir `off`.
+</ParamField>
+
+## Pieprasījuma piemērs
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=5"
+```
+
+## Atbildes piemērs
+
+```json
+{
+  "kind": "customsearch#search",
+  "searchInformation": {
+    "totalResults": "12400000",
+    "searchTime": 0.248
+  },
+  "items": [
+    {
+      "title": "Climate Change Overview",
+      "link": "https://example.com/climate",
+      "snippet": "An overview of current climate change research and its global implications for ecosystems and economies."
+    },
+    {
+      "title": "What Is Climate Change? — NASA",
+      "link": "https://climate.nasa.gov/what-is-climate-change/",
+      "snippet": "NASA's guide to the science, causes, and projected impacts of climate change."
+    }
+  ]
+}
+```
+
+## Atbildes lauki
+
+<ResponseField name="kind" type="string">
+  Identificē atgrieztā resursa tipu. Meklēšanas atbildēm tas vienmēr ir `"customsearch#search"`.
+</ResponseField>
+
+<ResponseField name="searchInformation.totalResults" type="string">
+  Aptuvenais kopējais rezultātu skaits, kas atbilst vaicājumam, atgriezts kā virkne. Šī ir aproksimācija un var atšķirties starp pieprasījumiem.
+</ResponseField>
+
+<ResponseField name="searchInformation.searchTime" type="number">
+  Laiks, ko Google patērēja vaicājuma apstrādei, sekundēs.
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  Meklēšanas rezultātu objektu masīvs. Šis masīvs nav klāt, ja netika atrasti rezultāti.
+</ResponseField>
+
+<ResponseField name="items[].title" type="string">
+  Tīmekļa lapas nosaukums, kā tas parādās meklēšanas rezultātos.
+</ResponseField>
+
+<ResponseField name="items[].link" type="string">
+  Rezultāta lapas pilnais URL.
+</ResponseField>
+
+<ResponseField name="items[].snippet" type="string">
+  Īss izvilkums no lapas satura, kas parāda, kā vaicājuma vārdi parādās kontekstā.
+</ResponseField>
+
+## Lapošana
+
+Programmable Search API atgriež maksimums **10 rezultātus vienā pieprasījumā** un atbalsta līdz **100 rezultātiem kopā** vienam vaicājumam (rezultāti 1–100). Lai lappusētu cauri rezultātiem, palieliniet `start` par `num` vērtību:
+
+| Lapa | `start` | `num` |
+|------|---------|-------|
+| 1 | 1 | 10 |
+| 2 | 11 | 10 |
+| 3 | 21 | 10 |
+| … | … | … |
+| 10 | 91 | 10 |
+
+```bash
+# Fetch the second page of results
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=10&start=11"
+```
+
+<Note>
+  Rezultāti aiz 100. pozīcijas nav pieejami caur API. Ja jūsu lietošanas gadījums prasa dziļāku lapošanu, apsveriet iespēju precizēt vaicājumu ar papildu vārdiem vai filtriem, lai izceltu vissvarīgākos rezultātus pirmajos 100.
+</Note>

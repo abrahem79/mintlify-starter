@@ -1,0 +1,66 @@
+---
+title: "Jak działa wyszukiwarka Google: indeksowanie i ranking"
+sidebarTitle: "Wyszukiwanie"
+description: "Dowiedz się, jak Google indeksuje, rangę i pokazuje treści. Zrozum operatory wyszukiwania, Custom Search i sposoby integracji wyszukiwania w swojej aplikacji."
+---
+
+Wyszukiwarka Google przetwarza setki miliardów stron i odpowiada na biliony zapytań rocznie, co czyni ją najczęściej używanym systemem wyszukiwania informacji na świecie. Niezależnie od tego, czy udoskonalasz własną technikę wyszukiwania, optymalizujesz treści, aby Google prawidłowo je pokazywał, czy osadzasz wyszukiwanie bezpośrednio w swoim produkcie, zrozumienie działania wyszukiwarki pod maską daje Ci wymierną przewagę.
+
+## Jak działa wyszukiwanie
+
+Wyszukiwarka Google działa w trzech szerokich etapach, które nieprzerwanie przebiegają w tle.
+
+**Crawling** — automatyczne roboty Google (zwane zbiorczo Googlebot) podążają za linkami w sieci, aby wykrywać nowe i zaktualizowane strony. Możesz kierować robotami za pomocą pliku `robots.txt` oraz tagów `<meta name="robots">`, aby kontrolować, co jest pobierane.
+
+**Indeksowanie** — gdy strona zostaje zeskanowana, Google analizuje jej zawartość — tekst, obrazy, dane strukturalne i inne — i zapisuje jej reprezentację w indeksie wyszukiwania. Dobrze ustrukturyzowane strony z czytelnymi nagłówkami, opisowymi metadanymi i poprawnym oznaczeniem schematu są łatwiejsze do trafnego zindeksowania.
+
+**Ranking** — gdy użytkownik przesyła zapytanie, systemy rankingowe Google oceniają setki sygnałów (trafność, jakość strony, kontekst, świeżość i inne), aby uporządkować wyniki. Żaden pojedynczy czynnik nie decyduje o pozycji; algorytm rozważa sygnały całościowo, aby wyeksponować najbardziej użyteczny wynik dla danego zapytania.
+
+<Note>
+  Google nie gwarantuje indeksowania każdej strony. Używaj Google Search Console, aby monitorować pokrycie, identyfikować błędy skanowania i prosić o (ponowne) zindeksowanie ważnych adresów URL.
+</Note>
+
+## Operatory wyszukiwania
+
+Operatory wyszukiwania to specjalne polecenia wpisywane bezpośrednio w pole wyszukiwarki Google w celu filtrowania i zawężania wyników. Są przydatne w badaniach, analizie konkurencji, audycie obecności własnej witryny oraz w debugowaniu problemów z indeksowaniem.
+
+| Operator | Składnia | Co robi |
+|---|---|---|
+| `site:` | `site:example.com` | Ogranicza wyniki do stron w określonej domenie lub subdomenie. |
+| `filetype:` | `filetype:pdf` | Zwraca wyniki określonego typu pliku (pdf, docx, xlsx itd.). |
+| `intitle:` | `intitle:keyword` | Dopasowuje strony zawierające słowo kluczowe w tagu HTML `<title>`. |
+| Fraza dokładna | `"machine learning"` | Zwraca tylko wyniki zawierające dokładnie tę sekwencję słów. |
+| Wykluczenie | `-keyword` | Usuwa wyniki zawierające podane słowo lub frazę. |
+
+Możesz łączyć operatory w jednym zapytaniu. Na przykład `site:docs.example.com filetype:pdf -intitle:archive` znajduje pliki PDF w Twojej subdomenie docs, które nie mają w tytule słowa „archive”.
+
+<Tip>
+  Poprzedź operator słowem `OR` (wielkimi literami), aby dopasować dowolny z dwóch warunków — na przykład `site:example.com OR site:example.io` zwraca wyniki z obu domen w jednym zapytaniu.
+</Tip>
+
+## Custom Search Engine (CSE)
+
+Custom Search Engine pozwala utworzyć zawężone, oznakowane doświadczenie wyszukiwania, które odpytuje konkretny zestaw witryn lub stron zamiast całej sieci. Jest to przydatne przy dodawaniu paska wyszukiwania do dokumentacji, centrum pomocy lub katalogu e-commerce.
+
+**Aby utworzyć Custom Search Engine:**
+
+1. Przejdź do [panelu sterowania Programmable Search Engine](https://programmablesearchengine.google.com/controlpanel/all).
+2. Kliknij **Add** i wprowadź witryny lub wzorce URL, które chcesz przeszukiwać.
+3. Nadaj wyszukiwarce nazwę i zapisz ją — Google wygeneruje unikalny **Search Engine ID** (parametr `cx`), który ją identyfikuje.
+4. Dostosuj wygląd w sekcji **Look and feel**, a następnie skopiuj snippet osadzania na swoją stronę.
+
+<Note>
+  Wyniki CSE respektują te same reguły indeksowania co zwykła wyszukiwarka Google. Jeśli strona nie jest zindeksowana, nie pojawi się także w wynikach CSE.
+</Note>
+
+## Programmable Search API
+
+Programmable Search JSON API zapewnia programistyczny dostęp do wyników Twojej Custom Search Engine, dzięki czemu możesz pobierać, formatować i wyświetlać wyniki wyszukiwania w całości we własnej aplikacji — bez osadzania UI Google.
+
+Kluczowe możliwości obejmują:
+
+- Odpytywanie CSE i otrzymywanie ustrukturyzowanych odpowiedzi JSON zawierających tytuły, adresy URL, fragmenty i bogate metadane.
+- Stosowanie parametrów `dateRestrict`, `sort` i `filter` do doprecyzowania wyników w momencie żądania.
+- Użycie parametru `searchType=image` do wyszukiwania obrazów w zdefiniowanym zakresie.
+
+Pełne schematy żądań/odpowiedzi, wymagania uwierzytelniania i przykłady kodu znajdziesz w [dokumentacji Search API](/api/search).

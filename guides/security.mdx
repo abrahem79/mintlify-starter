@@ -1,0 +1,72 @@
+---
+title: "Secure Your Google Account and Developer Credentials"
+sidebarTitle: "Security"
+description: "Protect your Google account with 2-Step Verification, manage API key restrictions, and follow best practices for credential security."
+---
+
+Your Google account is the key to your email, documents, cloud infrastructure, and API credentials — making it one of the most valuable and frequently targeted assets you manage. Securing it requires both locking down your account with strong authentication and handling the API keys and service account credentials your applications depend on with the same care you would give a password. This guide covers the essential steps to harden both.
+
+## 2-Step Verification
+
+2-Step Verification (2SV) adds a second proof of identity on top of your password, so a stolen password alone is not enough to access your account. Google recommends using an authenticator app as your second factor because it generates codes offline and is not vulnerable to SIM-swapping attacks the way SMS is.
+
+<Steps>
+  <Step title="Open My Account">
+    Go to [myaccount.google.com](https://myaccount.google.com) and sign in if prompted.
+  </Step>
+  <Step title="Navigate to Security">
+    Click **Security** in the left-hand navigation panel.
+  </Step>
+  <Step title="Start 2-Step Verification setup">
+    Under the **How you sign in to Google** section, click **2-Step Verification**, then click **Get started**.
+  </Step>
+  <Step title="Choose your second factor">
+    Google will suggest the strongest method available for your account. For best security, choose **Authenticator app** — scan the QR code with Google Authenticator or any TOTP-compatible app (Authy, 1Password, etc.). Alternatively you can use a hardware security key (FIDO2/WebAuthn) for even stronger protection.
+  </Step>
+  <Step title="Confirm and save backup codes">
+    Complete the verification prompt, then download and store your **backup codes** in a secure location. These one-time codes let you regain access if you lose your second-factor device.
+  </Step>
+</Steps>
+
+## API Key Restrictions
+
+An unrestricted API key can be used by anyone who obtains it, from any application, to call any Google API enabled in your project. Restrictions narrow the blast radius if a key is ever exposed.
+
+| Restriction Type | How to Set It | Example |
+|---|---|---|
+| **HTTP referrers** | In Cloud Console: **Credentials → Edit key → Application restrictions → HTTP referrers** | Allow only `https://yourdomain.com/*` so the key is rejected if used from any other site |
+| **IP addresses** | In Cloud Console: **Credentials → Edit key → Application restrictions → IP addresses** | Allow only your server's static IP (e.g., `203.0.113.42`) so the key works from your backend only |
+| **API restriction** | In Cloud Console: **Credentials → Edit key → API restrictions → Restrict key** | Limit the key to a single API (e.g., Maps JavaScript API) so it cannot be used to call Gmail or Drive |
+
+Apply all three layers wherever possible: restrict by referrer or IP *and* lock the key to only the APIs it actually needs.
+
+## Rotating API Keys
+
+Even with restrictions in place, you should rotate keys periodically or immediately if you suspect a key has been compromised.
+
+1. In the [Cloud Console](https://console.cloud.google.com), go to **APIs & Services → Credentials**.
+2. Click **Create Credentials → API key** to generate a fresh key with the same restrictions as the old one.
+3. Update your application's configuration to use the new key and confirm that everything works correctly.
+4. Return to the Credentials page, click the old key's overflow menu (**⋮**), and select **Delete**. The old key will stop working immediately.
+
+Avoid a gap in service by ensuring the new key is deployed and verified *before* you delete the old one.
+
+## Security Checkup
+
+Google's Security Checkup gives you a personalized overview of your account's security posture in one place. Visit [myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup) to review:
+
+- **Recent security events** — unfamiliar sign-ins or password changes.
+- **Your devices** — every device currently signed in to your account, with the option to remove any you don't recognize.
+- **Third-party app access** — apps and services that have been granted OAuth access to your account, so you can revoke any you no longer use.
+- **2-Step Verification status** — confirmation that your second factor is active and which method you are using.
+- **Gmail and Drive settings** — forwarding addresses, delegate accounts, and sharing settings that could expose your data.
+
+Run the Security Checkup at least once a quarter, and immediately after any suspected account compromise.
+
+<Warning>
+Never commit API keys, OAuth client secrets, or service account JSON files to source code — not even in a private repository. Git history is permanent, repositories can be made public accidentally, and automated scanners continuously harvest credentials from public repos. Store secrets in environment variables or a dedicated secrets manager instead, and add credential file patterns (e.g., `*.json`, `.env`) to your `.gitignore` before your first commit.
+</Warning>
+
+<Tip>
+For production workloads, use [Google Cloud Secret Manager](https://cloud.google.com/secret-manager) to store, version, and audit access to credentials. Secret Manager integrates natively with Cloud Run, Cloud Functions, and GKE via IAM bindings, so your services can retrieve secrets at runtime without ever writing them to disk or baking them into container images.
+</Tip>

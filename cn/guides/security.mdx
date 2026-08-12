@@ -1,0 +1,72 @@
+---
+title: "保护你的 Google 账户和开发者凭据"
+sidebarTitle: "安全"
+description: "使用两步验证保护你的 Google 账户，管理 API 密钥限制，并遵循凭据安全最佳实践。"
+---
+
+你的 Google 账户是通往邮件、文档、云基础设施以及 API 凭据的钥匙——使其成为你所管理的最有价值且最常被攻击的资产之一。保护它既需要通过强身份验证锁定你的账户，也需要以对待密码同样的谨慎态度处理应用所依赖的 API 密钥和服务账户凭据。本指南涵盖了强化两者的关键步骤。
+
+## 两步验证
+
+两步验证（2SV）在你的密码之上增加了第二重身份证明，因此仅凭被盗的密码不足以访问你的账户。Google 建议使用身份验证器应用作为第二因素，因为它离线生成代码，不像 SMS 那样容易受到 SIM 卡交换攻击。
+
+<Steps>
+  <Step title="打开 My Account">
+    前往 [myaccount.google.com](https://myaccount.google.com)，如有提示请登录。
+  </Step>
+  <Step title="导航到 Security">
+    点击左侧导航面板中的 **Security**。
+  </Step>
+  <Step title="开始两步验证设置">
+    在 **How you sign in to Google** 部分下，点击 **2-Step Verification**，然后点击 **Get started**。
+  </Step>
+  <Step title="选择你的第二因素">
+    Google 会为你的账户推荐最强的可用方法。为获得最佳安全性，请选择 **Authenticator app**——使用 Google Authenticator 或任何 TOTP 兼容应用（Authy、1Password 等）扫描 QR 码。或者，你可以使用硬件安全密钥（FIDO2/WebAuthn）获得更强的保护。
+  </Step>
+  <Step title="确认并保存备用代码">
+    完成验证提示，然后下载并将 **备用代码** 存储在安全的位置。这些一次性代码让你在丢失第二因素设备时重新获得访问权限。
+  </Step>
+</Steps>
+
+## API 密钥限制
+
+一个无限制的 API 密钥可以被任何获取到它的人从任何应用中使用，调用你项目中启用的任何 Google API。限制可以在密钥泄露时缩小影响范围。
+
+| 限制类型 | 设置方法 | 示例 |
+|---|---|---|
+| **HTTP 引用来源** | 在 Cloud Console 中：**Credentials → Edit key → Application restrictions → HTTP referrers** | 仅允许 `https://yourdomain.com/*`，从其他站点使用该密钥时会被拒绝 |
+| **IP 地址** | 在 Cloud Console 中：**Credentials → Edit key → Application restrictions → IP addresses** | 仅允许你服务器的静态 IP（例如 `203.0.113.42`），使密钥仅能从你的后端使用 |
+| **API 限制** | 在 Cloud Console 中：**Credentials → Edit key → API restrictions → Restrict key** | 将密钥限制为单一 API（例如 Maps JavaScript API），使其不能用于调用 Gmail 或 Drive |
+
+尽可能应用所有三层：按引用来源或 IP 限制 *并且* 将密钥锁定到它实际需要的 API。
+
+## 轮换 API 密钥
+
+即使已经启用了限制，你也应该定期轮换密钥，或在怀疑密钥被泄露时立即轮换。
+
+1. 在 [Cloud Console](https://console.cloud.google.com) 中，前往 **APIs & Services → Credentials**。
+2. 点击 **Create Credentials → API key**，用与旧密钥相同的限制生成一个新密钥。
+3. 更新应用的配置以使用新密钥，并确认一切正常工作。
+4. 返回 Credentials 页面，点击旧密钥的溢出菜单（**⋮**），并选择 **Delete**。旧密钥会立即失效。
+
+在删除旧密钥 *之前* 确保新密钥已部署并经过验证，从而避免服务中断。
+
+## Security Checkup
+
+Google 的 Security Checkup 让你在一个地方获得账户安全态势的个性化概览。请访问 [myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup) 查看：
+
+- **近期安全事件** — 不熟悉的登录或密码更改。
+- **你的设备** — 当前已登录你账户的每台设备，可选择移除任何你不认识的设备。
+- **第三方应用访问** — 已被授予 OAuth 访问你账户的应用和服务，让你可以撤销任何不再使用的授权。
+- **两步验证状态** — 确认你的第二因素处于启用状态，并了解使用的是哪种方法。
+- **Gmail 和 Drive 设置** — 可能暴露你数据的转发地址、委托账户和共享设置。
+
+至少每季度运行一次 Security Checkup，并在任何疑似账户被入侵后立即运行。
+
+<Warning>
+切勿将 API 密钥、OAuth 客户端密钥或服务账户 JSON 文件提交到源代码中——即使是在私有仓库中。Git 历史是永久的，仓库可能会被意外公开，自动扫描器会持续从公共仓库中收集凭据。请将机密存储在环境变量或专用的密钥管理器中，并在首次提交之前，将凭据文件模式（例如 `*.json`、`.env`）添加到你的 `.gitignore` 中。
+</Warning>
+
+<Tip>
+对于生产工作负载，请使用 [Google Cloud Secret Manager](https://cloud.google.com/secret-manager) 来存储、版本化并审计对凭据的访问。Secret Manager 通过 IAM 绑定原生集成 Cloud Run、Cloud Functions 和 GKE，因此你的服务可以在运行时获取机密，而无需将它们写入磁盘或烘焙进容器镜像。
+</Tip>

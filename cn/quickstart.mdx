@@ -1,47 +1,77 @@
 ---
-title: "快速开始"
-description: "从最快达成成功结果的指南开始"
+title: "快速开始：登录并进行你的首次 Google API 调用"
+sidebarTitle: "快速开始"
+description: "登录 Google，从 Cloud Console 获取 API 凭据，并发起你的第一次实时搜索 API 请求——整个过程不到 10 分钟。"
 ---
 
-描述用户如何开始使用你的产品。他们首先需要做什么？是否有任何先决条件？
-
-快速开始应引导用户从零开始使用你的产品。他们能够快速取得成果，并了解可以通过产品实现什么。
+本快速开始将引导你完成登录 Google、获取 API 凭据以及发起首次 API 请求的整个过程——全部在 10 分钟内完成。结束时，你将拥有一个可正常返回实时搜索结果的 API 调用，可以在你自己的应用程序中进一步构建。
 
 ## 先决条件
 
-在开始之前，你必须具备：
+在开始之前，请确保你具备以下条件：
 
-- 要求一（例如，Node.js 18+、一个免费账户、一个 API 密钥）
-- 要求二（例如，兼容的设备、兼容的浏览器、兼容的操作系统）
+- 一个 **Google 账户** — 如果你还没有，[免费创建一个](https://accounts.google.com/signup)。
+- **基本的 HTTP 知识** — 熟悉发起 GET/POST 请求并读取 JSON 响应。
+- 一个命令行终端或 HTTP 客户端，例如 [curl](https://curl.se/) 或 [Postman](https://www.postman.com/)。
 
-## 开始使用
+## 步骤
 
 <Steps>
-  <Step title="安装">
-    描述如何安装你的产品或注册。
+  <Step title="登录">
+    前往 [accounts.google.com](https://accounts.google.com) 并使用你的 Google 账户登录。如果这是你第一次使用，请先完成账户创建流程再继续。
+  </Step>
+  <Step title="获取 API 凭据">
+    1. 打开 [Google Cloud Console](https://console.cloud.google.com)。
+    2. 创建一个新项目（或选择一个现有项目）。
+    3. 导航至 **APIs & Services → Library** 并启用 **Custom Search API**。
+    4. 前往 **APIs & Services → Credentials**，然后点击 **Create Credentials → API key**。
+    5. 复制你新的 API 密钥并妥善保存。
+    6. 在 [programmablesearchengine.google.com](https://programmablesearchengine.google.com) 创建一个 Programmable Search Engine，并复制你的 **Search Engine ID**（`cx`）。
+  </Step>
+  <Step title="发起你的首次请求">
+    将下面命令中的 `YOUR_API_KEY` 和 `YOUR_SEARCH_ENGINE_ID` 替换为你刚复制的值，然后在终端中运行它：
 
     ```bash
-    npm install your-package
+    curl -X GET "https://www.googleapis.com/customsearch/v1?q=hello+world&key=YOUR_API_KEY&cx=YOUR_SEARCH_ENGINE_ID"
     ```
   </Step>
-  <Step title="配置">
-    描述首次使用前所需的任何设置或配置。
+  <Step title="检查响应">
+    成功的请求会返回一个包含搜索元数据和结果数组的 JSON 对象。你应该会看到类似如下的响应：
 
-    ```bash
-    your-cli init
+    ```json
+    {
+      "kind": "customsearch#search",
+      "url": {
+        "type": "application/json",
+        "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&..."
+      },
+      "queries": {
+        "request": [
+          {
+            "title": "Google Custom Search - hello world",
+            "totalResults": "4970000000",
+            "searchTerms": "hello world",
+            "count": 10,
+            "startIndex": 1
+          }
+        ]
+      },
+      "items": [
+        {
+          "kind": "customsearch#result",
+          "title": "Hello, World! – Wikipedia",
+          "htmlTitle": "\u003cb\u003eHello, World!\u003c/b\u003e – Wikipedia",
+          "link": "https://en.wikipedia.org/wiki/%22Hello,_World!%22_program",
+          "snippet": "A \"Hello, World!\" program is generally a simple computer program that outputs the phrase \"Hello, World!\" to a display device."
+        }
+      ]
+    }
     ```
-  </Step>
-  <Step title="运行">
-    展示用户为看到它运行所做的第一件事。
 
-    ```bash
-    your-cli start
-    ```
+    `items` 数组包含你的搜索结果。每个对象都包含页面标题、URL（`link`）和一段简短的 `snippet`，你可以直接在 UI 中显示它们。
   </Step>
 </Steps>
 
 <Tip>
-  为用户提供获取帮助的途径。这可以是指向支持页面的链接、与客服代理的聊天，或产品论坛。
-
-  示例：需要帮助？请通过 [support@yourcompany.com](mailto:support@yourcompany.com) 联系我们。
+  上面的示例使用简单的 API 密钥进行身份验证。Google API 也支持 OAuth 2.0，用于访问用户数据的请求。有关所有受支持身份验证方法的完整说明，请参阅 [身份验证指南](/api/authentication)。
 </Tip>

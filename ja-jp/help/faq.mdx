@@ -1,0 +1,45 @@
+---
+title: "Google サービスの FAQ: アカウント、API、請求、プライバシー"
+sidebarTitle: "FAQ"
+description: "Google アカウント、ストレージクォータ、Workspace、API キー、請求、データプライバシー、開発者レート制限に関するよくある質問への回答。"
+---
+
+Google の新規ユーザーでも、Google API を扱う熟練の開発者でも、アカウント、ストレージ、請求、アクセス制御の仕組みについて疑問に遭遇することがあります。このページでは、Google のコンシューマー製品、Workspace アプリ、開発者プラットフォーム全体で最も頻繁に寄せられる質問への回答をまとめています — 複数のヘルプセンターを掘り下げることなく、素早く回答を得られます。
+
+<AccordionGroup>
+  <Accordion title="Google のパスワードをリセットするには?">
+    Google のパスワードは、アカウント復旧ページ [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery) からリセットできます。アカウントに関連付けられたメールアドレスを入力し、プロンプトに従います — Google は復旧用のメールまたは電話番号に確認コードを送信します。確認できたら、新しいパスワードを作成できます。すべての復旧オプションへのアクセスを失った場合は、Google のアカウント履歴に基づいて本人確認質問に答える ID 確認プロセスが提供されます。
+  </Accordion>
+
+  <Accordion title="API キーが動作しないのはなぜ?">
+    API キーが機能しなくなる最も一般的な理由は、キーが現在の環境と一致しない特定の IP アドレスやリファラーに制限されている、キーに必要な API が Google Cloud プロジェクトで有効になっていない、あるいはキーが削除または再生成されているためです。[Google Cloud Console](https://console.cloud.google.com) を開き、**APIs & Services → 認証情報** に移動して、キーの制限とステータスを確認してください。また、**APIs & Services → 有効な API とサービス** で対象の API(例: Maps JavaScript API、Sheets API)が有効になっていることも確認してください。
+  </Accordion>
+
+  <Accordion title="Google のストレージクォータには何がカウントされる?">
+    無料の 15 GB の Google ストレージは、Gmail(メールと添付ファイル)、Google Drive(アップロードされたファイル)、Google Photos(バックアップされた画像と動画)全体で共有されます。Google のネイティブ形式でネイティブに作成された Google Docs、Sheets、Slides、Forms、Drawings は、クォータにカウントされ**ません**。ただし、`.docx`、`.xlsx`、`.pdf` などの他の形式で Drive にアップロードされたファイルはストレージを消費します。現在の使用状況と内訳は [one.google.com/storage](https://one.google.com/storage) で確認できます。
+  </Accordion>
+
+  <Accordion title="Google アカウントを削除するには?">
+    Google アカウントは、アカウント設定の **データとプライバシー** セクションから完全に削除できます。[myaccount.google.com](https://myaccount.google.com) にアクセスし、**データとプライバシー** をクリックし、**その他のオプション** までスクロールして、**Google アカウントを削除する** をクリックします。Google はまず Google Takeout を使ってデータのコピーをダウンロードするよう求めます。削除は永続的であることに注意してください — Gmail、Drive ファイル、および関連するすべてのデータは失われ、猶予期間終了後は復旧できません。
+  </Accordion>
+
+  <Accordion title="Google API は無料で使える?">
+    多くの Google API は、寛大な使用制限のある無料枠を提供しています — 例えば、Maps JavaScript API には月 $200 の無料クレジットが含まれ、Google Sheets API の呼び出しはプロジェクトごとに設定された使用制限までは無料です。ただし、大量使用、一部のプレミアム API(Google Maps Routes Preferred など)、エンタープライズ級の機能を利用するには、Google Cloud で請求先アカウントの設定が必要です。特定の API の料金は [cloud.google.com/pricing](https://cloud.google.com/pricing) や、個々の API のドキュメントページで確認できます。
+  </Accordion>
+
+  <Accordion title="Google ドキュメントのオーナー権限を譲渡するには?">
+    Google Doc、Sheet、または Slide のオーナー権限を譲渡するには、ファイルを開き、右上の **共有** をクリックします。オーナー権限を譲渡したい人を探し(その人は既にアクセス権を持っている必要があります)、名前の隣のドロップダウンをクリックして **オーナー権限を譲渡** を選択します。受信者はメール通知を受け取り、譲渡を承諾する必要があります。オーナー権限は、同じ Google Workspace 組織内の別のユーザーにのみ譲渡でき、個人アカウントの場合は別の Google アカウント保有者にのみ譲渡できます。
+  </Accordion>
+
+  <Accordion title="Gmail でスパムやフィッシングメールを報告するには?">
+    Gmail でスパムメールを報告するには、メッセージを開き、メール右上の **3 点メニュー**(⋮)をクリックして、**スパムを報告** または **フィッシングを報告** を選択します。フィッシングを報告すると、メールが Google に送信され審査され、他のユーザーを同様の攻撃から保護するのに役立ちます。Gmail はメールを自動的に受信トレイから移動します。企業や機関を装ったフィッシングメールを受け取った場合、[Google セーフブラウジングチーム](https://safebrowsing.google.com/safebrowsing/report_phish/) に追加で報告することもできます。
+  </Accordion>
+
+  <Accordion title="Google Search API のレート制限は?">
+    Google Custom Search JSON API は、無料で 1 日最大 **100 件の検索クエリ**を許可しており、追加のクエリは 1,000 件あたり $5(1 日最大 10,000 件)で利用できます。これは Programmable Search Engine API に適用されます — Google Search Console API や他の検索関連 API を使っている場合、制限は異なり、個別に文書化されています。使用状況の監視やリクエストクォータの設定は、[Google Cloud Console](https://console.cloud.google.com) の **APIs & Services → 割り当て** で行えます。非常に大量の検索ニーズには、Google は Google Cloud を通じてエンタープライズレベルのオプションを提供しています。
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  お探しの回答が見つかりませんか? 製品固有のサポートドキュメントについては [Google ヘルプセンター](https://support.google.com) にアクセスするか、Google アカウントのナビゲーションメニューの **サポート** から直接 Google サポートに連絡してください。
+</Note>

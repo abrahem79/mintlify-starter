@@ -1,0 +1,133 @@
+---
+title: "Google lietotņu atļauju un trešo pušu piekļuves pārvaldība"
+sidebarTitle: "Atļaujas"
+description: "Pārskatiet un atsauciet trešo pušu lietotņu piekļuvi, pārvaldiet Google Workspace koplietošanas politikas un kontrolējiet API tvērumus savienotajām lietojumprogrammām."
+---
+
+Kad pierakstāties trešo pušu lietotnēs un pakalpojumos, izmantojot savu Google kontu, vai autorizējat tos piekļūt saviem datiem, šīs lietotnes saņem atļauju marķierus, kas piešķir tām piekļuvi noteiktām jūsu konta daļām. Laika gaitā jūs varat uzkrāt desmitiem savienoto lietotņu, no kurām daudzas vairs neizmantojat. Regulāra nevajadzīgu atļauju pārskatīšana un atsaukšana ir viens no efektīvākajiem veidiem, kā aizsargāt sava konta drošību un konfidencialitāti.
+
+## Skatīt savienotās lietotnes
+
+Katru lietotni, kurai pašlaik ir piekļuve jūsu Google kontam, varat redzēt sadaļā **Security** sava konta informācijas panelī.
+
+<Steps>
+  <Step title="Atveriet savu Google kontu">
+    Dodieties uz [myaccount.google.com](https://myaccount.google.com) un pierakstieties.
+  </Step>
+  <Step title="Dodieties uz Security">
+    Kreisajā sānjoslā noklikšķiniet uz **Security**.
+  </Step>
+  <Step title="Atveriet Third-party apps with account access">
+    Ritiniet uz leju līdz sadaļai **Your connections to third-party apps & services** un noklikšķiniet uz **See all connections**.
+  </Step>
+  <Step title="Pārskatiet sarakstu">
+    Redzēsit visas lietotnes, kurām ir piešķirta piekļuve, kopā ar pēdējās piekļuves datumu un atļaujām, kas ir katrai lietotnei.
+  </Step>
+</Steps>
+
+<Note>
+  Lietotnes, kurās esat pierakstījies, izmantojot "Sign in with Google", šeit parādās kopā ar lietotnēm, kurām programmatiski piešķirta API piekļuve. Abus tipus var pārskatīt un atsaukt no vienas lapas.
+</Note>
+
+## Atsaukt piekļuvi
+
+Ja vairs neizmantojat lietotni vai neatpazīstat savienoto lietotni, nekavējoties atsauciet tās piekļuvi.
+
+<Steps>
+  <Step title="Pārejiet uz savienotajām lietotnēm">
+    No [myaccount.google.com](https://myaccount.google.com) dodieties uz **Security** → **See all connections** sadaļā Third-party apps.
+  </Step>
+  <Step title="Atlasiet noņemamo lietotni">
+    Noklikšķiniet uz lietotnes, kuras piekļuvi vēlaties atsaukt.
+  </Step>
+  <Step title="Pārskatiet atļaujas">
+    Izlasiet lietotnei piešķirto tvērumu sarakstu. Tas parāda tieši to, kādiem datiem lietotne var piekļūt.
+  </Step>
+  <Step title="Noklikšķiniet uz Delete all connections">
+    Noklikšķiniet uz **Delete all connections you have with [App Name]** un apstipriniet, kad tas tiek prasīts.
+  </Step>
+  <Step title="Pārbaudiet noņemšanu">
+    Lietotne vairs neparādīsies jūsu savienoto lietotņu sarakstā un zaudēs iespēju piekļūt jūsu kontam ar atsaukto marķieri.
+  </Step>
+</Steps>
+
+<Warning>
+  Piekļuves atsaukšana nekavējoties anulē lietotnes piekļuves marķieri — lietotne vairs nevar lasīt vai rakstīt jūsu Google datus. Tomēr dati, ko lietotne jau ir lejupielādējusi vai saglabājusi savās sistēmās, netiek automātiski dzēsti. Pārbaudiet lietotnes konfidencialitātes iestatījumus vai sazinieties ar izstrādātāju, lai pieprasītu datu dzēšanu.
+</Warning>
+
+## OAuth tvērumi
+
+OAuth tvērumi precīzi definē, ko lietotnei ir atļauts darīt ar jūsu Google kontu. Kad lietotne pieprasa piekļuvi, tā norāda tvēruma virkņu sarakstu, kas kartējas uz konkrētām iespējām. Pirms piešķirat piekļuvi jebkurai trešās puses lietojumprogrammai, vienmēr pārskatiet pieprasītos tvērumus.
+
+Tvēruma virknes seko šim formātam:
+
+```text
+https://www.googleapis.com/auth/[service].[permission-level]
+```
+
+Piemēram:
+
+```text
+https://www.googleapis.com/auth/drive.readonly
+```
+
+Šis tvērums ļauj lietotnei lasīt failus jūsu Google Drive, bet neļauj tos veidot, modificēt vai dzēst.
+
+### Izplatīti OAuth tvērumi
+
+| Tvērums | Piekļuves līmenis | Ko lietotne var darīt |
+|---|---|---|
+| `https://www.googleapis.com/auth/drive.readonly` | Tikai lasīšana | Skatīt un lejupielādēt failus Drive |
+| `https://www.googleapis.com/auth/drive` | Pilna piekļuve | Veidot, rediģēt un dzēst jebkuru failu Drive |
+| `https://www.googleapis.com/auth/gmail.readonly` | Tikai lasīšana | Lasīt visus Gmail ziņojumus un iestatījumus |
+| `https://www.googleapis.com/auth/gmail.send` | Tikai sūtīšana | Sūtīt e-pastu jūsu vārdā |
+| `https://www.googleapis.com/auth/gmail.modify` | Lasīšana/rakstīšana | Lasīt, sūtīt, dzēst un pārvaldīt e-pastu |
+| `https://www.googleapis.com/auth/calendar.readonly` | Tikai lasīšana | Skatīt jūsu kalendāra notikumus |
+| `https://www.googleapis.com/auth/calendar` | Pilna piekļuve | Veidot, rediģēt un dzēst kalendāra notikumus |
+| `https://www.googleapis.com/auth/userinfo.email` | Profils | Piekļūt jūsu e-pasta adresei |
+| `https://www.googleapis.com/auth/userinfo.profile` | Profils | Piekļūt jūsu pamata profila informācijai |
+| `openid` | Identitāte | Pārbaudīt jūsu identitāti, izmantojot OpenID Connect |
+
+<Warning>
+  Izvairieties no plašu tvērumu piešķiršanas — piemēram, `https://www.googleapis.com/auth/drive` vai `https://www.googleapis.com/auth/gmail.modify` —, ja vien pilnībā neuzticaties lietojumprogrammai un skaidri nav vajadzīga šī līmeņa piekļuve. Vienmēr izvēlieties visierobežotāko tvērumu, kas apmierina lietotnes funkcionalitāti. Lietotnei, kurai nepieciešams tikai lasīt failus no Drive, nekad nevajadzētu pieprasīt pilnu Drive rakstīšanas piekļuvi.
+</Warning>
+
+<Tip>
+  Kad veidojat savas lietojumprogrammas ar Google API, ievērojiet mazāko privilēģiju principu: pieprasiet tikai tos tvērumus, kas jūsu lietotnei patiešām nepieciešami. Tas veido lietotāju uzticību un samazina drošības risku, ja jūsu lietotnes akreditācijas dati kādreiz tiktu apdraudēti.
+</Tip>
+
+## Workspace administratora atļaujas
+
+Ja pārvaldāt Google Workspace organizāciju, jums ir papildu vadīklas, lai regulētu, kuras trešo pušu lietotnes jūsu lietotāji var savienot ar saviem darba kontiem. Šos iestatījumus pārvalda no **Google administratora konsoles**.
+
+<Steps>
+  <Step title="Atveriet administratora konsoli">
+    Pierakstieties vietnē [admin.google.com](https://admin.google.com) ar saviem Workspace administratora akreditācijas datiem.
+  </Step>
+  <Step title="Dodieties uz Security → API Controls">
+    Pārejiet uz **Security** → **Access and data control** → **API controls**.
+  </Step>
+  <Step title="Pārvaldiet visas jomas lietotņu piekļuvi">
+    Noklikšķiniet uz **Manage Third-Party App Access**, lai redzētu visas OAuth lietotnes, kuras jūsu organizācijas lietotāji ir savienojuši.
+  </Step>
+  <Step title="Konfigurējiet lietotnes uzticamības iestatījumus">
+    Katrai lietotnei varat iestatīt tās uzticamības līmeni:
+    - **Trusted** — lietotāji var piešķirt jebkuru pieprasīto tvērumu
+    - **Limited** — lietotāji var piešķirt piekļuvi tikai Google pakalpojumiem, kas atzīmēti kā neierobežoti
+    - **Blocked** — neviens organizācijas lietotājs nevar savienot šo lietotni
+  </Step>
+  <Step title="Iestatiet visas organizācijas noklusējumus">
+    Sadaļā **App access control** konfigurējiet, vai lietotājiem pēc noklusējuma ir atļauts piešķirt piekļuvi neuzticamām lietotnēm.
+  </Step>
+</Steps>
+
+| Administratora vadīkla | Apraksts |
+|---|---|
+| **Uzticamības līmenis par lietotni** | Detalizēti atļaut vai bloķēt atsevišķas OAuth lietotnes savai organizācijai |
+| **Domēna mēroga deleģēšana** | Piešķirt pakalpojumu kontiem visas organizācijas piekļuvi, lai rīkotos lietotāju vārdā |
+| **Lietotnes piekļuves kontroles noklusējums** | Iestatīt organizācijas mēroga politiku neuzticamām trešo pušu lietotnēm |
+| **Audita žurnāli** | Pārskatīt, kuri lietotāji autorizēja kuras lietotnes un kad |
+
+<Note>
+  Domēna mēroga deleģēšana (DWD) piešķir pakalpojumu kontam spēju uzdoties par jebkuru lietotāju jūsu organizācijā. Izmantojiet DWD tikai tad, kad tas ir absolūti nepieciešams, un regulāri auditējiet, kuriem pakalpojumu kontiem šis piekļuves līmenis ir piešķirts.
+</Note>

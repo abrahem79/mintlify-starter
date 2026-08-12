@@ -1,0 +1,58 @@
+---
+title: "Google アカウントのセットアップ: API の有効化と認証情報の取得"
+sidebarTitle: "アカウントのセットアップ"
+description: "Google アカウントを作成し、Cloud Console プロジェクトを設定し、選んだ API を有効化して、アプリケーションを認証するための認証情報を生成します。"
+---
+
+Google の開発者向け API を使う前に、Google アカウント、リソースを収容する Cloud プロジェクト、そしてアプリケーションが認証に使う認証情報のセットが必要です。このガイドでは、最初の API 呼び出しを行えるようになるまでの各ステップをご案内します。
+
+## セットアップ手順
+
+<Steps>
+  <Step title="Google アカウントを作成する">
+    Google アカウントをまだお持ちでない場合は、[accounts.google.com/signup](https://accounts.google.com/signup) にアクセスして登録フォームに記入してください。Google アカウントを持てば、Cloud Console、Gmail、ドライブ、そしてすべての開発者向け API を含むあらゆる Google サービスにアクセスできます。
+  </Step>
+  <Step title="Google Cloud Console にアクセスする">
+    [Google Cloud Console](https://console.cloud.google.com) にアクセスし、Google アカウントでサインインします。Console は、Google Cloud プロジェクト、API の有効化、認証情報の作成を管理する中央のハブです。
+  </Step>
+  <Step title="プロジェクトを作成する">
+    1. Console ページの上部にあるプロジェクトセレクタをクリックします。
+    2. **新しいプロジェクト** をクリックします。
+    3. 分かりやすい **プロジェクト名** を入力します（例: `my-search-app`）。
+    4. プロンプトが表示されたら **請求先アカウント** を選択し、**作成** をクリックします。
+
+    作成する API と認証情報はすべてこのプロジェクトにスコープされ、アプリケーションごとに使用量と請求を簡単に管理できるようになります。
+  </Step>
+  <Step title="API を有効化する">
+    1. 左のナビゲーションで **APIs & Services → Library** に移動します。
+    2. 使用したい API を検索します（例: **Custom Search API**、**Maps JavaScript API**、**Gmail API**）。
+    3. API 名をクリックし、**Enable** をクリックします。
+
+    アプリケーションが必要とするすべての Google API についてこの手順を繰り返してください。認証情報からリクエストを受け付けられるのは、有効化された API のみです。
+  </Step>
+  <Step title="認証情報 (API キー) を作成する">
+    1. **APIs & Services → Credentials** に移動します。
+    2. **Create Credentials** をクリックし、**API key** を選択します。
+    3. Google はすぐに新しい API キーを生成します。**Copy** をクリックしてクリップボードにコピーします。
+    4. 任意で **Edit API key** をクリックし、キーを特定の API、または HTTP リファラーと IP アドレスに制限します — 本番使用では強く推奨されます。
+
+    API キーは、環境変数やシークレットマネージャーなどの安全な場所に保管してください。
+  </Step>
+</Steps>
+
+<Note>
+  **API キーは秘密として扱ってください。** API キーをソース管理にコミットしたり、クライアント側のコードに公開したりしないでください。キーが漏えいした場合は、Cloud Console の **APIs & Services → Credentials** に移動し、該当するキーを削除して、直ちに新しいキーを生成してください。
+</Note>
+
+## 次のステップ
+
+アカウントと認証情報のセットアップが完了しました。これで構築を始める準備ができました。
+
+<CardGroup cols={2}>
+  <Card title="クイックスタート" icon="rocket" href="/quickstart">
+    最初の API 呼び出しを実行し、数分でライブの検索結果を確認します
+  </Card>
+  <Card title="認証" icon="lock" href="/api/authentication">
+    API キー、OAuth 2.0、サービスアカウントについて学びます
+  </Card>
+</CardGroup>

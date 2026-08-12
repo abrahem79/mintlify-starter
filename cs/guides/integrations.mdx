@@ -1,0 +1,82 @@
+---
+title: "Integrujte rozhraní Google API a služby do své aplikace"
+sidebarTitle: "Integrace"
+description: "Propojte Google API se svou aplikací pomocí OAuth 2.0, klíčů API a servisních účtů. Krok za krokem nastavení pro běžné integrační vzory."
+---
+
+Google zpřístupňuje většinu svých klíčových služeb — Disk, Gmail, Tabulky, Kalendář, Mapy a další — prostřednictvím REST API, které může volat jakákoli aplikace. Než napíšete svůj první požadavek API, potřebujete se rozhodnout, jak se bude vaše aplikace autentizovat: pomocí jednoduchého klíče API pro veřejná data, OAuth 2.0 pro akce jménem přihlášeného uživatele, nebo servisního účtu pro automatizované workflow mezi servery. Tento průvodce vysvětluje každou možnost a provede vás kroky nastavení pro každou z nich.
+
+## Zvolte svou metodu autentizace
+
+Správná metoda autentizace závisí na tom, co vaše integrace dělá a k čím datům přistupuje.
+
+| Metoda autentizace | Typický případ použití | Kdy použít | Vyžaduje souhlas uživatele |
+|---|---|---|---|
+| **Klíč API** | Čtení veřejných dat (např. Mapy, metadata YouTube) | Vaše aplikace přistupuje k necitlivým, veřejně dostupným prostředkům | Ne |
+| **OAuth 2.0** | Jednání jménem přihlášeného uživatele Google | Vaše aplikace čte nebo zapisuje soubory na Disku uživatele, Gmail, Kalendář atd. | Ano — uživatel musí udělit oprávnění |
+| **Servisní účet** | Automatizace mezi servery bez lidského uživatele | Backendové úlohy, datové pipelines, přístup k prostředkům vlastněným vaší organizací | Ne |
+
+## Tok OAuth 2.0
+
+OAuth 2.0 je standard umožňující uživatelům udělit vaší aplikaci omezený přístup k jejich datům Google bez sdílení hesla. Následujte tyto kroky pro implementaci toku autorizačního kódu (Authorization Code flow).
+
+<Steps>
+  <Step title="Vytvořte OAuth client ID v Cloud Console">
+    Otevřete [Google Cloud Console](https://console.cloud.google.com), přejděte na **APIs & Services → Credentials** a klikněte na **Create Credentials → OAuth client ID**. Vyberte **Web application** (nebo platformu, která odpovídá vaší aplikaci) a přidejte své autorizované přesměrovací URI.
+  </Step>
+  <Step title="Nakonfigurujte obrazovku souhlasu">
+    Přejděte na **APIs & Services → OAuth consent screen**. Vyplňte název aplikace, kontaktní e-mail a rozsahy, o které bude vaše aplikace žádat. Rozsahy přesně definují, ke kterým datům Google může vaše aplikace přistupovat — žádejte pouze o minimum, které vaše aplikace potřebuje.
+  </Step>
+  <Step title="Přesměrujte uživatele na autorizační URL Googlu">
+    Když se chce uživatel připojit svým účtem Google, přesměrujte jej na autorizační koncový bod Googlu s vaším `client_id`, požadovaným `scope`, `redirect_uri` a `response_type=code`. Google zobrazí obrazovku souhlasu, kterou jste nakonfigurovali.
+  </Step>
+  <Step title="Vyměňte autorizační kód za tokeny">
+    Po schválení ze strany uživatele Google přesměruje zpět na vaše `redirect_uri` s krátkodobě platným parametrem `code`. Odešlete serverový POST požadavek na `https://oauth2.googleapis.com/token` s tímto kódem, `client_id`, `client_secret` a `redirect_uri`, abyste získali `access_token` a (pokud jste požádali o `offline` přístup) také `refresh_token`.
+  </Step>
+  <Step title="Volejte API pomocí Bearer tokenu">
+    Zahrňte `access_token` do hlavičky `Authorization` každého API požadavku. Přístupové tokeny vyprší po jedné hodině — pomocí `refresh_token` získáte automaticky nový, aniž byste znovu obtěžovali uživatele.
+  </Step>
+</Steps>
+
+## Servisní účty
+
+Servisní účet je speciální účet Google, který patří vaší aplikaci, ne jednotlivému uživateli. Autentizuje se privátním klíčem, což jej činí ideálním pro backendové služby, plánované úlohy a jakékoli workflow, kde neexistuje interaktivní uživatel.
+
+1. V Cloud Console přejděte na **IAM & Admin → Service Accounts** a klikněte na **Create Service Account**.
+2. Dejte účtu popisný název a volitelně mu udělte IAM roli, která odpovídá minimálním oprávněním, která potřebuje.
+3. Otevřete servisní účet, přejděte na kartu **Keys**, klikněte na **Add Key → Create new key** a vyberte **JSON**. Soubor s klíčem si stáhněte okamžitě — již jej nebude možné stáhnout znovu.
+4. JSON klíč bezpečně uložte (osvědčené postupy najdete v [průvodci zabezpečením](/guides/security)) a načtěte jej ve svém serverovém kódu pomocí příslušné klientské knihovny Googlu.
+
+Chcete-li, aby servisní účet mohl přistupovat ke konkrétní složce na Disku Google nebo souboru v Tabulkách, sdílejte tento prostředek s e-mailovou adresou servisního účtu (viditelnou v Cloud Console) přesně stejně, jako byste jej sdíleli s lidským uživatelem.
+
+## Volání API
+
+Jakmile máte přístupový token, připojte jej jako `Bearer` token v hlavičce `Authorization` svého HTTP požadavku. Zde je příklad, který vypíše soubory na Disku Google uživatele:
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+Nahraďte `YOUR_ACCESS_TOKEN` tokenem, který jste obdrželi z toku OAuth nebo podepsáním JWT klíčem servisního účtu. Odpovědí je JSON objekt obsahující seznam souborů, ke kterým má autentizovaný principál přístup.
+
+<Note>
+Úplnou referenci k rozsahům tokenů, tokům obnovení a zpracování odvolání tokenu najdete v [referenci autentizace API](/api/authentication).
+</Note>
+
+## Oblíbené integrace
+
+<CardGroup cols={2}>
+  <Card title="Google Drive API" icon="hard-drive">
+    Nahrávejte, stahujte, organizujte a sdílejte soubory a složky na Disku Google. Podporuje obnovitelné nahrávání, dotazy na metadata souborů a správu oprávnění sdílení.
+  </Card>
+  <Card title="Gmail API" icon="envelope">
+    Programově čtěte, odesílejte a spravujte e-mailové zprávy a vlákna. Ideální pro tvorbu e-mailové automatizace, přebírání tiketů podpory nebo vlastních klientů schránky.
+  </Card>
+  <Card title="Google Sheets API" icon="table">
+    Čtěte a zapisujte data v tabulkách, formátujte buňky a spravujte pojmenované rozsahy. Běžně se používá pro lehké ukládání dat, reportovací panely a pipelines z formulářů do tabulek.
+  </Card>
+  <Card title="Google Calendar API" icon="calendar">
+    Vytvářejte, aktualizujte a mažte události v kalendáři a spravujte účastníky. Použijte jej k synchronizaci plánovacích systémů, odesílání pozvánek na schůzky nebo tvorbě nástrojů pro dostupnost.
+  </Card>
+</CardGroup>

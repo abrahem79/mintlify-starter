@@ -1,47 +1,77 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Quickstart: Sign In and Make Your First Google API Call"
+sidebarTitle: "Quickstart"
+description: "Sign in to Google, obtain API credentials from the Cloud Console, and make your first live search API request — all in under 10 minutes."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+This quickstart walks you through signing in to Google, obtaining API credentials, and making your first API request — all in under 10 minutes. By the end, you'll have a working API call returning live search results that you can build on in your own application.
 
 ## Prerequisites
 
-Before you begin, you must have:
+Before you begin, make sure you have the following:
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+- A **Google Account** — [create one for free](https://accounts.google.com/signup) if you don't have one yet.
+- **Basic HTTP knowledge** — familiarity with making GET/POST requests and reading JSON responses.
+- A command-line terminal or an HTTP client such as [curl](https://curl.se/) or [Postman](https://www.postman.com/).
 
-## Get started
+## Steps
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Sign In">
+    Go to [accounts.google.com](https://accounts.google.com) and sign in with your Google Account. If this is your first time, complete the account creation flow before proceeding.
+  </Step>
+  <Step title="Get API Credentials">
+    1. Open the [Google Cloud Console](https://console.cloud.google.com).
+    2. Create a new project (or select an existing one).
+    3. Navigate to **APIs & Services → Library** and enable the **Custom Search API**.
+    4. Go to **APIs & Services → Credentials** and click **Create Credentials → API key**.
+    5. Copy your new API key and store it somewhere safe.
+    6. Create a Programmable Search Engine at [programmablesearchengine.google.com](https://programmablesearchengine.google.com) and copy your **Search Engine ID** (`cx`).
+  </Step>
+  <Step title="Make Your First Request">
+    Replace `YOUR_API_KEY` and `YOUR_SEARCH_ENGINE_ID` in the command below with the values you copied, then run it in your terminal:
 
     ```bash
-    npm install your-package
+    curl -X GET "https://www.googleapis.com/customsearch/v1?q=hello+world&key=YOUR_API_KEY&cx=YOUR_SEARCH_ENGINE_ID"
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+  <Step title="Check the Response">
+    A successful request returns a JSON object containing search metadata and an array of results. You should see a response similar to this:
 
-    ```bash
-    your-cli init
+    ```json
+    {
+      "kind": "customsearch#search",
+      "url": {
+        "type": "application/json",
+        "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&..."
+      },
+      "queries": {
+        "request": [
+          {
+            "title": "Google Custom Search - hello world",
+            "totalResults": "4970000000",
+            "searchTerms": "hello world",
+            "count": 10,
+            "startIndex": 1
+          }
+        ]
+      },
+      "items": [
+        {
+          "kind": "customsearch#result",
+          "title": "Hello, World! – Wikipedia",
+          "htmlTitle": "\u003cb\u003eHello, World!\u003c/b\u003e – Wikipedia",
+          "link": "https://en.wikipedia.org/wiki/%22Hello,_World!%22_program",
+          "snippet": "A \"Hello, World!\" program is generally a simple computer program that outputs the phrase \"Hello, World!\" to a display device."
+        }
+      ]
+    }
     ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
 
-    ```bash
-    your-cli start
-    ```
+    The `items` array contains your search results. Each object includes the page title, URL (`link`), and a short `snippet` you can display directly in your UI.
   </Step>
 </Steps>
 
 <Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
-
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+  The example above uses a simple API key for authentication. Google APIs also support OAuth 2.0 for requests that access user data. See the [Authentication guide](/api/authentication) for a full breakdown of all supported authentication methods.
 </Tip>

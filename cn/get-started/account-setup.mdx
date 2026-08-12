@@ -1,0 +1,58 @@
+---
+title: "Google 账户设置：启用 API 并获取凭据"
+sidebarTitle: "账户设置"
+description: "创建 Google 账户，设置一个 Cloud Console 项目，启用所选 API，并生成用于对应用进行身份验证的凭据。"
+---
+
+在你使用 Google 的开发者 API 之前，你需要一个 Google 账户、一个存放你资源的 Cloud 项目，以及一组供你应用程序进行身份验证的凭据。本指南将带你逐步完成上述每一步，让你为发起首次 API 调用做好准备。
+
+## 设置步骤
+
+<Steps>
+  <Step title="创建 Google 账户">
+    如果你还没有 Google 账户，请前往 [accounts.google.com/signup](https://accounts.google.com/signup) 完成注册表单。你的 Google 账户让你可以访问所有 Google 服务，包括 Cloud Console、Gmail、Drive 以及所有开发者 API。
+  </Step>
+  <Step title="前往 Google Cloud Console">
+    导航到 [Google Cloud Console](https://console.cloud.google.com) 并使用你的 Google 账户登录。Console 是你管理 Google Cloud 项目、启用 API 和创建凭据的中央枢纽。
+  </Step>
+  <Step title="创建项目">
+    1. 点击 Console 页面顶部的项目选择器。
+    2. 点击 **New Project**。
+    3. 输入一个描述性的 **Project name**（例如 `my-search-app`）。
+    4. 如有提示，选择一个 **Billing account**，然后点击 **Create**。
+
+    你创建的所有 API 和凭据都将限定于此项目，便于分别管理每个应用的用量和计费。
+  </Step>
+  <Step title="启用 API">
+    1. 在左侧导航中，前往 **APIs & Services → Library**。
+    2. 搜索你想使用的 API（例如 **Custom Search API**、**Maps JavaScript API** 或 **Gmail API**）。
+    3. 点击 API 名称，然后点击 **Enable**。
+
+    对你的应用所需的每个 Google API 重复此步骤。只有已启用的 API 才能接收来自你的凭据的请求。
+  </Step>
+  <Step title="创建凭据（API 密钥）">
+    1. 前往 **APIs & Services → Credentials**。
+    2. 点击 **Create Credentials** 并选择 **API key**。
+    3. Google 立即生成一个新的 API 密钥。点击 **Copy** 将其复制到剪贴板。
+    4. 你可以选择点击 **Edit API key** 将密钥限制为特定的 API 或 HTTP 引用来源和 IP 地址——强烈建议在生产环境中使用此设置。
+
+    将你的 API 密钥存储在安全的位置，例如环境变量或密钥管理器中。
+  </Step>
+</Steps>
+
+<Note>
+  **对你的 API 密钥保密。** 切勿将 API 密钥提交到源代码管理或在客户端代码中暴露它。如果你的密钥泄露，请在 Cloud Console 的 **APIs & Services → Credentials** 中删除受影响的密钥并立即生成一个新密钥。
+</Note>
+
+## 后续步骤
+
+既然你的账户和凭据都已设置完毕，你就可以开始构建了。
+
+<CardGroup cols={2}>
+  <Card title="快速开始" icon="rocket" href="/quickstart">
+    发起你的首次 API 调用，几分钟内看到实时搜索结果
+  </Card>
+  <Card title="身份验证" icon="lock" href="/api/authentication">
+    了解 API 密钥、OAuth 2.0 和服务账户
+  </Card>
+</CardGroup>

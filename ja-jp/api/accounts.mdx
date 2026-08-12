@@ -1,0 +1,130 @@
+---
+title: "ユーザーアカウント API: プロフィールと ID データの取得"
+sidebarTitle: "Accounts API"
+description: "OAuth 2.0 の Bearer トークンを使用して、GET /oauth2/v2/userinfo または People API から、認証済みユーザーのプロフィール、メールアドレス、名前、写真を取得します。"
+---
+
+Google は、認証済みユーザーの ID とプロフィールデータを読み取るための、補完的な 2 つのエンドポイントを提供しています。OAuth 2.0 の userinfo エンドポイントは、メールアドレス、表示名、プロフィール画像、ロケールなどの軽量な概要を返し、サインインフローに最適です。People API は、より豊富で構造化されたユーザーの連絡先レコードのビューを提供し、フィールドを細かく制御したい場合に適しています。どちらのエンドポイントも、適切なスコープを持つ有効な OAuth 2.0 アクセストークンが必要です。
+
+<Note>
+  このページで説明する 2 つのエンドポイントは、いずれも有効な OAuth 2.0 の Bearer トークンが必要です。API キーは受け付けられ**ません** — これらのリソースは認証済みユーザー ID に紐づいています。OAuth フローを設定するには、[認証ガイド](/api/authentication) を参照してください。
+</Note>
+
+---
+
+## 現在のユーザープロフィールを取得する
+
+現在認証されているユーザーのコンパクトなプロフィールを取得します。
+
+**エンドポイント**
+
+```http
+GET https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**必要なスコープ:** `openid email profile`
+
+### リクエスト例
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/oauth2/v2/userinfo"
+```
+
+### レスポンス例
+
+```json
+{
+  "id": "116195079999551234567",
+  "email": "alex@example.com",
+  "name": "Alex Johnson",
+  "given_name": "Alex",
+  "family_name": "Johnson",
+  "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+  "locale": "en"
+}
+```
+
+### レスポンスフィールド
+
+<ResponseField name="id" type="string">
+  ユーザー固有かつ安定した Google アカウント ID。この値は、ユーザーがメールアドレスや名前を変更しても変わりません。
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  ユーザーのプライマリ Google アカウントのメールアドレス。`email` スコープが必要です。
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Google アカウントに表示されているユーザーのフルネーム。
+</ResponseField>
+
+<ResponseField name="given_name" type="string">
+  ユーザーの名(given name)。`profile` スコープが必要です。
+</ResponseField>
+
+<ResponseField name="family_name" type="string">
+  ユーザーの姓(family name)。`profile` スコープが必要です。
+</ResponseField>
+
+<ResponseField name="picture" type="string">
+  Google のサーバー上にホストされたユーザーのプロフィール写真の URL。画像は公開アクセス可能ですが、ユーザーが写真を更新すると変更される場合があります。
+</ResponseField>
+
+<ResponseField name="locale" type="string">
+  ユーザーの優先言語を表す BCP 47 言語タグ(例: `"en"`、`"fr"`、`"ja"`)。`profile` スコープが必要です。
+</ResponseField>
+
+---
+
+## People API 経由でユーザー情報を取得する
+
+People API は、より豊富な構造化データを返し、`personFields` パラメーターで必要なフィールドを正確にリクエストできます。
+
+**エンドポイント**
+
+```http
+GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
+```
+
+**必要なスコープ:** `https://www.googleapis.com/auth/contacts.readonly`
+
+### リクエスト例
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses"
+```
+
+### レスポンス例
+
+```json
+{
+  "resourceName": "people/116195079999551234567",
+  "etag": "%EgoBAgkLDg8REhMaAQ==",
+  "names": [
+    {
+      "displayName": "Alex Johnson",
+      "givenName": "Alex",
+      "familyName": "Johnson",
+      "metadata": {
+        "primary": true,
+        "source": { "type": "PROFILE" }
+      }
+    }
+  ],
+  "emailAddresses": [
+    {
+      "value": "alex@example.com",
+      "metadata": {
+        "primary": true,
+        "verified": true
+      }
+    }
+  ]
+}
+```
+
+<Tip>
+  `phoneNumbers`、`addresses`、`birthdays`、`photos` などの追加の `personFields` を、カンマ区切りリストとして追加することでリクエストできます: `?personFields=names,emailAddresses,phoneNumbers`。
+</Tip>

@@ -1,0 +1,58 @@
+---
+title: "Configuration du compte Google : activer les API et obtenir des identifiants"
+sidebarTitle: "Configuration du compte"
+description: "Créez un compte Google, configurez un projet dans la console Cloud, activez les API de votre choix et générez des identifiants pour authentifier votre application."
+---
+
+Avant de pouvoir utiliser les API pour développeurs de Google, vous avez besoin d'un compte Google, d'un projet Cloud pour héberger vos ressources, et d'un ensemble d'identifiants que votre application utilisera pour s'authentifier. Ce guide vous accompagne à chacune de ces étapes afin que vous soyez prêt à effectuer votre premier appel d'API.
+
+## Étapes de configuration
+
+<Steps>
+  <Step title="Créer un compte Google">
+    Si vous n'avez pas déjà un compte Google, rendez-vous à [accounts.google.com/signup](https://accounts.google.com/signup) et remplissez le formulaire d'inscription. Votre compte Google vous donne accès à tous les services Google, dont la console Cloud, Gmail, Drive et toutes les API pour développeurs.
+  </Step>
+  <Step title="Aller à la console Google Cloud">
+    Rendez-vous à la [console Google Cloud](https://console.cloud.google.com) et connectez-vous avec votre compte Google. La console est votre centre névralgique pour gérer les projets Google Cloud, activer les API et créer des identifiants.
+  </Step>
+  <Step title="Créer un projet">
+    1. Cliquez sur le sélecteur de projet en haut de la page de la console.
+    2. Cliquez sur **New Project**.
+    3. Saisissez un **Project name** descriptif (par exemple, `my-search-app`).
+    4. Sélectionnez un **Billing account** si demandé, puis cliquez sur **Create**.
+
+    Toutes les API et identifiants que vous créez seront rattachés à ce projet, ce qui facilite la gestion séparée de l'utilisation et de la facturation pour chaque application.
+  </Step>
+  <Step title="Activer les API">
+    1. Dans la navigation de gauche, allez à **APIs & Services → Library**.
+    2. Recherchez l'API que vous voulez utiliser (par exemple, **Custom Search API**, **Maps JavaScript API** ou **Gmail API**).
+    3. Cliquez sur le nom de l'API, puis cliquez sur **Enable**.
+
+    Répétez cette étape pour chaque API Google dont votre application a besoin. Seules les API activées peuvent recevoir des requêtes de vos identifiants.
+  </Step>
+  <Step title="Créer des identifiants (clé d'API)">
+    1. Allez à **APIs & Services → Credentials**.
+    2. Cliquez sur **Create Credentials** et sélectionnez **API key**.
+    3. Google génère immédiatement une nouvelle clé d'API. Cliquez sur **Copy** pour la copier dans le presse-papiers.
+    4. Facultativement, cliquez sur **Edit API key** pour restreindre la clé à des API précises, ou à des référents HTTP et adresses IP — c'est fortement recommandé pour la production.
+
+    Rangez votre clé d'API dans un emplacement sécurisé, comme une variable d'environnement ou un gestionnaire de secrets.
+  </Step>
+</Steps>
+
+<Note>
+  **Gardez votre clé d'API secrète.** Ne validez jamais votre clé d'API dans un système de contrôle de version et ne l'exposez pas dans du code côté client. Si votre clé est compromise, allez à **APIs & Services → Credentials** dans la console Cloud, supprimez la clé touchée et générez-en une nouvelle immédiatement.
+</Note>
+
+## Prochaines étapes
+
+Maintenant que votre compte et vos identifiants sont configurés, vous êtes prêt à commencer à bâtir.
+
+<CardGroup cols={2}>
+  <Card title="Démarrage rapide" icon="rocket" href="/quickstart">
+    Effectuez votre premier appel d'API et voyez des résultats de recherche en direct en quelques minutes
+  </Card>
+  <Card title="Authentification" icon="lock" href="/api/authentication">
+    Apprenez-en plus sur les clés d'API, OAuth 2.0 et les comptes de service
+  </Card>
+</CardGroup>

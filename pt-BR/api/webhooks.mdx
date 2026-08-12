@@ -1,0 +1,153 @@
+---
+title: "Webhooks das APIs do Google: Assine Notificações Push"
+sidebarTitle: "Webhooks"
+description: "Registre canais de notificação push do Google Drive para receber callbacks de webhook em tempo real quando arquivos ou recursos forem criados, atualizados ou excluídos."
+---
+
+Em vez de repetidamente consultar a API para verificar se um recurso mudou, você pode usar o sistema de notificações push do Google para que o Google chame seu servidor no momento em que uma mudança ocorrer. Você registra um **canal de watch** que aponta para um endpoint HTTPS que você controla; o Google então envia requisições `POST` para esse endpoint sempre que o recurso monitorado é criado, atualizado ou excluído. Notificações push estão disponíveis para Google Drive, Gmail, Calendar e várias outras APIs.
+
+<Warning>
+  Seu endpoint de webhook **deve** ser servido por HTTPS com um certificado válido. O Google não entrega notificações para URLs HTTP simples. Além disso, seu endpoint deve responder com HTTP `200 OK` em até **10 segundos** — respostas que excedem esse tempo são tratadas como falhas e podem fazer o Google parar de entregar notificações ao canal.
+</Warning>
+
+---
+
+## Como Funcionam as Notificações Push
+
+O fluxo funciona em quatro etapas:
+
+1. **Registrar** — sua aplicação chama o método `watch` no recurso que deseja monitorar, fornecendo a URL do endpoint e um ID único de canal.
+2. **Sync** — o Google confirma o canal com uma notificação inicial (`X-Goog-Resource-State: sync`).
+3. **Receber** — o Google envia uma requisição `POST` ao seu endpoint sempre que o recurso muda.
+4. **Renovar ou parar** — os canais têm um tempo de expiração. Você deve reregistrar antes que expirem, ou pará-los explicitamente quando não forem mais necessários.
+
+---
+
+## Registrar um Canal de Watch
+
+O exemplo abaixo registra um watch em todos os arquivos do Google Drive. Outras APIs seguem o mesmo padrão com diferentes paths de endpoint.
+
+**Endpoint**
+
+```http
+POST https://www.googleapis.com/drive/v3/files/watch
+```
+
+### Parâmetros do Corpo da Requisição
+
+<ParamField body="id" type="string" required>
+  Um UUID ou outra string única que você gera para identificar esse canal. O Google devolve esse valor em cada notificação para que você possa roteá-la ao handler correto.
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  O mecanismo de entrega das notificações. Deve ser `"web_hook"` para entrega push via HTTPS.
+</ParamField>
+
+<ParamField body="address" type="string" required>
+  A URL HTTPS totalmente qualificada do seu endpoint de webhook. O Google fará `POST` das notificações para essa URL.
+</ParamField>
+
+<ParamField body="expiration" type="integer">
+  Um timestamp Unix em **milissegundos** especificando quando o canal deve expirar. Se omitido, o Google aplica uma expiração padrão (tipicamente até 7 dias). Você deve reregistrar o canal antes desse momento para evitar perder notificações.
+</ParamField>
+
+### Exemplo de Requisição
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1893456000000
+  }'
+```
+
+### Exemplo de Resposta
+
+```json
+{
+  "kind": "api#channel",
+  "id": "my-channel-01",
+  "resourceId": "o3hgv1538sdjfh",
+  "resourceUri": "https://www.googleapis.com/drive/v3/files?...",
+  "expiration": "1893456000000"
+}
+```
+
+Armazene o valor `resourceId` — você vai precisar dele para parar o canal depois.
+
+---
+
+## Headers de Requisição Recebidos
+
+Quando o Google entrega uma notificação ao seu endpoint, a requisição `POST` inclui os seguintes headers customizados:
+
+| Header | Descrição |
+|--------|-------------|
+| `X-Goog-Channel-ID` | O `id` do canal que você especificou ao registrar. Use isso para identificar qual watch disparou a notificação. |
+| `X-Goog-Resource-State` | O tipo de mudança que ocorreu. Valores comuns: `sync` (confirmação inicial), `add`, `update`, `remove`, `trash`, `untrash`, `change`. |
+| `X-Goog-Changed` | Uma lista separada por vírgulas de propriedades que mudaram (por exemplo, `content,properties`). Presente para notificações de `update`. |
+| `X-Goog-Resource-ID` | Identificador interno do Google para o recurso monitorado. |
+| `X-Goog-Resource-URI` | A URL da API do recurso que mudou. |
+| `X-Goog-Message-Number` | Um inteiro monotonicamente crescente para cada mensagem no canal. A mensagem de sync é sempre `1`. |
+
+<Note>
+  O corpo da notificação é intencionalmente **vazio** — o Google informa que algo mudou, mas não o que mudou. Você deve usar o header `X-Goog-Resource-URI` para fazer uma requisição de acompanhamento à API e buscar o recurso atualizado.
+</Note>
+
+---
+
+## Parar um Canal
+
+Para parar de receber notificações e liberar o canal antes que ele expire, envie uma requisição `POST` ao endpoint de stop:
+
+```http
+POST https://www.googleapis.com/drive/v3/channels/stop
+```
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/channels/stop" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "resourceId": "o3hgv1538sdjfh"
+  }'
+```
+
+Uma resposta bem-sucedida retorna HTTP `204 No Content` com um corpo vazio. Após parar um canal, o Google imediatamente deixa de entregar notificações ao seu endpoint para aquele canal.
+
+---
+
+## Expiração e Renovação de Canais
+
+Todos os canais de watch expiram — seja no timestamp `expiration` que você especificou ou no máximo do próprio Google (que varia por API). Uma vez que um canal expira, o Google para de enviar notificações e você perderá mudanças até registrar um novo canal.
+
+**Estratégia de renovação recomendada:**
+
+1. Armazene o valor de `expiration` retornado quando você registra cada canal.
+2. Agende um job para reregistrar o canal pelo menos **24 horas antes** de ele expirar.
+3. Depois de registrar com sucesso o novo canal, pare o antigo.
+
+```bash
+# Re-register with a new channel ID and updated expiration
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-02",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1925000000000
+  }'
+```
+
+<Tip>
+  Use um gerador de UUID (por exemplo, `uuidgen` no macOS/Linux) para produzir IDs de canal únicos. Reutilizar um ID antes que o canal anterior tenha parado pode resultar em conflitos ou notificações duplicadas.
+</Tip>

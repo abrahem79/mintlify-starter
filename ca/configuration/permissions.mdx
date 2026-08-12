@@ -1,0 +1,133 @@
+---
+title: "Gestiona els permisos d'aplicacions de Google i l'accés de tercers"
+sidebarTitle: "Permisos"
+description: "Revisa i revoca l'accés d'aplicacions de tercers, gestiona les polítiques de compartició de Google Workspace i controla els àmbits d'API per a aplicacions connectades."
+---
+
+Quan inicies sessió a aplicacions i serveis de tercers utilitzant el teu compte de Google —o els autoritzes a accedir a les teves dades—, aquestes aplicacions reben tokens de permís que els concedeixen accés a parts específiques del teu compte. Amb el temps, pots acumular desenes d'aplicacions connectades, moltes de les quals ja no utilitzes. Revisar i revocar regularment els permisos innecessaris és una de les maneres més efectives de protegir la seguretat i la privadesa del teu compte.
+
+## Veure les aplicacions connectades
+
+Pots veure totes les aplicacions que actualment tenen accés al teu compte de Google des de la secció **Seguretat** del tauler del teu compte.
+
+<Steps>
+  <Step title="Obre el teu compte de Google">
+    Vés a [myaccount.google.com](https://myaccount.google.com) i inicia sessió.
+  </Step>
+  <Step title="Vés a Seguretat">
+    Fes clic a **Seguretat** a la barra lateral esquerra.
+  </Step>
+  <Step title="Obre Aplicacions de tercers amb accés al compte">
+    Desplaça't cap avall fins a la secció **Les teves connexions a aplicacions i serveis de tercers** i fes clic a **Consulta totes les connexions**.
+  </Step>
+  <Step title="Revisa la llista">
+    Veuràs totes les aplicacions a què s'ha concedit accés, juntament amb la data d'últim accés i els permisos que té cada aplicació.
+  </Step>
+</Steps>
+
+<Note>
+  Les aplicacions on has iniciat sessió mitjançant "Inicia sessió amb Google" apareixen aquí al costat de les aplicacions a què s'ha concedit accés a l'API programàticament. Tots dos tipus es poden revisar i revocar des de la mateixa pàgina.
+</Note>
+
+## Revocar l'accés
+
+Si ja no utilitzes una aplicació, o si no reconeixes una aplicació connectada, has de revocar-ne l'accés immediatament.
+
+<Steps>
+  <Step title="Navega a les aplicacions connectades">
+    Des de [myaccount.google.com](https://myaccount.google.com), vés a **Seguretat** → **Consulta totes les connexions** sota Aplicacions de tercers.
+  </Step>
+  <Step title="Selecciona l'aplicació que vols eliminar">
+    Fes clic a l'aplicació de la qual vols revocar l'accés.
+  </Step>
+  <Step title="Revisa els permisos">
+    Llegeix la llista d'àmbits que s'han concedit a l'aplicació. Això mostra exactament quines dades pot accedir l'aplicació.
+  </Step>
+  <Step title="Fes clic a Suprimeix totes les connexions">
+    Fes clic a **Suprimeix totes les connexions que tens amb [Nom de l'aplicació]** i confirma quan se't demani.
+  </Step>
+  <Step title="Verifica l'eliminació">
+    L'aplicació ja no apareixerà a la teva llista d'aplicacions connectades i perdrà la capacitat d'accedir al teu compte amb el token revocat.
+  </Step>
+</Steps>
+
+<Warning>
+  Revocar l'accés invalida immediatament el token d'accés de l'aplicació: l'aplicació ja no pot llegir ni escriure les teves dades de Google. Tanmateix, qualsevol dada que l'aplicació ja hagi descarregat o desat als seus propis sistemes no s'elimina automàticament. Consulta la configuració de privadesa de l'aplicació o contacta amb el desenvolupador per sol·licitar l'eliminació de dades.
+</Warning>
+
+## Àmbits d'OAuth
+
+Els àmbits d'OAuth defineixen amb precisió què pot fer una aplicació amb el teu compte de Google. Quan una aplicació sol·licita accés, especifica una llista de cadenes d'àmbit que corresponen a capacitats concretes. Hauries de revisar sempre els àmbits sol·licitats abans de concedir accés a qualsevol aplicació de tercers.
+
+Les cadenes d'àmbit segueixen aquest format:
+
+```text
+https://www.googleapis.com/auth/[service].[permission-level]
+```
+
+Per exemple:
+
+```text
+https://www.googleapis.com/auth/drive.readonly
+```
+
+Aquest àmbit permet a l'aplicació llegir fitxers al teu Google Drive però no crear-los, modificar-los ni eliminar-los.
+
+### Àmbits OAuth habituals
+
+| Àmbit | Nivell d'accés | Què pot fer l'aplicació |
+|---|---|---|
+| `https://www.googleapis.com/auth/drive.readonly` | Només lectura | Veure i descarregar fitxers a Drive |
+| `https://www.googleapis.com/auth/drive` | Accés complet | Crear, editar i eliminar qualsevol fitxer a Drive |
+| `https://www.googleapis.com/auth/gmail.readonly` | Només lectura | Llegir tots els missatges i configuracions de Gmail |
+| `https://www.googleapis.com/auth/gmail.send` | Només enviar | Enviar correu en el teu nom |
+| `https://www.googleapis.com/auth/gmail.modify` | Lectura/escriptura | Llegir, enviar, eliminar i gestionar correu |
+| `https://www.googleapis.com/auth/calendar.readonly` | Només lectura | Veure els teus esdeveniments de calendari |
+| `https://www.googleapis.com/auth/calendar` | Accés complet | Crear, editar i eliminar esdeveniments de calendari |
+| `https://www.googleapis.com/auth/userinfo.email` | Perfil | Accedir a la teva adreça de correu electrònic |
+| `https://www.googleapis.com/auth/userinfo.profile` | Perfil | Accedir a la informació bàsica del teu perfil |
+| `openid` | Identitat | Verificar la teva identitat via OpenID Connect |
+
+<Warning>
+  Evita concedir àmbits amplis —com ara `https://www.googleapis.com/auth/drive` o `https://www.googleapis.com/auth/gmail.modify`— tret que confiïs plenament en l'aplicació i tinguis una necessitat clara d'aquest nivell d'accés. Prefereix sempre l'àmbit més restrictiu que satisfaci la funcionalitat de l'aplicació. Una aplicació que només necessita llegir fitxers de Drive mai hauria de sol·licitar accés d'escriptura complet a Drive.
+</Warning>
+
+<Tip>
+  Quan construeixis les teves pròpies aplicacions amb API de Google, segueix el principi del mínim privilegi: sol·licita només els àmbits que la teva aplicació realment necessita. Això genera confiança de l'usuari i redueix el risc de seguretat si les credencials de la teva aplicació es veuen mai compromeses.
+</Tip>
+
+## Permisos d'administrador de Workspace
+
+Si gestiones una organització de Google Workspace, tens controls addicionals per governar quines aplicacions de tercers els teus usuaris poden connectar als seus comptes de treball. Aquestes configuracions es gestionen des de la **Google Admin Console**.
+
+<Steps>
+  <Step title="Obre l'Admin Console">
+    Inicia sessió a [admin.google.com](https://admin.google.com) amb les teves credencials d'administrador de Workspace.
+  </Step>
+  <Step title="Vés a Seguretat → Controls d'API">
+    Navega a **Seguretat** → **Control d'accés i dades** → **Controls d'API**.
+  </Step>
+  <Step title="Gestiona l'accés d'aplicacions a nivell de domini">
+    Fes clic a **Gestiona l'accés d'aplicacions de tercers** per veure totes les aplicacions OAuth que els usuaris de la teva organització han connectat.
+  </Step>
+  <Step title="Configura els paràmetres de confiança d'aplicacions">
+    Per a cada aplicació, pots establir el seu nivell de confiança:
+    - **De confiança** — els usuaris poden concedir qualsevol àmbit sol·licitat
+    - **Limitada** — els usuaris només poden concedir accés als serveis de Google marcats com a no restringits
+    - **Bloquejada** — cap usuari de l'organització no pot connectar aquesta aplicació
+  </Step>
+  <Step title="Estableix els valors per defecte a nivell d'organització">
+    Sota **Control d'accés a aplicacions**, configura si els usuaris poden concedir accés a aplicacions no de confiança per defecte.
+  </Step>
+</Steps>
+
+| Control d'administrador | Descripció |
+|---|---|
+| **Nivell de confiança per aplicació** | Permet o bloqueja de manera granular aplicacions OAuth individuals per a la teva organització |
+| **Delegació a nivell de domini** | Concedeix als comptes de servei accés a nivell d'organització per actuar en nom dels usuaris |
+| **Control d'accés per defecte a aplicacions** | Estableix la política a nivell d'organització per a aplicacions de tercers no de confiança |
+| **Registres d'auditoria** | Revisa quins usuaris han autoritzat quines aplicacions i quan |
+
+<Note>
+  La delegació a nivell de domini (DWD) concedeix a un compte de servei la capacitat de suplantar qualsevol usuari de la teva organització. Utilitza DWD només quan sigui absolutament necessari i audita regularment quins comptes de servei han rebut aquest nivell d'accés.
+</Note>

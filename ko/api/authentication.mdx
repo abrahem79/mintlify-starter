@@ -1,0 +1,134 @@
+---
+title: "Google API 인증: 키, OAuth 2.0, 서비스 계정"
+sidebarTitle: "Authentication"
+description: "공개 데이터에는 API 키를, 사용자 데이터에는 OAuth 2.0 Bearer 토큰을, 서버 간 접근에는 서비스 계정을 사용하여 Google API 요청을 인증하세요."
+---
+
+Google REST API로 보내는 모든 요청은 인증되어야 합니다. Google은 세 가지 주요 인증 메커니즘을 지원합니다: 공개 데이터에 접근하기 위한 API 키, 사용자를 대신하여 작동하기 위한 OAuth 2.0 Bearer 토큰, 그리고 서버 간 통합을 위한 서비스 계정 자격 증명입니다. 올바른 메커니즘 선택은 어떤 데이터에 접근해야 하는지와 사람인 사용자가 흐름에 관여하는지에 따라 달라집니다.
+
+## API 키
+
+API 키는 가장 단순한 인증 방식입니다. Google에 여러분의 프로젝트를 식별시켜 주지만 사용자 컨텍스트는 포함하지 않으므로, **공개적으로 사용 가능한 데이터**에 접근하는 API(예: Programmable Search API)에만 적합합니다.
+
+모든 요청에 API 키를 `key` 쿼리 파라미터로 전달하세요:
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**curl 예시:**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  [Google Cloud Console](https://console.cloud.google.com/apis/credentials)에서 API 키를 생성하고 관리하세요. 각 키를 특정 API와 리퍼러 URL로 제한하면 노출되었을 때 피해 범위를 제한할 수 있습니다.
+</Tip>
+
+## OAuth 2.0 Bearer 토큰
+
+애플리케이션이 **사용자 소유 데이터** — Google Drive 파일, Gmail 메시지, Calendar 이벤트 등 — 에 접근하거나 이를 수정해야 할 때는 OAuth 2.0을 사용해야 합니다. 사용자가 OAuth 동의 흐름을 완료하면, 애플리케이션은 모든 요청의 `Authorization` 헤더에 포함할 액세스 토큰을 받게 됩니다.
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+액세스 토큰은 기본적으로 **3600초(1시간)** 후에 만료됩니다. 애플리케이션은 함께 발급된 리프레시 토큰을 저장해 두고, 이를 사용하여 사용자에게 다시 프롬프트하지 않고 새 액세스 토큰을 얻어야 합니다. 자세한 내용은 아래 [토큰 갱신](#token-refresh)을 참조하세요.
+
+**curl 예시:**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## 서비스 계정 자격 증명
+
+서비스 계정은 개별 사용자가 아니라 애플리케이션에 속하는 특별한 Google 계정입니다. **서버 간** 시나리오에 맞게 설계되어 있습니다 — 예를 들어, 사용자 상호작용 없이 일정에 따라 Google Sheets에서 읽어오는 백엔드 작업 등입니다.
+
+서비스 계정으로 인증하려면:
+
+1. [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts)에서 서비스 계정을 만들고 JSON 키 파일을 다운로드하세요.
+2. 서비스 계정에 필요한 IAM 역할(예: `roles/drive.reader`)을 부여하세요.
+3. Google 클라이언트 라이브러리 또는 서명된 JWT를 사용하여 키를 짧은 수명의 액세스 토큰으로 교환하세요.
+
+**예시: curl을 사용해 서비스 계정 키를 액세스 토큰으로 교환하기**
+
+```bash
+# 1. google-auth-library를 설치하거나 oauth2 토큰 엔드포인트를 직접 사용하세요.
+# 아래는 Python의 google-auth 라이브러리를 사용한 가장 단순한 형태의 two-legged JWT 흐름입니다.
+# 설치: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+액세스 토큰을 얻으면, OAuth 2.0과 완전히 동일하게 Bearer 토큰으로 전달하세요:
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  서비스 계정 JSON 키 파일을 안전하게 보관하고, 절대 소스 관리 시스템에 커밋하지 마세요. 노출이 의심되면 즉시 키를 교체하세요.
+</Warning>
+
+## 스코프
+
+OAuth 2.0 스코프는 액세스 토큰이 부여하는 권한이 정확히 무엇인지 정의합니다. 인증 단계에서 스코프를 요청하며, 사용자는 Google 동의 화면에서 이를 확인합니다. 애플리케이션이 실제로 필요한 스코프만 요청하세요 — 지나치게 넓은 스코프를 요청하면 사용자 신뢰가 약해지고 앱 검증 과정에서 거절될 수 있습니다.
+
+| 스코프 | 부여되는 접근 권한 |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | 사용자의 Google Drive에 있는 모든 파일에 대한 읽기 전용 접근. |
+| `https://www.googleapis.com/auth/drive` | 사용자의 Google Drive에 대한 전체 읽기 및 쓰기 접근. |
+| `https://www.googleapis.com/auth/gmail.readonly` | 사용자의 Gmail 메시지 및 설정에 대한 읽기 전용 접근. |
+| `https://www.googleapis.com/auth/calendar` | 사용자의 Google Calendar에 대한 전체 읽기 및 쓰기 접근. |
+| `openid` | OpenID Connect를 통해 사용자를 인증하고 안정적인 사용자 ID를 검색. |
+| `email` | 사용자의 주 Google 계정 이메일 주소에 접근. |
+| `profile` | 사용자의 기본 프로필 정보(이름, 사진, 로케일)에 접근. |
+
+## 토큰 갱신
+
+액세스 토큰이 만료되면, Google 토큰 엔드포인트에 `POST` 요청을 보내 리프레시 토큰을 새 토큰으로 교환하세요:
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+성공적인 응답에는 새 액세스 토큰과 만료 시간이 포함됩니다:
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| 필드 | 설명 |
+|-------|-------------|
+| `access_token` | 이후 API 요청에 사용할 새 Bearer 토큰. |
+| `expires_in` | 토큰 만료까지 남은 시간(초), 일반적으로 `3600`. |
+| `token_type` | 항상 `"Bearer"`. |
+
+새 `access_token`을 저장하고 애플리케이션에서 이전 토큰을 대체하세요. 리프레시 토큰 자체는 사용자가 접근 권한을 취소하거나 Google에 의해 무효화될 때까지 유효합니다.
+
+<Warning>
+  OAuth `client_secret`을 절대 클라이언트 측 코드(JavaScript 번들, 모바일 앱, 공개 저장소)에 포함하지 마세요. 노출되면 공격자가 애플리케이션을 사칭하고, OAuth 흐름을 가로채며, 사용자 데이터에 여러분을 대신해 접근할 수 있습니다. 토큰 교환은 반드시 안전한 백엔드 서버에서 수행하세요.
+</Warning>

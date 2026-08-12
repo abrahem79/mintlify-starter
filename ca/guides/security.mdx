@@ -1,0 +1,72 @@
+---
+title: "Assegura el teu compte de Google i les credencials de desenvolupador"
+sidebarTitle: "Seguretat"
+description: "Protegeix el teu compte de Google amb la verificació en dos passos, gestiona les restriccions de claus d'API i segueix les millors pràctiques per a la seguretat de credencials."
+---
+
+El teu compte de Google és la clau del teu correu electrònic, documents, infraestructura al núvol i credencials d'API, cosa que el converteix en un dels actius més valuosos i freqüentment atacats que gestiones. Assegurar-lo requereix tant bloquejar el teu compte amb una autenticació forta com gestionar les claus d'API i les credencials del compte de servei de què depenen les teves aplicacions amb la mateixa cura que li donaries a una contrasenya. Aquesta guia cobreix els passos essencials per enfortir tots dos.
+
+## Verificació en dos passos
+
+La verificació en dos passos (2SV) afegeix una segona prova d'identitat a sobre de la teva contrasenya, de manera que una contrasenya robada sola no és suficient per accedir al teu compte. Google recomana utilitzar una aplicació d'autenticació com a segon factor perquè genera codis fora de línia i no és vulnerable als atacs de SIM-swap com ho és l'SMS.
+
+<Steps>
+  <Step title="Obre El meu compte">
+    Vés a [myaccount.google.com](https://myaccount.google.com) i inicia sessió si se't demana.
+  </Step>
+  <Step title="Navega a Seguretat">
+    Fes clic a **Seguretat** al panell de navegació esquerre.
+  </Step>
+  <Step title="Inicia la configuració de la verificació en dos passos">
+    Sota la secció **Com inicieu sessió a Google**, fes clic a **Verificació en dos passos** i, després, fes clic a **Comença**.
+  </Step>
+  <Step title="Tria el teu segon factor">
+    Google et suggerirà el mètode més fort disponible per al teu compte. Per obtenir la millor seguretat, tria **Aplicació d'autenticació**: escaneja el codi QR amb Google Authenticator o qualsevol aplicació compatible amb TOTP (Authy, 1Password, etc.). Alternativament, pots utilitzar una clau de seguretat de maquinari (FIDO2/WebAuthn) per obtenir una protecció encara més forta.
+  </Step>
+  <Step title="Confirma i desa els codis de còpia de seguretat">
+    Completa la sol·licitud de verificació, després descarrega i desa els teus **codis de còpia de seguretat** en un lloc segur. Aquests codis d'un sol ús et permeten recuperar l'accés si perds el dispositiu de segon factor.
+  </Step>
+</Steps>
+
+## Restriccions de claus d'API
+
+Una clau d'API sense restringir pot ser utilitzada per qualsevol persona que l'obtingui, des de qualsevol aplicació, per cridar qualsevol API de Google activada al teu projecte. Les restriccions redueixen el radi d'impacte si una clau queda mai exposada.
+
+| Tipus de restricció | Com configurar-la | Exemple |
+|---|---|---|
+| **Referents HTTP** | A Cloud Console: **Credentials → Edit key → Application restrictions → HTTP referrers** | Permet només `https://yourdomain.com/*` perquè la clau sigui rebutjada si s'utilitza des de qualsevol altre lloc |
+| **Adreces IP** | A Cloud Console: **Credentials → Edit key → Application restrictions → IP addresses** | Permet només la IP estàtica del teu servidor (p. ex., `203.0.113.42`) perquè la clau funcioni només des del teu backend |
+| **Restricció d'API** | A Cloud Console: **Credentials → Edit key → API restrictions → Restrict key** | Limita la clau a una única API (p. ex., Maps JavaScript API) perquè no es pugui utilitzar per cridar Gmail o Drive |
+
+Aplica les tres capes sempre que sigui possible: restringeix per referent o IP *i* bloqueja la clau només a les API que realment necessita.
+
+## Rotació de claus d'API
+
+Fins i tot amb restriccions al seu lloc, hauries de rotar les claus periòdicament o immediatament si sospites que una clau ha estat compromesa.
+
+1. A la [Cloud Console](https://console.cloud.google.com), vés a **APIs & Services → Credentials**.
+2. Fes clic a **Create Credentials → API key** per generar una clau fresca amb les mateixes restriccions que l'antiga.
+3. Actualitza la configuració de la teva aplicació per utilitzar la nova clau i confirma que tot funciona correctament.
+4. Torna a la pàgina de Credentials, fes clic al menú d'opcions de la clau antiga (**⋮**) i selecciona **Delete**. La clau antiga deixarà de funcionar immediatament.
+
+Evita una interrupció del servei assegurant-te que la nova clau estigui desplegada i verificada *abans* d'eliminar l'antiga.
+
+## Comprovació de seguretat
+
+La Comprovació de seguretat de Google et dona una visió general personalitzada de la postura de seguretat del teu compte en un sol lloc. Visita [myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup) per revisar:
+
+- **Esdeveniments de seguretat recents** — inicis de sessió desconeguts o canvis de contrasenya.
+- **Els teus dispositius** — cada dispositiu que actualment té sessió iniciada al teu compte, amb l'opció d'eliminar qualsevol que no reconeguis.
+- **Accés d'aplicacions de tercers** — aplicacions i serveis a què s'ha concedit accés OAuth al teu compte, perquè puguis revocar qualsevol que ja no utilitzis.
+- **Estat de la verificació en dos passos** — confirmació que el teu segon factor està actiu i quin mètode estàs utilitzant.
+- **Configuració de Gmail i Drive** — adreces de reenviament, comptes delegats i configuracions de compartició que podrien exposar les teves dades.
+
+Executa la Comprovació de seguretat almenys un cop cada trimestre, i immediatament després de qualsevol sospita de compromís del compte.
+
+<Warning>
+Mai no committis claus d'API, secrets de client OAuth ni fitxers JSON de compte de servei al codi font, ni tan sols en un repositori privat. L'historial de Git és permanent, els repositoris es poden fer públics accidentalment i els escàners automatitzats recol·lecten contínuament credencials dels repositoris públics. Desa els secrets en variables d'entorn o en un gestor de secrets dedicat, i afegeix patrons de fitxers de credencials (p. ex., `*.json`, `.env`) al teu `.gitignore` abans del teu primer commit.
+</Warning>
+
+<Tip>
+Per a càrregues de treball de producció, utilitza [Google Cloud Secret Manager](https://cloud.google.com/secret-manager) per emmagatzemar, versionar i auditar l'accés a credencials. Secret Manager s'integra de manera nativa amb Cloud Run, Cloud Functions i GKE via enllaços IAM, de manera que els teus serveis puguin recuperar secrets en temps d'execució sense escriure'ls mai al disc ni incorporar-los a les imatges de contenidor.
+</Tip>

@@ -1,0 +1,134 @@
+---
+title: "مصادقة واجهة Google البرمجية: المفاتيح وOAuth 2.0 وحسابات الخدمة"
+sidebarTitle: "المصادقة"
+description: "قم بمصادقة طلبات واجهة Google REST باستخدام مفاتيح API للبيانات العامة، أو رموز Bearer الخاصة بـ OAuth 2.0 لبيانات المستخدم، أو حسابات الخدمة للوصول بين الخوادم."
+---
+
+يجب مصادقة كل طلب تقوم به إلى واجهة Google REST البرمجية. يدعم Google ثلاث آليات مصادقة أساسية: مفاتيح API للوصول إلى البيانات العامة، ورموز Bearer الخاصة بـ OAuth 2.0 للتصرف نيابة عن مستخدم، وبيانات اعتماد حساب الخدمة للتكاملات بين الخوادم. يعتمد اختيار الآلية المناسبة على البيانات التي تحتاج إلى الوصول إليها وما إذا كان مستخدم بشري يشارك في التدفق.
+
+## مفاتيح API
+
+مفاتيح API هي أبسط طريقة مصادقة. تعرّف مشروعك إلى Google لكنها لا تحمل أي سياق للمستخدم، لذلك فهي مناسبة فقط لواجهات API التي تصل إلى **بيانات متاحة للعموم** (مثل Programmable Search API).
+
+مرر مفتاح API الخاص بك كمعامل استعلام `key` في كل طلب:
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**مثال باستخدام curl:**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  أنشئ وأدر مفاتيح API الخاصة بك في [Google Cloud Console](https://console.cloud.google.com/apis/credentials). قيّد كل مفتاح لواجهات API محددة وعناوين URL المرجعية للحد من نطاق الضرر إذا تم كشفه.
+</Tip>
+
+## رموز Bearer الخاصة بـ OAuth 2.0
+
+عندما يحتاج تطبيقك إلى الوصول إلى **البيانات المملوكة للمستخدم** أو تعديلها — مثل الملفات في Google Drive، أو رسائل Gmail، أو أحداث Calendar — يجب عليك استخدام OAuth 2.0. بعد أن يكمل المستخدم تدفق موافقة OAuth، يتلقى تطبيقك رمز وصول تقوم بتضمينه في رأس `Authorization` لكل طلب.
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+تنتهي صلاحية رموز الوصول بعد **3600 ثانية (ساعة واحدة)** افتراضيًا. يجب أن يخزن تطبيقك رمز التحديث المصاحب ويستخدمه للحصول على رمز وصول جديد دون مطالبة المستخدم مرة أخرى. راجع [تحديث الرمز](#token-refresh) أدناه للحصول على التفاصيل.
+
+**مثال باستخدام curl:**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## بيانات اعتماد حساب الخدمة
+
+حسابات الخدمة هي حسابات Google خاصة تنتمي إلى تطبيق بدلاً من مستخدم فردي. وهي مصممة لسيناريوهات **الخادم إلى الخادم** — على سبيل المثال، مهمة في الخلفية تقرأ من Google Sheets وفقًا لجدول زمني دون أي تفاعل مع المستخدم.
+
+للمصادقة كحساب خدمة:
+
+1. في [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts)، أنشئ حساب خدمة ونزّل ملف مفتاح JSON الخاص به.
+2. امنح حساب الخدمة أدوار IAM التي يحتاجها (مثل `roles/drive.reader`).
+3. استخدم مكتبة عميل Google أو JWT موقّعًا لتبادل المفتاح للحصول على رمز وصول قصير الأجل.
+
+**مثال: تبادل مفتاح حساب الخدمة مقابل رمز وصول باستخدام curl**
+
+```bash
+# 1. Install the google-auth-library or use the oauth2 token endpoint directly.
+# Below shows the two-legged JWT flow at its simplest using Python's google-auth library.
+# Install: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+بمجرد حصولك على رمز الوصول، مرره كرمز Bearer تمامًا كما تفعل مع OAuth 2.0:
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  خزّن ملف مفتاح JSON الخاص بحساب الخدمة بشكل آمن ولا تلتزم به مطلقًا في نظام التحكم بالمصدر. قم بتدوير المفاتيح فورًا إذا كنت تشك في أنها قد تم كشفها.
+</Warning>
+
+## النطاقات
+
+تحدد نطاقات OAuth 2.0 بالضبط الأذونات التي يمنحها رمز الوصول. أنت تطلب النطاقات خلال خطوة التفويض، ويراها المستخدم مدرجة على شاشة موافقة Google. اطلب فقط النطاقات التي يحتاجها تطبيقك فعليًا — طلب نطاقات واسعة جدًا يضر بثقة المستخدم وقد يُرفض أثناء التحقق من التطبيق.
+
+| النطاق | الوصول الممنوح |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | وصول للقراءة فقط لجميع الملفات في Google Drive الخاص بالمستخدم. |
+| `https://www.googleapis.com/auth/drive` | وصول كامل للقراءة والكتابة إلى Google Drive الخاص بالمستخدم. |
+| `https://www.googleapis.com/auth/gmail.readonly` | وصول للقراءة فقط إلى رسائل وإعدادات Gmail الخاصة بالمستخدم. |
+| `https://www.googleapis.com/auth/calendar` | وصول كامل للقراءة والكتابة إلى Google Calendar الخاص بالمستخدم. |
+| `openid` | مصادقة المستخدم واسترداد معرّف مستخدم ثابت عبر OpenID Connect. |
+| `email` | الوصول إلى عنوان البريد الإلكتروني الأساسي لحساب Google الخاص بالمستخدم. |
+| `profile` | الوصول إلى معلومات الملف الشخصي الأساسية للمستخدم (الاسم، الصورة، الإعدادات المحلية). |
+
+## تحديث الرمز
+
+عندما تنتهي صلاحية رمز الوصول، قم بتبادل رمز التحديث الخاص بك للحصول على رمز جديد عن طريق إرسال طلب `POST` إلى نقطة نهاية رمز Google:
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+تحتوي الاستجابة الناجحة على رمز الوصول الجديد إلى جانب انتهاء صلاحيته:
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| الحقل | الوصف |
+|-------|-------------|
+| `access_token` | رمز Bearer الجديد لاستخدامه في طلبات API اللاحقة. |
+| `expires_in` | الثواني حتى انتهاء صلاحية الرمز (عادةً `3600`). |
+| `token_type` | دائمًا `"Bearer"`. |
+
+خزّن `access_token` الجديد واستبدل السابق في تطبيقك. يظل رمز التحديث نفسه صالحًا حتى يلغي المستخدم الوصول أو يتم إبطاله بواسطة Google بطريقة أخرى.
+
+<Warning>
+  لا تضمّن مطلقًا `client_secret` الخاص بـ OAuth في الكود من جانب العميل (حزم JavaScript، أو تطبيقات الهاتف المحمول، أو المستودعات العامة). إذا تم كشفه، يمكن للمهاجم انتحال شخصية تطبيقك، واختطاف تدفقات OAuth، والوصول إلى بيانات المستخدم نيابة عنك. قم دائمًا بإجراء تبادل الرمز على خادم خلفي آمن.
+</Warning>

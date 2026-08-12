@@ -1,0 +1,145 @@
+---
+title: "Google pierakstīšanās, Drive un API kļūdu problēmu novēršana"
+sidebarTitle: "Problēmu novēršana"
+description: "Diagnosticējiet un novērsiet izplatītas problēmas ar Google pierakstīšanās neveiksmēm, Drive sinhronizācijas problēmām, API kļūdu kodiem, kvotu ierobežojumiem un meklēšanas indeksēšanas kavējumiem."
+---
+
+Pat uzticami pakalpojumi kā Google reizēm saskaras ar problēmām — vai tā ir API, kas atgriež negaidītus kļūdu kodus, sinhronizācija, kas pārtraukusi darboties, vai pierakstīšanās, kas nedarbojas. Šis ceļvedis soli pa solim parāda visbiežāk sastopamās problēmas Google produktos un izstrādātāju platformā, ar skaidriem soļiem katras diagnostikai un atrisināšanai.
+
+<Tip>
+  Pirms atsevišķu problēmu novēršanas pārbaudiet [Google Workspace statusa informācijas paneli](https://www.google.com/appsstatus), lai redzētu, vai ir aktīvs pārtraukums, kas ietekmē vienu vai vairākus Google pakalpojumus. Daudzas pierakstīšanās, sinhronizācijas un API problēmas rodas no īslaicīgiem infrastruktūras incidentiem, kas atrisinās paši no sevis.
+</Tip>
+
+## API kļūdu kodi
+
+Kad Google API atgriež kļūdu, HTTP statusa kods un kļūdas ziņojums kopā precīzi norāda, kas noticis. Zemāk esošā tabula aptver visbiežākās kļūdu atbildes un to, kā tās risināt:
+
+| HTTP statuss | Kļūdas kods | Nozīme | Kā labot |
+|---|---|---|---|
+| **400** | `INVALID_ARGUMENT` | Pieprasījums bija nepareizi formatēts vai saturēja nederīgu parametru | Pārskatiet savu pieprasījuma ķermeni un vaicājuma parametrus pret API atsauci; pārbaudiet trūkstošus obligātus laukus vai nepareizus datu tipus |
+| **401** | `UNAUTHENTICATED` | Pieprasījumam trūkst derīgu autentifikācijas akreditācijas datu | Atsvaidziniet savu OAuth marķieri vai pārbaudiet, vai jūsu API atslēga ir iekļauta pieprasījuma galvenēs; pārliecinieties, ka akreditācijas dati nav beigušies |
+| **403** | `PERMISSION_DENIED` | Autentificētajam kontam nav atļaujas veikt šo darbību | Pārbaudiet, vai ir piešķirts nepieciešamais OAuth tvērums un ka API ir iespējota jūsu Cloud projektā; pārbaudiet resursa koplietošanas iestatījumus |
+| **429** | `RESOURCE_EXHAUSTED` | Esat pārsniedzis savu kvotu vai ātruma ierobežojumu šai API | Ieviesiet eksponenciālu atkāpi un atkārtošanas loģiku; nepieciešamības gadījumā pieprasiet kvotas palielinājumu, izmantojot Cloud konsoli |
+| **500** | `INTERNAL` | Google serveros radās negaidīta kļūda | Atkārtojiet pieprasījumu ar eksponenciālu atkāpi; ja kļūda saglabājas, pārbaudiet lapu [Google Cloud Status](https://status.cloud.google.com) |
+
+<Note>
+  Visas Google API kļūdu atbildes ietver JSON ķermeni ar laukiem `code`, `message` un `status`. Vienmēr reģistrējiet pilnu kļūdas atbildes ķermeni — ne tikai HTTP statusa kodu —, lai iegūtu visnoderīgāko diagnostisko informāciju.
+</Note>
+
+## Nevaru pierakstīties
+
+Ja nevarat pierakstīties savā Google kontā, izejiet cauri šiem soļiem secīgi:
+
+<Steps>
+  <Step title="Pārbaudiet Caps Lock un tastatūras izkārtojumu">
+    Paroles ir reģistrjutīgas. Pirms atkārtotas paroles ievadīšanas pārliecinieties, ka Caps Lock ir izslēgts un jūs izmantojat pareizo tastatūras valodas izkārtojumu.
+  </Step>
+  <Step title="Izmantojiet Forgot Password">
+    Pierakstīšanās lapā noklikšķiniet uz **Forgot password?**. Google nosūtīs verifikācijas kodu uz jūsu atkopšanas e-pasta adresi vai tālruņa numuru. Ievadiet kodu, lai apstiprinātu savu identitāti un izveidotu jaunu paroli.
+  </Step>
+  <Step title="Pārbaudiet savu divpakāpju verifikācijas metodi">
+    Ja esat iespējojis divpakāpju verifikāciju (2SV) un nesaņemat savu autentifikācijas kodu, pārliecinieties, ka jūsu tālrunim ir signāls un Google Authenticator lietotne (vai cita TOTP lietotne) rāda pareizo laika sinhronizēto kodu. Ja esat zaudējis piekļuvi savai 2SV ierīcei, izmantojiet saglabātu dublējuma kodu vai pieprasiet konta atkopšanu vietnē [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery).
+  </Step>
+  <Step title="Pārbaudiet konta apturēšanu">
+    Ja Google atklāj neparastu aktivitāti vai politikas pārkāpumu, jūsu konts var tikt uz laiku apturēts. Šajā gadījumā pierakstīšanās lapā redzēsit skaidru ziņojumu. Sekojiet ekrāna norādēm, lai apstrīdētu apturēšanu vai apstiprinātu savu identitāti.
+  </Step>
+  <Step title="Izmēģiniet citu pārlūku vai ierīci">
+    Pārlūka paplašinājumi, saglabāti akreditācijas dati vai bojāti sīkfaili dažreiz var traucēt pierakstīšanos. Mēģiniet pierakstīties no Incognito/privātā loga vai cita pārlūka, lai izslēgtu vietējo problēmu.
+  </Step>
+</Steps>
+
+## Google Drive sinhronizācijas problēmas
+
+Ja faili netiek sinhronizēti starp jūsu datoru un Google Drive vai Drive for Desktop ir pārtraucis darboties, sekojiet šiem soļiem:
+
+<AccordionGroup>
+  <Accordion title="Pārbaudiet savu krātuves kvotu">
+    Ja jūsu Google konta krātuve ir pilna, Drive pārtrauks sinhronizēt jaunus failus un var neizdoties augšupielādēt izmaiņas. Apmeklējiet [one.google.com/storage](https://one.google.com/storage), lai pārbaudītu savu lietojumu. Ja esat pārsniedzis ierobežojumu, dzēsiet nevajadzīgus failus no Gmail, Drive atkritnes vai Google Photos, vai jauniniet uz Google One plānu.
+  </Accordion>
+
+  <Accordion title="Pārbaudiet savu interneta savienojumu">
+    Drive for Desktop sinhronizācijai nepieciešams stabils interneta savienojums. Apstipriniet, ka esat savienots, atverot pārlūku un ielādējot tīmekļa lapu. Ja jūsu savienojums ir pārtraukumains, sinhronizācija apstāsies un atsāksies automātiski, kad savienojums stabilizēsies.
+  </Accordion>
+
+  <Accordion title="Restartējiet Drive for Desktop">
+    Noklikšķiniet uz Drive for Desktop ikonas sistēmas paplātē (Windows) vai izvēlņu joslā (macOS), pēc tam atlasiet **Quit**. Palaidiet lietotni no jauna no mapes Applications vai Start izvēlnes. Klienta restartēšana liek tam vēlreiz pārbaudīt sinhronizācijas statusu un atrisināt daudzas īslaicīgas problēmas.
+  </Accordion>
+
+  <Accordion title="Atkārtoti saistiet savu Google kontu">
+    Ja lietotne rāda autentifikācijas kļūdu, iespējams, būs jāatkārto konta saistīšana. Atveriet Drive for Desktop preferences, dodieties uz **Accounts** un izrakstieties un atkal pierakstieties ar savu Google kontu. Tas atsvaidzina jūsu akreditācijas datus, neietekmējot sinhronizētos failus.
+  </Accordion>
+
+  <Accordion title="Pārbaudiet faila ceļa garuma vai nosaukumu problēmas">
+    Drive for Desktop var atteikties sinhronizēt failus ar ceļiem, kas pārsniedz sistēmas ierobežojumus (260 rakstzīmes operētājsistēmā Windows) vai failu nosaukumus, kas satur rakstzīmes, kuras jūsu operētājsistēma neatbalsta. Pārsauciet vai pārvietojiet problēmas failus uz īsāku ceļu un pārbaudiet Drive for Desktop kļūdu žurnālu par konkrētiem failu nosaukumiem.
+  </Accordion>
+</AccordionGroup>
+
+## API kvota pārsniegta (429)
+
+Kļūdas `429 RESOURCE_EXHAUSTED` saņemšana nozīmē, ka jūsu lietojumprogramma ir nosūtījusi pārāk daudz pieprasījumu pārāk īsā laikā vai sasniegusi savu dienas kvotas ierobežojumu. Šeit ir, kā to apstrādāt:
+
+### Ieviesiet eksponenciālu atkāpi
+
+Tā vietā, lai nekavējoties atkārtotu neveiksmīgu pieprasījumu, gaidiet progresīvi ilgāku intervālu starp katru atkārtojumu. Tas neļauj jūsu klientam grabināt API, kamēr tas ir slodzē, un dod kvotu logiem laiku atiestatīties.
+
+```python
+import time
+import random
+
+def api_request_with_backoff(request_func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return request_func()
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limited. Retrying in {wait:.2f} seconds...")
+                time.sleep(wait)
+            else:
+                raise
+```
+
+### Pieprasiet kvotas palielinājumu
+
+Ja jūsu lietojumprogramma konsekventi sasniedz savus kvotu ierobežojumus, varat pieprasīt palielinājumu, izmantojot Google Cloud konsoli:
+
+<Steps>
+  <Step title="Atveriet Cloud konsoli">
+    Dodieties uz [console.cloud.google.com](https://console.cloud.google.com) un atlasiet savu projektu.
+  </Step>
+  <Step title="Dodieties uz APIs & Services → Quotas & System Limits">
+    Pārejiet uz **APIs & Services** → **Quotas & System Limits** un filtrējiet pēc API, kas tiek ierobežota.
+  </Step>
+  <Step title="Atlasiet palielināmo kvotu">
+    Atrodiet konkrēto kvotu (piemēram, "Queries per day" vai "Requests per minute"), noklikšķiniet uz izvēles rūtiņas blakus tai, un pēc tam noklikšķiniet uz **Edit quotas**.
+  </Step>
+  <Step title="Iesniedziet savu pieprasījumu">
+    Ievadiet vēlamo jauno kvotas vērtību un īsu pamatojumu. Google parasti pārskata kvotu palielinājumu pieprasījumus 2–3 darba dienu laikā.
+  </Step>
+</Steps>
+
+## Meklēšanas rezultāti neatjauninās
+
+Ja esat veicis izmaiņas tīmekļa lapā un atjauninājumi neparādās Google meklēšanas rezultātos, kavējums gandrīz vienmēr ir saistīts ar Google rāpošanas un indeksēšanas plūsmu — nevis ar kļūdu.
+
+<AccordionGroup>
+  <Accordion title="Sapratīsiet indeksēšanas kavējumus">
+    Pēc tam, kad Google rāpotājs (Googlebot) apmeklē lapu, ir nepieciešams papildu laiks, lai indekss tiktu atjaunināts un šīs izmaiņas parādītos meklēšanas rezultātos. Vairākumam vietņu šis process aizņem no dažām dienām līdz dažām nedēļām. Jaunām vietnēm vai lapām ar zemu autoritāti jau iesākumā var būt vajadzīgs vairāk laika, lai tās tiktu rāpotas.
+  </Accordion>
+
+  <Accordion title="Pārbaudiet Google kešatmiņas versiju">
+    Varat redzēt, kuru savas lapas versiju Google pēdējoreiz indeksējis, meklējot `cache:yourdomain.com/page` Google meklēšanā. Ja kešētā versija ir novecojusi, Google vienkārši vēl nav atkārtoti rāpojis lapu.
+  </Accordion>
+
+  <Accordion title="Pieprasiet atkārtotu indeksēšanu, izmantojot Search Console">
+    Ja jums steidzami nepieciešams atjaunināt konkrētu lapu, izmantojiet rīku **URL Inspection** [Google Search Console](https://search.google.com/search-console). Ielīmējiet URL, pēc tam noklikšķiniet uz **Request Indexing**, lai lūgtu Googlebot to atkārtoti rāpot pēc iespējas ātrāk. Tas negarantē tūlītējus rezultātus, bet piešķir URL prioritāti rāpošanas rindā.
+  </Accordion>
+
+  <Accordion title="Pārbaudiet savu robots.txt un noindex tagus">
+    Pārliecinieties, ka jūsu lapa nav nejauši bloķēta no indeksēšanas. Pārbaudiet, vai jūsu `robots.txt` fails neaizliedz Googlebot rāpot URL, un pārbaudiet, vai lapā nav taga `<meta name="robots" content="noindex">`. Jebkurš no tiem neļaus jūsu saturam parādīties meklēšanas rezultātos.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Bieža atkārtotas indeksēšanas pieprasīšana tam pašam URL nepaātrina procesu. Google indeksēšanas plūsma tiek pārvaldīta automātiski, un dublējošu pieprasījumu iesniegšana turpmāk nepalielinās rāpošanas prioritāti.
+</Warning>

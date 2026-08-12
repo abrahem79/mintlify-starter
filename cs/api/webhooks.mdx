@@ -1,0 +1,153 @@
+---
+title: "Webhooky Google API: Přihlaste se k push notifikacím"
+sidebarTitle: "Webhooky"
+description: "Zaregistrujte kanály push notifikací Google Disku a přijímejte webhook callbacky v reálném čase při vytvoření, aktualizaci nebo smazání souborů či prostředků."
+---
+
+Namísto opakovaného dotazování API, zda se prostředek změnil, můžete využít systém push notifikací Googlu a nechat Google zavolat na váš server v okamžiku, kdy ke změně dojde. Zaregistrujete **watch kanál**, který ukazuje na HTTPS endpoint, jenž ovládáte; Google poté odesílá požadavky `POST` na tento endpoint pokaždé, když je sledovaný prostředek vytvořen, aktualizován nebo smazán. Push notifikace jsou k dispozici pro Google Drive, Gmail, Calendar a několik dalších API.
+
+<Warning>
+  Váš webhookový endpoint **musí** být obsluhován přes HTTPS s platným certifikátem. Google nedoručuje notifikace na běžné HTTP URL. Kromě toho musí váš endpoint odpovědět HTTP `200 OK` do **10 sekund** — odpovědi, které vyprší, jsou považovány za selhání a mohou způsobit, že Google přestane doručovat notifikace do daného kanálu.
+</Warning>
+
+---
+
+## Jak fungují push notifikace
+
+Postup funguje ve čtyřech krocích:
+
+1. **Registrace** — vaše aplikace zavolá metodu `watch` na prostředku, který chcete monitorovat, a poskytne URL svého endpointu a jedinečné ID kanálu.
+2. **Synchronizace** — Google potvrdí kanál úvodní notifikací (`X-Goog-Resource-State: sync`).
+3. **Přijímání** — Google odesílá požadavek `POST` na váš endpoint pokaždé, když se prostředek změní.
+4. **Obnovení nebo zastavení** — kanály mají dobu vypršení. Musíte je před vypršením znovu zaregistrovat nebo je explicitně zastavit, když už nejsou potřeba.
+
+---
+
+## Registrace watch kanálu
+
+Následující příklad registruje sledování všech souborů na Google Disku. Ostatní API se řídí stejným vzorem s odlišnými cestami koncového bodu.
+
+**Koncový bod**
+
+```http
+POST https://www.googleapis.com/drive/v3/files/watch
+```
+
+### Parametry těla požadavku
+
+<ParamField body="id" type="string" required>
+  UUID nebo jiný jedinečný řetězec, který vygenerujete pro identifikaci tohoto kanálu. Google tuto hodnotu odráží v každé notifikaci, takže ji můžete směrovat na správný handler.
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  Mechanismus doručování notifikací. Musí být `"web_hook"` pro doručování push přes HTTPS.
+</ParamField>
+
+<ParamField body="address" type="string" required>
+  Plně kvalifikovaná HTTPS URL vašeho webhookového endpointu. Google bude na tuto URL odesílat notifikace metodou `POST`.
+</ParamField>
+
+<ParamField body="expiration" type="integer">
+  Unixové časové razítko v **milisekundách** určující, kdy má kanál vypršet. Pokud je vynecháno, Google použije výchozí dobu vypršení (obvykle až 7 dní). Kanál musíte před tímto časem znovu zaregistrovat, abyste nezmeškali notifikace.
+</ParamField>
+
+### Ukázkový požadavek
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1893456000000
+  }'
+```
+
+### Ukázková odpověď
+
+```json
+{
+  "kind": "api#channel",
+  "id": "my-channel-01",
+  "resourceId": "o3hgv1538sdjfh",
+  "resourceUri": "https://www.googleapis.com/drive/v3/files?...",
+  "expiration": "1893456000000"
+}
+```
+
+Uložte hodnotu `resourceId` — budete ji později potřebovat pro zastavení kanálu.
+
+---
+
+## Hlavičky příchozího požadavku
+
+Když Google doručuje notifikaci na váš endpoint, obsahuje požadavek `POST` následující vlastní hlavičky:
+
+| Hlavička | Popis |
+|--------|-------------|
+| `X-Goog-Channel-ID` | ID kanálu (`id`), které jste zadali při registraci. Použijte ji k identifikaci, které sledování notifikaci vyvolalo. |
+| `X-Goog-Resource-State` | Typ změny, ke které došlo. Běžné hodnoty: `sync` (počáteční potvrzení), `add`, `update`, `remove`, `trash`, `untrash`, `change`. |
+| `X-Goog-Changed` | Seznam změněných vlastností oddělený čárkami (např. `content,properties`). Přítomen u notifikací typu `update`. |
+| `X-Goog-Resource-ID` | Interní identifikátor Googlu pro sledovaný prostředek. |
+| `X-Goog-Resource-URI` | URL API prostředku, který se změnil. |
+| `X-Goog-Message-Number` | Monotónně rostoucí celé číslo pro každou zprávu na kanálu. Zpráva sync má vždy hodnotu `1`. |
+
+<Note>
+  Tělo notifikace je záměrně **prázdné** — Google vám sděluje, že se něco změnilo, ale ne co se změnilo. Měli byste použít hlavičku `X-Goog-Resource-URI` k odeslání následného API požadavku a získání aktualizovaného prostředku.
+</Note>
+
+---
+
+## Zastavení kanálu
+
+Chcete-li přestat přijímat notifikace a uvolnit kanál před jeho vypršením, odešlete požadavek `POST` na endpoint pro zastavení:
+
+```http
+POST https://www.googleapis.com/drive/v3/channels/stop
+```
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/channels/stop" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "resourceId": "o3hgv1538sdjfh"
+  }'
+```
+
+Úspěšná odpověď vrací HTTP `204 No Content` s prázdným tělem. Po zastavení kanálu Google okamžitě přestane doručovat notifikace na váš endpoint pro daný kanál.
+
+---
+
+## Vypršení a obnovování kanálů
+
+Všechny watch kanály vyprší — buď v čase `expiration`, který jste zadali, nebo ve vlastním maximu Googlu (které se liší podle API). Jakmile kanál vyprší, Google přestane odesílat notifikace a přijdete o změny, dokud nezaregistrujete nový kanál.
+
+**Doporučená strategie obnovení:**
+
+1. Uložte hodnotu `expiration` vrácenou při registraci každého kanálu.
+2. Naplánujte úlohu, která kanál znovu zaregistruje alespoň **24 hodin před** jeho vypršením.
+3. Po úspěšné registraci nového kanálu starý zastavte.
+
+```bash
+# Re-register with a new channel ID and updated expiration
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-02",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1925000000000
+  }'
+```
+
+<Tip>
+  Pro vytváření jedinečných ID kanálů použijte generátor UUID (např. `uuidgen` na macOS/Linuxu). Opakované použití ID předtím, než se předchozí kanál zastaví, může vést ke konfliktům nebo duplicitním notifikacím.
+</Tip>

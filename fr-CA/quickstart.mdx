@@ -1,47 +1,77 @@
 ---
-title: "Démarrage rapide"
-description: "Commencez par un guide qui vous mène le plus rapidement possible à un résultat concluant"
+title: "Démarrage rapide : se connecter et effectuer son premier appel à l'API Google"
+sidebarTitle: "Démarrage rapide"
+description: "Connectez-vous à Google, obtenez des identifiants d'API depuis la console Cloud et effectuez votre première requête d'API de recherche en direct — le tout en moins de 10 minutes."
 ---
 
-Décrivez comment un utilisateur commence à utiliser votre produit. Quelle est la première chose qu'il doit faire? Y a-t-il des prérequis?
-
-Un démarrage rapide doit permettre à une personne de passer de zéro à l'utilisation de votre produit. Elle obtiendra une victoire rapide et une bonne idée de ce qu'elle peut accomplir.
+Ce démarrage rapide vous guide dans la connexion à Google, l'obtention d'identifiants d'API et l'exécution de votre première requête d'API — le tout en moins de 10 minutes. À la fin, vous aurez un appel d'API fonctionnel qui renvoie des résultats de recherche en direct sur lesquels vous pourrez bâtir dans votre propre application.
 
 ## Prérequis
 
-Avant de commencer, vous devez avoir :
+Avant de commencer, assurez-vous d'avoir les éléments suivants :
 
-- Exigence numéro un (par exemple, Node.js 18+, un compte gratuit, une clé API)
-- Exigence numéro deux (par exemple, un appareil compatible, un navigateur compatible, un système d'exploitation compatible)
+- Un **compte Google** — [créez-en un gratuitement](https://accounts.google.com/signup) si vous n'en avez pas encore.
+- **Connaissances HTTP de base** — savoir effectuer des requêtes GET/POST et lire des réponses JSON.
+- Un terminal en ligne de commande ou un client HTTP comme [curl](https://curl.se/) ou [Postman](https://www.postman.com/).
 
-## Pour commencer
+## Étapes
 
 <Steps>
-  <Step title="Installer">
-    Décrivez comment installer votre produit ou s'y inscrire.
+  <Step title="Se connecter">
+    Rendez-vous à [accounts.google.com](https://accounts.google.com) et connectez-vous avec votre compte Google. S'il s'agit de votre première visite, complétez la création du compte avant de poursuivre.
+  </Step>
+  <Step title="Obtenir des identifiants d'API">
+    1. Ouvrez la [console Google Cloud](https://console.cloud.google.com).
+    2. Créez un nouveau projet (ou sélectionnez-en un existant).
+    3. Accédez à **APIs & Services → Library** et activez la **Custom Search API**.
+    4. Allez à **APIs & Services → Credentials** et cliquez sur **Create Credentials → API key**.
+    5. Copiez votre nouvelle clé d'API et rangez-la en lieu sûr.
+    6. Créez un Programmable Search Engine à [programmablesearchengine.google.com](https://programmablesearchengine.google.com) et copiez votre **Search Engine ID** (`cx`).
+  </Step>
+  <Step title="Effectuer votre première requête">
+    Remplacez `YOUR_API_KEY` et `YOUR_SEARCH_ENGINE_ID` dans la commande ci-dessous par les valeurs que vous avez copiées, puis exécutez-la dans votre terminal :
 
     ```bash
-    npm install your-package
+    curl -X GET "https://www.googleapis.com/customsearch/v1?q=hello+world&key=YOUR_API_KEY&cx=YOUR_SEARCH_ENGINE_ID"
     ```
   </Step>
-  <Step title="Configurer">
-    Décrivez toute étape d'installation ou de configuration nécessaire avant la première utilisation.
+  <Step title="Vérifier la réponse">
+    Une requête réussie renvoie un objet JSON contenant des métadonnées de recherche et un tableau de résultats. Vous devriez voir une réponse semblable à celle-ci :
 
-    ```bash
-    your-cli init
+    ```json
+    {
+      "kind": "customsearch#search",
+      "url": {
+        "type": "application/json",
+        "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&..."
+      },
+      "queries": {
+        "request": [
+          {
+            "title": "Google Custom Search - hello world",
+            "totalResults": "4970000000",
+            "searchTerms": "hello world",
+            "count": 10,
+            "startIndex": 1
+          }
+        ]
+      },
+      "items": [
+        {
+          "kind": "customsearch#result",
+          "title": "Hello, World! – Wikipedia",
+          "htmlTitle": "\u003cb\u003eHello, World!\u003c/b\u003e – Wikipedia",
+          "link": "https://en.wikipedia.org/wiki/%22Hello,_World!%22_program",
+          "snippet": "A \"Hello, World!\" program is generally a simple computer program that outputs the phrase \"Hello, World!\" to a display device."
+        }
+      ]
+    }
     ```
-  </Step>
-  <Step title="Lancer">
-    Montrez la première chose qu'un utilisateur fait pour voir le produit fonctionner.
 
-    ```bash
-    your-cli start
-    ```
+    Le tableau `items` contient vos résultats de recherche. Chaque objet comprend le titre de la page, l'URL (`link`) et un court `snippet` que vous pouvez afficher directement dans votre interface.
   </Step>
 </Steps>
 
 <Tip>
-  Offrez aux utilisateurs un moyen d'obtenir de l'aide. Cela peut être un lien vers une page d'assistance, une conversation avec un agent du service à la clientèle ou un forum dédié à votre produit.
-
-  Exemple : Besoin d'aide? Contactez-nous à [support@yourcompany.com](mailto:support@yourcompany.com).
+  L'exemple ci-dessus utilise une simple clé d'API pour l'authentification. Les API de Google prennent aussi en charge OAuth 2.0 pour les requêtes qui accèdent aux données d'un utilisateur. Consultez le [guide d'authentification](/api/authentication) pour un aperçu complet de toutes les méthodes d'authentification prises en charge.
 </Tip>

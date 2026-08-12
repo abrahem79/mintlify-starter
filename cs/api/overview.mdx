@@ -1,0 +1,109 @@
+---
+title: "Google REST API: Přehled a průvodce prvními kroky"
+sidebarTitle: "Přehled"
+description: "Úvod do Google REST API: základní URL, verzování, formát požadavků a odpovědí, limity a zpracování chyb pro všechny služby."
+---
+
+Google zpřístupňuje širokou sadu REST API, která pohánějí vše od vyhledávání a produktivity až po cloudovou infrastrukturu a strojové učení. Ať už tvoříte webovou aplikaci, mobilního klienta nebo backendovou službu, tato API vám poskytují programový přístup k platformě Googlu pomocí standardních HTTP požadavků a JSONu. Tento průvodce pokrývá základní pojmy, které potřebujete znát, než odešlete své první volání.
+
+## Základní URL
+
+Všechna Google REST API jsou obsluhována ze společné základní URL:
+
+```text
+https://www.googleapis.com
+```
+
+Některá API mají vyhrazené názvy hostitelů (například `https://people.googleapis.com`), ale většina se řídí vzorem `https://www.googleapis.com/{api}/{version}/{resource}`.
+
+## Verzování API
+
+Google API používají **verzování založené na cestě**. Segment verze se v cestě URL nachází bezprostředně za názvem API, například:
+
+| API | Prefix koncového bodu s verzí |
+|-----|-----------------------------|
+| Custom Search | `https://www.googleapis.com/customsearch/v1` |
+| Drive | `https://www.googleapis.com/drive/v3` |
+| OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |
+
+Když Google vydá novou hlavní verzi, předchozí verze zůstává dostupná na své původní cestě až do oznámení oficiálního termínu ukončení podpory. U nových integrací se vždy zaměřte na nejnovější stabilní verzi.
+
+## Formát požadavku
+
+Každé volání API musí dodržovat tyto konvence:
+
+- **Metoda** — použijte HTTP sloveso odpovídající operaci (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`).
+- **Typ obsahu** — u požadavků s tělem uvádějte `Content-Type: application/json`.
+- **Autorizace** — přihlašovací údaje předávejte v hlavičce `Authorization` jako Bearer token, nebo prostřednictvím parametru dotazu `key` u požadavků autentizovaných klíčem API:
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+```
+
+- **Tělo** — těla požadavků musí být platný JSON. Booleovské hodnoty mají být `true`/`false` (ne řetězce) a časová razítka mají být ve formátu RFC 3339.
+
+## Formát odpovědi
+
+Úspěšné odpovědi vracejí HTTP stavové kódy `2xx` a tělo JSON. Většina koncových bodů kolekce se řídí standardní obálkou:
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "items": [
+    { "id": "1BxiM...", "name": "Report.pdf" }
+  ]
+}
+```
+
+- **`kind`** — jmenný prostor identifikující typ prostředku (např. `customsearch#search`, `drive#file`).
+- **`items`** — pole objektů prostředků vrácených operacemi typu list.
+- **`nextPageToken`** — je přítomen, pokud existují další stránky výsledků; předejte jej jako `pageToken` v dalším požadavku.
+
+## Limity rychlosti
+
+Limity rychlosti se liší podle API a jsou vynucovány na projekt a na uživatele. Když limit překročíte, API vrátí HTTP `429 Too Many Requests`. Ve svém klientovi byste měli implementovat exponenciální odklad a logiku opakování.
+
+<Tip>
+  Podívejte se do [průvodce řešením problémů](/help/troubleshooting), kde najdete doporučené strategie opakování a pokyny pro žádost o navýšení kvóty pro vysokoobjemové zátěže.
+</Tip>
+
+## Chybové odpovědi
+
+Všechny chyby API se řídí konzistentní strukturou JSON, což usnadňuje jejich programové parsování a zpracování:
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+| Pole | Popis |
+|-------|-------------|
+| `error.code` | HTTP stavový kód chyby. |
+| `error.message` | Lidsky čitelný popis toho, co se pokazilo. |
+| `error.status` | Strojově čitelný kód chyby jako řetězec. |
+
+Mezi běžné hodnoty stavu patří `PERMISSION_DENIED`, `NOT_FOUND`, `INVALID_ARGUMENT`, `UNAUTHENTICATED` a `RESOURCE_EXHAUSTED`.
+
+## Prozkoumejte API
+
+<CardGroup cols={2}>
+  <Card title="Autentizace" icon="key" href="/api/authentication">
+    Zjistěte, jak se autentizovat pomocí klíčů API, tokenů OAuth 2.0 a servisních účtů.
+  </Card>
+  <Card title="Search API" icon="magnifying-glass" href="/api/search">
+    Dotazujte se na svůj Programmable Search Engine a získávejte strukturované webové výsledky.
+  </Card>
+  <Card title="API účtů" icon="user" href="/api/accounts">
+    Načtěte profil, e-mail a identitu autentizovaného uživatele.
+  </Card>
+  <Card title="Webhooky" icon="webhook" href="/api/webhooks">
+    Přihlaste se k push notifikacím pro události změn prostředků v reálném čase.
+  </Card>
+</CardGroup>

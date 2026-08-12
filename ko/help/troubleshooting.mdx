@@ -1,0 +1,145 @@
+---
+title: "Google 로그인, Drive, API 오류 문제 해결"
+sidebarTitle: "문제 해결"
+description: "Google 로그인 실패, Drive 동기화 문제, API 오류 코드, 할당량 한도, Search 색인 지연에 대한 일반적인 문제를 진단하고 수정하세요."
+---
+
+Google처럼 신뢰할 수 있는 서비스도 때때로 문제를 겪습니다 — 예상치 못한 오류 코드를 반환하는 API든, 작동을 멈춘 동기화든, 진행되지 않는 로그인이든. 이 가이드는 Google 제품과 개발자 플랫폼 전반에서 가장 흔한 문제를 각각 진단하고 해결하는 명확한 단계와 함께 안내합니다.
+
+<Tip>
+  개별 문제를 해결하기 전에, 하나 이상의 Google 서비스에 영향을 미치는 활성 장애가 있는지 확인하기 위해 [Google Workspace 상태 대시보드](https://www.google.com/appsstatus)를 확인하세요. 많은 로그인, 동기화, API 문제는 스스로 해결되는 일시적인 인프라 사고로 인해 발생합니다.
+</Tip>
+
+## API 오류 코드
+
+Google API가 오류를 반환할 때, HTTP 상태 코드와 오류 메시지가 함께 무엇이 잘못되었는지 정확히 알려줍니다. 아래 표는 가장 흔한 오류 응답과 이를 해결하는 방법을 다룹니다:
+
+| HTTP 상태 | 오류 코드 | 의미 | 해결 방법 |
+|---|---|---|---|
+| **400** | `INVALID_ARGUMENT` | 요청이 잘못 구성되었거나 잘못된 파라미터가 포함됨 | API 레퍼런스와 대조해 요청 본문과 쿼리 파라미터를 검토하고, 누락된 필수 필드나 잘못된 데이터 유형이 있는지 확인 |
+| **401** | `UNAUTHENTICATED` | 요청에 유효한 인증 자격 증명이 없음 | OAuth 토큰을 갱신하거나 API 키가 요청 헤더에 포함되어 있는지 확인, 자격 증명이 만료되지 않았는지 확인 |
+| **403** | `PERMISSION_DENIED` | 인증된 계정이 이 작업을 수행할 권한이 없음 | 필요한 OAuth 스코프가 부여되었고 API가 Cloud 프로젝트에서 활성화되어 있는지 확인, 리소스의 공유 설정 확인 |
+| **429** | `RESOURCE_EXHAUSTED` | 이 API에 대한 할당량 또는 속도 제한을 초과함 | 지수 백오프와 재시도 로직 구현, 필요한 경우 Cloud Console을 통해 할당량 증가 요청 |
+| **500** | `INTERNAL` | Google 서버에서 예상치 못한 오류가 발생함 | 지수 백오프로 요청 재시도, 오류가 지속되면 [Google Cloud Status](https://status.cloud.google.com) 페이지 확인 |
+
+<Note>
+  모든 Google API 오류 응답에는 `code`, `message`, `status` 필드가 포함된 JSON 본문이 포함됩니다. 가장 실행 가능한 진단 정보를 얻으려면 HTTP 상태 코드뿐만 아니라 항상 전체 오류 응답 본문을 로깅하세요.
+</Note>
+
+## 로그인할 수 없음
+
+Google 계정에 로그인할 수 없다면 다음 단계를 순서대로 수행하세요:
+
+<Steps>
+  <Step title="Caps Lock 및 키보드 레이아웃 확인">
+    비밀번호는 대소문자를 구분합니다. Caps Lock이 꺼져 있고 비밀번호를 다시 입력하기 전에 올바른 키보드 언어 레이아웃을 사용하고 있는지 확인하세요.
+  </Step>
+  <Step title="비밀번호 찾기 사용">
+    로그인 페이지에서 **비밀번호를 잊으셨나요?**를 클릭하세요. Google이 복구 이메일 주소나 전화번호로 인증 코드를 보냅니다. 코드를 입력해 신원을 확인하고 새 비밀번호를 만드세요.
+  </Step>
+  <Step title="2단계 인증 방법 확인">
+    2단계 인증(2SV)을 활성화했는데 인증 코드를 받지 못한다면, 휴대전화에 신호가 있고 Google Authenticator 앱(또는 다른 TOTP 앱)이 올바르게 시간 동기화된 코드를 표시하고 있는지 확인하세요. 2SV 기기에 접근할 수 없게 되었다면, 저장된 백업 코드를 사용하거나 [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery)에서 계정 복구를 요청하세요.
+  </Step>
+  <Step title="계정 정지 여부 확인">
+    Google이 비정상적인 활동이나 정책 위반을 감지하면 계정이 일시적으로 정지될 수 있습니다. 이 경우 로그인 페이지에 명확한 메시지가 표시됩니다. 화면 지침을 따라 정지에 이의를 제기하거나 신원을 확인하세요.
+  </Step>
+  <Step title="다른 브라우저나 기기 사용">
+    브라우저 확장 프로그램, 캐시된 자격 증명, 손상된 쿠키가 때때로 로그인을 방해할 수 있습니다. 로컬 문제를 배제하기 위해 시크릿/비공개 창이나 다른 브라우저에서 로그인해 보세요.
+  </Step>
+</Steps>
+
+## Google Drive 동기화 문제
+
+파일이 컴퓨터와 Google Drive 간에 동기화되지 않거나 Drive for Desktop이 작동을 멈춘 경우 다음 단계를 따르세요:
+
+<AccordionGroup>
+  <Accordion title="저장 용량 할당량 확인">
+    Google 계정 저장 용량이 가득 차면 Drive가 새 파일 동기화를 중단하고 변경 사항을 업로드하지 못할 수 있습니다. [one.google.com/storage](https://one.google.com/storage)를 방문해 사용량을 확인하세요. 한도를 초과했다면 Gmail, Drive 휴지통 또는 Google Photos에서 필요 없는 파일을 삭제하거나 Google One 요금제로 업그레이드하세요.
+  </Accordion>
+
+  <Accordion title="인터넷 연결 확인">
+    Drive for Desktop은 동기화를 위해 안정적인 인터넷 연결이 필요합니다. 브라우저를 열고 웹페이지를 로드해 연결되어 있는지 확인하세요. 연결이 간헐적이면 연결이 안정될 때까지 동기화가 일시 중지되었다가 자동으로 재개됩니다.
+  </Accordion>
+
+  <Accordion title="Drive for Desktop 재시작">
+    시스템 트레이(Windows) 또는 메뉴 바(macOS)의 Drive for Desktop 아이콘을 클릭한 다음 **종료**를 선택하세요. 응용 프로그램 폴더나 시작 메뉴에서 앱을 다시 실행하세요. 클라이언트를 재시작하면 동기화 상태를 다시 확인하고 많은 일시적 문제를 해결하도록 강제됩니다.
+  </Accordion>
+
+  <Accordion title="Google 계정 다시 연결">
+    앱이 인증 오류를 표시하면 계정을 다시 연결해야 할 수 있습니다. Drive for Desktop 환경설정을 열고 **계정**으로 이동한 다음 Google 계정으로 로그아웃했다가 다시 로그인하세요. 이는 동기화된 파일에 영향을 주지 않고 자격 증명을 갱신합니다.
+  </Accordion>
+
+  <Accordion title="파일 경로 길이 또는 명명 문제 확인">
+    Drive for Desktop은 시스템 한도를 초과하는 경로(Windows에서 260자)나 운영 체제에서 지원하지 않는 문자를 포함하는 파일 이름을 가진 파일의 동기화를 거부할 수 있습니다. 문제 파일의 이름을 변경하거나 더 짧은 경로로 이동하고, 특정 파일 이름에 대해 Drive for Desktop 오류 로그를 확인하세요.
+  </Accordion>
+</AccordionGroup>
+
+## API 할당량 초과 (429)
+
+`429 RESOURCE_EXHAUSTED` 오류를 받는다는 것은 애플리케이션이 너무 짧은 시간에 너무 많은 요청을 보냈거나 일일 할당량 한도에 도달했다는 의미입니다. 이를 처리하는 방법은 다음과 같습니다:
+
+### 지수 백오프 구현
+
+실패한 요청을 즉시 재시도하기보다는, 각 재시도 사이에 점차 더 긴 간격을 두고 기다리세요. 이는 API가 부하 상태일 때 클라이언트가 API를 두드리는 것을 방지하고 할당량 창이 재설정될 시간을 줍니다.
+
+```python
+import time
+import random
+
+def api_request_with_backoff(request_func, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return request_func()
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = (2 ** attempt) + random.uniform(0, 1)
+                print(f"Rate limited. Retrying in {wait:.2f} seconds...")
+                time.sleep(wait)
+            else:
+                raise
+```
+
+### 할당량 증가 요청
+
+애플리케이션이 지속적으로 할당량 한도에 도달한다면 Google Cloud Console을 통해 증가를 요청할 수 있습니다:
+
+<Steps>
+  <Step title="Cloud Console 열기">
+    [console.cloud.google.com](https://console.cloud.google.com)으로 이동해 프로젝트를 선택하세요.
+  </Step>
+  <Step title="APIs & Services → Quotas & System Limits로 이동">
+    **APIs & Services** → **Quotas & System Limits**로 이동하고 스로틀링되고 있는 API로 필터링하세요.
+  </Step>
+  <Step title="증가시킬 할당량 선택">
+    특정 할당량(예: "Queries per day" 또는 "Requests per minute")을 찾아 옆에 있는 확인란을 클릭한 다음 **Edit quotas**를 클릭하세요.
+  </Step>
+  <Step title="요청 제출">
+    원하는 새 할당량 값과 간단한 정당한 이유를 입력하세요. Google은 일반적으로 할당량 증가 요청을 2~3 영업일 이내에 검토합니다.
+  </Step>
+</Steps>
+
+## 검색 결과가 업데이트되지 않음
+
+웹페이지에 변경 사항을 적용했는데 업데이트가 Google 검색 결과에 나타나지 않는다면, 지연은 거의 항상 오류가 아니라 Google의 크롤링 및 색인 파이프라인 때문입니다.
+
+<AccordionGroup>
+  <Accordion title="색인 지연 이해하기">
+    Google 크롤러(Googlebot)가 페이지를 방문한 후, 색인이 업데이트되고 그 변경 사항이 검색 결과에 나타나는 데 추가 시간이 걸립니다. 대부분의 사이트에서 이 프로세스는 며칠에서 몇 주가 걸립니다. 새 사이트나 권위가 낮은 페이지는 애초에 크롤링되는 데 더 오래 걸릴 수 있습니다.
+  </Accordion>
+
+  <Accordion title="Google의 캐시된 버전 확인">
+    Google 검색에서 `cache:yourdomain.com/page`를 검색하면 Google이 마지막으로 색인화한 페이지 버전을 볼 수 있습니다. 캐시된 버전이 오래되었다면 Google이 아직 페이지를 다시 크롤링하지 않은 것입니다.
+  </Accordion>
+
+  <Accordion title="Search Console을 통한 재색인화 요청">
+    특정 페이지를 긴급히 업데이트해야 한다면 [Google Search Console](https://search.google.com/search-console)의 **URL 검사** 도구를 사용하세요. URL을 붙여넣은 다음 **색인 요청**을 클릭해 Googlebot이 가능한 한 빨리 다시 크롤링하도록 요청하세요. 이것이 즉각적인 결과를 보장하지는 않지만, 크롤 대기열에서 URL의 우선 순위를 높입니다.
+  </Accordion>
+
+  <Accordion title="robots.txt 및 noindex 태그 확인">
+    페이지가 실수로 색인화가 차단되지 않았는지 확인하세요. `robots.txt` 파일이 Googlebot이 URL을 크롤링하는 것을 허용하지 않도록 되어 있지 않은지, 그리고 페이지에 `<meta name="robots" content="noindex">` 태그가 없는지 확인하세요. 둘 중 하나가 있으면 콘텐츠가 검색 결과에 나타나지 않습니다.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  동일한 URL에 대해 재색인화를 자주 요청해도 프로세스가 빨라지지는 않습니다. Google의 색인 파이프라인은 자동으로 관리되며, 중복 요청을 제출한다고 해서 크롤 우선 순위가 더 높아지지 않습니다.
+</Warning>

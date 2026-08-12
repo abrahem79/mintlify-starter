@@ -1,0 +1,45 @@
+---
+title: "FAQ for Google-tjenester: Kontoer, API-er, fakturering og personvern"
+sidebarTitle: "FAQ"
+description: "Svar på vanlige spørsmål om Google-kontoer, lagringskvoter, Workspace, API-nøkler, fakturering, personvern og hastighetsgrenser for utviklere."
+---
+
+Enten du er en ny Google-bruker eller en erfaren utvikler som jobber med Google API-er, vil du sannsynligvis støte på spørsmål om hvordan kontoer, lagring, fakturering og tilgangskontroller fungerer. Denne siden samler svar på de vanligste spørsmålene på tvers av Googles forbrukerprodukter, Workspace-apper og utviklerplattform — slik at du kan få raske svar uten å grave gjennom flere hjelpesentre.
+
+<AccordionGroup>
+  <Accordion title="Hvordan tilbakestiller jeg Google-passordet mitt?">
+    Du kan tilbakestille Google-passordet ditt fra kontogjenopprettingssiden på [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery). Skriv inn e-postadressen tilknyttet kontoen din og følg instruksjonene — Google vil sende en verifiseringskode til gjenopprettings-e-posten eller telefonnummeret ditt. Når du er verifisert, kan du opprette et nytt passord. Hvis du har mistet tilgang til alle gjenopprettingsalternativer, tilbyr Google en identitetsverifiseringsprosess der du blir stilt spørsmål for å bekrefte identiteten din basert på kontohistorikken din.
+  </Accordion>
+
+  <Accordion title="Hvorfor fungerer ikke API-nøkkelen min?">
+    De vanligste grunnene til at en API-nøkkel slutter å fungere er at nøkkelen har blitt begrenset til spesifikke IP-adresser eller henvisere som ikke samsvarer med det nåværende miljøet ditt, at nøkkelen ikke har det nødvendige API-et aktivert i Google Cloud-prosjektet ditt, eller at nøkkelen har blitt slettet eller regenerert. Åpne [Google Cloud Console](https://console.cloud.google.com), naviger til **APIs & Services → Credentials**, og verifiser nøkkelens restriksjoner og status. Bekreft også at mål-API-et (f.eks. Maps JavaScript API, Sheets API) er aktivert under **APIs & Services → Enabled APIs & services**.
+  </Accordion>
+
+  <Accordion title="Hva teller mot Google-lagringskvoten min?">
+    Dine 15 GB gratis Google-lagring deles på tvers av Gmail (e-poster og vedlegg), Google Drive (opplastede filer) og Google Photos (sikkerhetskopierte bilder og videoer). Google Dokumenter, Regneark, Presentasjoner, Skjemaer og Tegninger opprettet nativt i Googles formater teller **ikke** mot kvoten din. Imidlertid forbruker filer lastet opp til Drive i andre formater — som `.docx`, `.xlsx` eller `.pdf` — lagring. Du kan sjekke gjeldende bruk og oversikt på [one.google.com/storage](https://one.google.com/storage).
+  </Accordion>
+
+  <Accordion title="Hvordan sletter jeg Google-kontoen min?">
+    Du kan permanent slette Google-kontoen din fra **Data & privacy**-delen av kontoinnstillingene dine. Gå til [myaccount.google.com](https://myaccount.google.com), klikk **Data & privacy**, bla til **More options**, og klikk **Delete your Google Account**. Google vil be deg om å laste ned en kopi av dataene dine først ved bruk av Google Takeout. Merk at sletting er permanent — Gmail, Drive-filer og alle tilknyttede data vil gå tapt og kan ikke gjenopprettes etter at frigjøringsperioden utløper.
+  </Accordion>
+
+  <Accordion title="Kan jeg bruke Google API-er gratis?">
+    Mange Google API-er tilbyr et gratisnivå med sjenerøse bruksgrenser — for eksempel inkluderer Maps JavaScript API $200/måned i gratis kreditter, og Google Sheets API-kall er gratis opp til bruksgrenser satt per prosjekt. Imidlertid krever bruk med høyt volum, visse premium-API-er (som Google Maps Routes Preferred) og enterprise-funksjoner at en faktureringskonto er satt opp i Google Cloud. Du kan gjennomgå prisene for et hvilket som helst spesifikt API på [cloud.google.com/pricing](https://cloud.google.com/pricing) eller innenfor det individuelle API-ets dokumentasjonsside.
+  </Accordion>
+
+  <Accordion title="Hvordan overfører jeg eierskapet av et Google-dokument?">
+    For å overføre eierskapet av et Google-dokument, -regneark eller -presentasjon, åpne filen og klikk **Share** i øverste høyre hjørne. Finn personen du vil overføre eierskapet til (de må allerede ha tilgang), klikk nedtrekksmenyen ved siden av navnet deres, og velg **Transfer ownership**. Mottakeren vil motta et e-postvarsel og må godta overføringen. Merk at du bare kan overføre eierskap til en annen bruker innenfor samme Google Workspace-organisasjon, eller for personlige kontoer, til en annen Google-kontoinnehaver.
+  </Accordion>
+
+  <Accordion title="Hvordan rapporterer jeg en spam- eller phishing-e-post i Gmail?">
+    For å rapportere en spam-e-post i Gmail, åpne meldingen, klikk **tre-prikker-menyen** (⋮) øverst til høyre i e-posten, og velg **Report spam** eller **Report phishing**. Rapportering av phishing sender e-posten til Google for gjennomgang og hjelper med å beskytte andre brukere fra lignende angrep. Gmail vil også automatisk flytte e-posten ut av innboksen din. Hvis du mottar phishing-e-poster som utgir seg for å være et selskap eller en institusjon, kan du i tillegg rapportere dem til [Google Safe Browsing-teamet](https://safebrowsing.google.com/safebrowsing/report_phish/).
+  </Accordion>
+
+  <Accordion title="Hva er hastighetsgrensene for Google Søk-API?">
+    Google Custom Search JSON API tillater opptil **100 søkespørringer per dag** gratis, med ytterligere spørringer tilgjengelige for $5 per 1 000 spørringer (opptil 10 000 per dag). Dette gjelder Programmable Search Engine API — hvis du bruker Google Search Console API eller andre søkerelaterte API-er, er grensene forskjellige og er dokumentert separat. Du kan overvåke bruken din og konfigurere forespørselskvoter i [Google Cloud Console](https://console.cloud.google.com) under **APIs & Services → Quotas**. For søkebehov med veldig høyt volum tilbyr Google enterprise-nivå-alternativer gjennom Google Cloud.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Finner du ikke svaret du leter etter? Besøk [Google Help Center](https://support.google.com) for produktspesifikk supportdokumentasjon, eller kontakt Google Support direkte fra Google-kontoen din under **Support** i navigasjonsmenyen.
+</Note>

@@ -1,0 +1,126 @@
+---
+title: "واجهة البحث القابل للبرمجة: الاستعلام واسترداد النتائج"
+sidebarTitle: "واجهة البحث البرمجية"
+description: "استعلم عن محرك بحث Google القابل للبرمجة عبر GET /customsearch/v1 واستقبل نتائج JSON منظمة تشمل العناوين وعناوين URL والمقتطفات."
+---
+
+تتيح لك واجهة Google Programmable Search API تضمين بحث ويب مخصص في تطبيقك. من خلال إنشاء محرك بحث في [لوحة تحكم محرك البحث القابل للبرمجة](https://programmablesearchengine.google.com/)، فإنك تحدد المواقع أو الويب بأكمله الذي يغطيه محركك. ثم تستعلم عن ذلك المحرك عبر طلب `GET` بسيط وتستقبل نتائج JSON منظمة — العناوين وعناوين URL والمقتطفات — يمكنك عرضها كما تشاء.
+
+## نقطة النهاية
+
+```http
+GET https://www.googleapis.com/customsearch/v1
+```
+
+تتم المصادقة عبر مفتاح API يتم تمريره كمعامل استعلام `key`. لا يلزم رمز OAuth لهذه النقطة.
+
+## معاملات الاستعلام
+
+<ParamField query="q" type="string" required>
+  سلسلة استعلام البحث. قم بترميز URL للمسافات والأحرف الخاصة (مثل `climate+change` أو `climate%20change`).
+</ParamField>
+
+<ParamField query="key" type="string" required>
+  مفتاح API الخاص بمشروعك. أنشئ واحدًا في [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+</ParamField>
+
+<ParamField query="cx" type="string" required>
+  المعرّف الفريد لمحرك البحث القابل للبرمجة الخاص بك. اعثر عليه في صفحة إعداد محرك البحث الخاص بك ضمن "Search engine ID".
+</ParamField>
+
+<ParamField query="num" type="integer">
+  عدد النتائج المطلوب إرجاعها لكل صفحة. القيم المقبولة من `1` إلى `10`. الافتراضي `10`.
+</ParamField>
+
+<ParamField query="start" type="integer">
+  فهرس أول نتيجة يتم إرجاعها، ويُستخدم لترقيم الصفحات. الافتراضي `1`. القيمة القصوى هي `91` (وتنتج النتائج 91–100). راجع [ترقيم الصفحات](#pagination) للحصول على التفاصيل.
+</ParamField>
+
+<ParamField query="lr" type="string">
+  يقيّد النتائج بالوثائق المكتوبة بلغة محددة. مرر رمز لغة مسبوقًا بـ `lang_`، على سبيل المثال `lang_en` للإنجليزية أو `lang_fr` للفرنسية.
+</ParamField>
+
+<ParamField query="safe" type="string">
+  يمكّن تصفية SafeSearch. مرر `active` لتصفية المحتوى الصريح، أو `off` لتعطيل التصفية. الافتراضي `off`.
+</ParamField>
+
+## مثال على الطلب
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=5"
+```
+
+## مثال على الاستجابة
+
+```json
+{
+  "kind": "customsearch#search",
+  "searchInformation": {
+    "totalResults": "12400000",
+    "searchTime": 0.248
+  },
+  "items": [
+    {
+      "title": "Climate Change Overview",
+      "link": "https://example.com/climate",
+      "snippet": "An overview of current climate change research and its global implications for ecosystems and economies."
+    },
+    {
+      "title": "What Is Climate Change? — NASA",
+      "link": "https://climate.nasa.gov/what-is-climate-change/",
+      "snippet": "NASA's guide to the science, causes, and projected impacts of climate change."
+    }
+  ]
+}
+```
+
+## حقول الاستجابة
+
+<ResponseField name="kind" type="string">
+  يحدد نوع المورد المُرجع. لاستجابات البحث تكون دائمًا `"customsearch#search"`.
+</ResponseField>
+
+<ResponseField name="searchInformation.totalResults" type="string">
+  العدد الإجمالي التقديري للنتائج المطابقة للاستعلام، يتم إرجاعه كسلسلة نصية. هذا تقريب وقد يختلف بين الطلبات.
+</ResponseField>
+
+<ResponseField name="searchInformation.searchTime" type="number">
+  الوقت الذي استغرقه Google لمعالجة الاستعلام، بالثواني.
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  مصفوفة من كائنات نتائج البحث. تكون هذه المصفوفة غائبة إذا لم يتم العثور على أي نتائج.
+</ResponseField>
+
+<ResponseField name="items[].title" type="string">
+  عنوان صفحة الويب كما يظهر في نتائج البحث.
+</ResponseField>
+
+<ResponseField name="items[].link" type="string">
+  عنوان URL الكامل لصفحة النتيجة.
+</ResponseField>
+
+<ResponseField name="items[].snippet" type="string">
+  مقتطف قصير من محتوى الصفحة يوضح كيف تظهر مصطلحات الاستعلام في السياق.
+</ResponseField>
+
+## ترقيم الصفحات
+
+تعيد واجهة Programmable Search API حدًا أقصى قدره **10 نتائج لكل طلب** وتدعم ما يصل إلى **100 نتيجة إجمالاً** لكل استعلام (النتائج 1–100). لترقيم النتائج، قم بزيادة `start` بقيمة `num`:
+
+| الصفحة | `start` | `num` |
+|------|---------|-------|
+| 1 | 1 | 10 |
+| 2 | 11 | 10 |
+| 3 | 21 | 10 |
+| … | … | … |
+| 10 | 91 | 10 |
+
+```bash
+# Fetch the second page of results
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=10&start=11"
+```
+
+<Note>
+  لا يمكن الوصول إلى النتائج بعد الموضع 100 عبر واجهة API. إذا كانت حالة استخدامك تتطلب ترقيم صفحات أعمق، ففكر في تنقيح الاستعلام بمصطلحات أو عوامل تصفية إضافية لإبراز النتائج الأكثر صلة ضمن أول 100.
+</Note>

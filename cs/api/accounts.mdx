@@ -1,0 +1,130 @@
+---
+title: "API uživatelských účtů: Načtení profilu a údajů o identitě"
+sidebarTitle: "API účtů"
+description: "Načtěte profil, e-mail, jméno a fotografii autentizovaného uživatele pomocí GET /oauth2/v2/userinfo nebo People API s použitím OAuth 2.0 Bearer tokenu."
+---
+
+Google poskytuje dva doplňkové koncové body pro čtení identity a profilových údajů autentizovaného uživatele. Koncový bod OAuth 2.0 userinfo vám poskytne odlehčený souhrn — e-mail, zobrazované jméno, profilový obrázek a lokalizaci — a je ideální pro přihlašovací toky. People API nabízí bohatší, strukturovanější pohled na kontaktní záznam uživatele a je vhodné, když potřebujete jemné ovládání jednotlivých polí. Oba koncové body vyžadují platný přístupový token OAuth 2.0 s odpovídajícími rozsahy.
+
+<Note>
+  Oba koncové body popsané na této stránce vyžadují platný OAuth 2.0 Bearer token. Klíče API **nejsou** akceptovány — tyto prostředky jsou vázány na identitu autentizovaného uživatele. V [průvodci autentizací](/api/authentication) najdete návod, jak nastavit svůj OAuth tok.
+</Note>
+
+---
+
+## Získání profilu aktuálního uživatele
+
+Načtěte kompaktní profil aktuálně autentizovaného uživatele.
+
+**Koncový bod**
+
+```http
+GET https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**Požadovaný rozsah:** `openid email profile`
+
+### Ukázkový požadavek
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/oauth2/v2/userinfo"
+```
+
+### Ukázková odpověď
+
+```json
+{
+  "id": "116195079999551234567",
+  "email": "alex@example.com",
+  "name": "Alex Johnson",
+  "given_name": "Alex",
+  "family_name": "Johnson",
+  "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+  "locale": "en"
+}
+```
+
+### Pole odpovědi
+
+<ResponseField name="id" type="string">
+  Jedinečné, stabilní ID účtu Google daného uživatele. Tato hodnota se nezmění, ani když uživatel aktualizuje svou e-mailovou adresu nebo jméno.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Primární e-mailová adresa účtu Google daného uživatele. Vyžaduje rozsah `email`.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Celé zobrazované jméno uživatele, jak se objevuje na jeho účtu Google.
+</ResponseField>
+
+<ResponseField name="given_name" type="string">
+  Křestní jméno uživatele. Vyžaduje rozsah `profile`.
+</ResponseField>
+
+<ResponseField name="family_name" type="string">
+  Příjmení uživatele. Vyžaduje rozsah `profile`.
+</ResponseField>
+
+<ResponseField name="picture" type="string">
+  URL odkazující na profilovou fotografii uživatele hostovanou na serverech Googlu. Obrázek je veřejně přístupný, ale může se změnit, pokud uživatel aktualizuje svou fotografii.
+</ResponseField>
+
+<ResponseField name="locale" type="string">
+  Jazykový tag BCP 47 představující preferovaný jazyk uživatele (např. `"en"`, `"fr"`, `"ja"`). Vyžaduje rozsah `profile`.
+</ResponseField>
+
+---
+
+## Získání informací o uživateli přes People API
+
+People API vrací bohatší strukturovaná data a umožňuje vám požádat přesně o pole, která potřebujete, pomocí parametru `personFields`.
+
+**Koncový bod**
+
+```http
+GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
+```
+
+**Požadovaný rozsah:** `https://www.googleapis.com/auth/contacts.readonly`
+
+### Ukázkový požadavek
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses"
+```
+
+### Ukázková odpověď
+
+```json
+{
+  "resourceName": "people/116195079999551234567",
+  "etag": "%EgoBAgkLDg8REhMaAQ==",
+  "names": [
+    {
+      "displayName": "Alex Johnson",
+      "givenName": "Alex",
+      "familyName": "Johnson",
+      "metadata": {
+        "primary": true,
+        "source": { "type": "PROFILE" }
+      }
+    }
+  ],
+  "emailAddresses": [
+    {
+      "value": "alex@example.com",
+      "metadata": {
+        "primary": true,
+        "verified": true
+      }
+    }
+  ]
+}
+```
+
+<Tip>
+  Můžete si vyžádat další `personFields`, jako jsou `phoneNumbers`, `addresses`, `birthdays` a `photos`, jejich připojením jako seznam oddělený čárkami: `?personFields=names,emailAddresses,phoneNumbers`.
+</Tip>

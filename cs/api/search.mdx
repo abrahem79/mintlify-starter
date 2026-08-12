@@ -1,0 +1,126 @@
+---
+title: "Programmable Search API: Dotazování a získávání výsledků"
+sidebarTitle: "Search API"
+description: "Dotazujte se na Google Programmable Search Engine pomocí GET /customsearch/v1 a získejte strukturované JSON výsledky včetně názvů, URL a úryvků."
+---
+
+Google Programmable Search API vám umožňuje vložit vlastní webové vyhledávání do vaší aplikace. Vytvořením vyhledávače v [ovládacím panelu Programmable Search Engine](https://programmablesearchengine.google.com/) definujete, které stránky nebo celý web váš vyhledávač pokrývá. Tento vyhledávač poté dotazujete pomocí jednoduchého požadavku `GET` a získáváte strukturované JSON výsledky — názvy, URL a úryvky — které můžete vykreslit, jak chcete.
+
+## Koncový bod
+
+```http
+GET https://www.googleapis.com/customsearch/v1
+```
+
+Autentizace se řeší prostřednictvím klíče API předávaného jako parametr dotazu `key`. Pro tento koncový bod není vyžadován žádný OAuth token.
+
+## Parametry dotazu
+
+<ParamField query="q" type="string" required>
+  Řetězec vyhledávacího dotazu. Mezery a speciální znaky zakódujte pro URL (např. `climate+change` nebo `climate%20change`).
+</ParamField>
+
+<ParamField query="key" type="string" required>
+  Klíč API vašeho projektu. Vygenerujte jej v [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+</ParamField>
+
+<ParamField query="cx" type="string" required>
+  Jedinečný identifikátor vašeho Programmable Search Engine. Najdete jej na stránce nastavení svého vyhledávače pod „Search engine ID".
+</ParamField>
+
+<ParamField query="num" type="integer">
+  Počet výsledků, které se mají vrátit na stránku. Akceptované hodnoty jsou `1` až `10`. Výchozí hodnota je `10`.
+</ParamField>
+
+<ParamField query="start" type="integer">
+  Index prvního výsledku, který se má vrátit, používaný pro stránkování. Výchozí hodnota je `1`. Maximální hodnota je `91` (což poskytuje výsledky 91–100). Podrobnosti viz [Stránkování](#pagination).
+</ParamField>
+
+<ParamField query="lr" type="string">
+  Omezuje výsledky na dokumenty napsané v konkrétním jazyce. Předejte kód jazyka s prefixem `lang_`, například `lang_en` pro angličtinu nebo `lang_fr` pro francouzštinu.
+</ParamField>
+
+<ParamField query="safe" type="string">
+  Povoluje filtrování SafeSearch. Předejte `active` pro filtrování explicitního obsahu nebo `off` pro vypnutí filtrování. Výchozí hodnota je `off`.
+</ParamField>
+
+## Ukázkový požadavek
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=5"
+```
+
+## Ukázková odpověď
+
+```json
+{
+  "kind": "customsearch#search",
+  "searchInformation": {
+    "totalResults": "12400000",
+    "searchTime": 0.248
+  },
+  "items": [
+    {
+      "title": "Climate Change Overview",
+      "link": "https://example.com/climate",
+      "snippet": "An overview of current climate change research and its global implications for ecosystems and economies."
+    },
+    {
+      "title": "What Is Climate Change? — NASA",
+      "link": "https://climate.nasa.gov/what-is-climate-change/",
+      "snippet": "NASA's guide to the science, causes, and projected impacts of climate change."
+    }
+  ]
+}
+```
+
+## Pole odpovědi
+
+<ResponseField name="kind" type="string">
+  Identifikuje typ vráceného prostředku. U odpovědí na vyhledávání je to vždy `"customsearch#search"`.
+</ResponseField>
+
+<ResponseField name="searchInformation.totalResults" type="string">
+  Odhadovaný celkový počet výsledků odpovídajících dotazu, vrácený jako řetězec. Jedná se o aproximaci, která se může mezi požadavky lišit.
+</ResponseField>
+
+<ResponseField name="searchInformation.searchTime" type="number">
+  Čas, který Google potřeboval na zpracování dotazu, v sekundách.
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  Pole objektů výsledků vyhledávání. Toto pole chybí, pokud nebyly nalezeny žádné výsledky.
+</ResponseField>
+
+<ResponseField name="items[].title" type="string">
+  Název webové stránky, jak se objevuje ve výsledcích vyhledávání.
+</ResponseField>
+
+<ResponseField name="items[].link" type="string">
+  Úplná URL stránky s výsledkem.
+</ResponseField>
+
+<ResponseField name="items[].snippet" type="string">
+  Krátký výňatek z obsahu stránky, který ukazuje, jak se hledané výrazy objevují v kontextu.
+</ResponseField>
+
+## Stránkování
+
+Programmable Search API vrací maximálně **10 výsledků na požadavek** a podporuje až **100 výsledků celkem** na dotaz (výsledky 1–100). Pro procházení výsledků zvyšujte `start` o hodnotu `num`:
+
+| Stránka | `start` | `num` |
+|------|---------|-------|
+| 1 | 1 | 10 |
+| 2 | 11 | 10 |
+| 3 | 21 | 10 |
+| … | … | … |
+| 10 | 91 | 10 |
+
+```bash
+# Fetch the second page of results
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=10&start=11"
+```
+
+<Note>
+  Výsledky za pozicí 100 nejsou prostřednictvím API dostupné. Pokud váš případ použití vyžaduje hlubší stránkování, zvažte upřesnění dotazu dalšími termíny nebo filtry, abyste v rámci prvních 100 získali nejrelevantnější výsledky.
+</Note>

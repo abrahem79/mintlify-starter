@@ -1,0 +1,133 @@
+---
+title: "Zarządzaj uprawnieniami aplikacji Google i dostępem stron trzecich"
+sidebarTitle: "Uprawnienia"
+description: "Przeglądaj i odbieraj dostęp aplikacjom stron trzecich, zarządzaj politykami udostępniania Google Workspace i kontroluj zakresy API dla połączonych aplikacji."
+---
+
+Gdy logujesz się do aplikacji i usług stron trzecich za pomocą konta Google — lub upoważniasz je do dostępu do swoich danych — te aplikacje otrzymują tokeny uprawnień, które dają im dostęp do określonych części Twojego konta. Z czasem możesz mieć dziesiątki podłączonych aplikacji, wielu z których już nie używasz. Regularne przeglądanie i odbieranie zbędnych uprawnień jest jednym z najskuteczniejszych sposobów ochrony bezpieczeństwa i prywatności konta.
+
+## Wyświetl podłączone aplikacje
+
+Możesz zobaczyć każdą aplikację, która aktualnie ma dostęp do Twojego konta Google, w sekcji **Bezpieczeństwo** panelu konta.
+
+<Steps>
+  <Step title="Otwórz swoje konto Google">
+    Przejdź do [myaccount.google.com](https://myaccount.google.com) i zaloguj się.
+  </Step>
+  <Step title="Przejdź do Bezpieczeństwa">
+    Kliknij **Bezpieczeństwo** w lewym pasku bocznym.
+  </Step>
+  <Step title="Otwórz Aplikacje innych firm z dostępem do konta">
+    Przewiń w dół do sekcji **Twoje połączenia z aplikacjami i usługami innych firm** i kliknij **Zobacz wszystkie połączenia**.
+  </Step>
+  <Step title="Przejrzyj listę">
+    Zobaczysz wszystkie aplikacje, którym przyznano dostęp, wraz z datą ostatniego dostępu i uprawnieniami, jakie każda z nich ma.
+  </Step>
+</Steps>
+
+<Note>
+  Aplikacje, do których zalogowałeś się przy użyciu „Zaloguj się przez Google”, pojawiają się tutaj obok aplikacji, którym dostęp do API przyznano programistycznie. Oba typy można przeglądać i odbierać na tej samej stronie.
+</Note>
+
+## Odbierz dostęp
+
+Jeśli nie używasz już aplikacji lub jeśli nie rozpoznajesz podłączonej aplikacji, powinieneś natychmiast odebrać jej dostęp.
+
+<Steps>
+  <Step title="Przejdź do podłączonych aplikacji">
+    Z [myaccount.google.com](https://myaccount.google.com) przejdź do **Bezpieczeństwo** → **Zobacz wszystkie połączenia** w sekcji Aplikacje innych firm.
+  </Step>
+  <Step title="Wybierz aplikację do usunięcia">
+    Kliknij aplikację, której dostęp chcesz odebrać.
+  </Step>
+  <Step title="Przejrzyj uprawnienia">
+    Przeczytaj listę zakresów, które przyznano aplikacji. Pokazuje ona dokładnie, do jakich danych aplikacja ma dostęp.
+  </Step>
+  <Step title="Kliknij Usuń wszystkie połączenia">
+    Kliknij **Usuń wszystkie połączenia z [Nazwa aplikacji]** i potwierdź, gdy zostaniesz o to poproszony.
+  </Step>
+  <Step title="Zweryfikuj usunięcie">
+    Aplikacja nie będzie już pojawiać się na liście podłączonych aplikacji i utraci możliwość dostępu do Twojego konta za pomocą odebranego tokena.
+  </Step>
+</Steps>
+
+<Warning>
+  Odebranie dostępu natychmiast unieważnia token dostępu aplikacji — aplikacja nie może już odczytywać ani zapisywać Twoich danych Google. Jednakże dane, które aplikacja już pobrała lub przechowuje we własnych systemach, nie są automatycznie usuwane. Sprawdź własne ustawienia prywatności aplikacji lub skontaktuj się z jej deweloperem, aby poprosić o usunięcie danych.
+</Warning>
+
+## Zakresy OAuth
+
+Zakresy OAuth definiują dokładnie, co aplikacja może robić z Twoim kontem Google. Gdy aplikacja żąda dostępu, określa listę ciągów zakresów mapujących się na konkretne możliwości. Zawsze przeglądaj żądane zakresy przed przyznaniem dostępu jakiejkolwiek aplikacji strony trzeciej.
+
+Ciągi zakresów mają następujący format:
+
+```text
+https://www.googleapis.com/auth/[service].[permission-level]
+```
+
+Na przykład:
+
+```text
+https://www.googleapis.com/auth/drive.readonly
+```
+
+Ten zakres pozwala aplikacji odczytywać pliki na Dysku Google, ale nie tworzyć, modyfikować ani usuwać ich.
+
+### Typowe zakresy OAuth
+
+| Zakres | Poziom dostępu | Co aplikacja może zrobić |
+|---|---|---|
+| `https://www.googleapis.com/auth/drive.readonly` | Tylko odczyt | Wyświetlać i pobierać pliki z Dysku |
+| `https://www.googleapis.com/auth/drive` | Pełny dostęp | Tworzyć, edytować i usuwać dowolne pliki na Dysku |
+| `https://www.googleapis.com/auth/gmail.readonly` | Tylko odczyt | Czytać wszystkie wiadomości i ustawienia Gmaila |
+| `https://www.googleapis.com/auth/gmail.send` | Tylko wysyłanie | Wysyłać e-maile w Twoim imieniu |
+| `https://www.googleapis.com/auth/gmail.modify` | Odczyt/zapis | Czytać, wysyłać, usuwać i zarządzać pocztą |
+| `https://www.googleapis.com/auth/calendar.readonly` | Tylko odczyt | Wyświetlać wydarzenia kalendarza |
+| `https://www.googleapis.com/auth/calendar` | Pełny dostęp | Tworzyć, edytować i usuwać wydarzenia kalendarza |
+| `https://www.googleapis.com/auth/userinfo.email` | Profil | Dostęp do Twojego adresu e-mail |
+| `https://www.googleapis.com/auth/userinfo.profile` | Profil | Dostęp do podstawowych informacji profilowych |
+| `openid` | Tożsamość | Weryfikacja tożsamości przez OpenID Connect |
+
+<Warning>
+  Unikaj przyznawania szerokich zakresów — takich jak `https://www.googleapis.com/auth/drive` czy `https://www.googleapis.com/auth/gmail.modify` — o ile w pełni nie ufasz aplikacji i nie masz jasnej potrzeby takiego poziomu dostępu. Zawsze preferuj najbardziej restrykcyjny zakres, który zaspokoi funkcjonalność aplikacji. Aplikacja, która potrzebuje tylko odczytu plików z Dysku, nigdy nie powinna żądać pełnego dostępu do zapisu na Dysku.
+</Warning>
+
+<Tip>
+  Budując własne aplikacje z API Google, kieruj się zasadą najmniejszych uprawnień: żądaj tylko tych zakresów, które Twoja aplikacja rzeczywiście potrzebuje. Buduje to zaufanie użytkowników i zmniejsza ryzyko bezpieczeństwa, gdyby poświadczenia Twojej aplikacji zostały kiedykolwiek naruszone.
+</Tip>
+
+## Uprawnienia administratora Workspace
+
+Jeśli zarządzasz organizacją Google Workspace, masz dodatkowe kontrole pozwalające regulować, do których aplikacji stron trzecich Twoi użytkownicy mogą łączyć swoje konta służbowe. Ustawienia te są zarządzane w **Konsoli administracyjnej Google**.
+
+<Steps>
+  <Step title="Otwórz Konsolę administracyjną">
+    Zaloguj się do [admin.google.com](https://admin.google.com) przy użyciu poświadczeń administratora Workspace.
+  </Step>
+  <Step title="Przejdź do Bezpieczeństwo → Kontrolki API">
+    Przejdź do **Bezpieczeństwo** → **Kontrola dostępu i danych** → **Kontrolki API**.
+  </Step>
+  <Step title="Zarządzaj dostępem aplikacji w całej domenie">
+    Kliknij **Zarządzaj dostępem aplikacji stron trzecich**, aby zobaczyć wszystkie aplikacje OAuth, z którymi użytkownicy w Twojej organizacji się połączyli.
+  </Step>
+  <Step title="Skonfiguruj ustawienia zaufania do aplikacji">
+    Dla każdej aplikacji możesz ustawić jej poziom zaufania:
+    - **Zaufana** — użytkownicy mogą przyznać dowolny żądany zakres
+    - **Ograniczona** — użytkownicy mogą przyznać dostęp tylko do usług Google oznaczonych jako nieograniczone
+    - **Zablokowana** — żaden użytkownik w organizacji nie może połączyć tej aplikacji
+  </Step>
+  <Step title="Ustaw domyślne wartości dla całej organizacji">
+    W sekcji **Kontrola dostępu aplikacji** skonfiguruj, czy użytkownicy mogą domyślnie przyznawać dostęp niezaufanym aplikacjom.
+  </Step>
+</Steps>
+
+| Kontrola administracyjna | Opis |
+|---|---|
+| **Poziom zaufania per aplikacja** | Granularnie zezwalaj lub blokuj poszczególne aplikacje OAuth dla organizacji |
+| **Delegacja w całej domenie** | Przyznaj kontom usługi dostęp w całej organizacji, aby działały w imieniu użytkowników |
+| **Domyślna kontrola dostępu aplikacji** | Ustaw politykę organizacyjną dla niezaufanych aplikacji stron trzecich |
+| **Dzienniki audytu** | Przejrzyj, którzy użytkownicy autoryzowali które aplikacje i kiedy |
+
+<Note>
+  Delegacja w całej domenie (DWD) daje kontu usługi możliwość podszywania się pod dowolnego użytkownika w Twojej organizacji. Używaj DWD tylko wtedy, gdy jest to absolutnie konieczne, i regularnie audytuj, którym kontom usługi przyznano ten poziom dostępu.
+</Note>

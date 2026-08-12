@@ -1,0 +1,134 @@
+---
+title: "Autenticação nas APIs do Google: Chaves, OAuth 2.0, Contas de Serviço"
+sidebarTitle: "Autenticação"
+description: "Autentique requisições às APIs do Google usando chaves de API para dados públicos, tokens Bearer OAuth 2.0 para dados de usuário ou contas de serviço para acesso servidor-a-servidor."
+---
+
+Toda requisição feita a uma API REST do Google precisa ser autenticada. O Google suporta três mecanismos principais de autenticação: chaves de API para acessar dados públicos, tokens Bearer OAuth 2.0 para agir em nome de um usuário e credenciais de conta de serviço para integrações servidor-a-servidor. Escolher o mecanismo certo depende de quais dados você precisa acessar e se um usuário humano está envolvido no fluxo.
+
+## Chaves de API
+
+Chaves de API são o método de autenticação mais simples. Elas identificam seu projeto para o Google, mas não carregam contexto de usuário, portanto só são adequadas para APIs que acessam **dados publicamente disponíveis** (como a Programmable Search API).
+
+Passe sua chave de API como um parâmetro de query `key` em cada requisição:
+
+```http
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**Exemplo com curl:**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  Gere e gerencie suas chaves de API no [Console do Google Cloud](https://console.cloud.google.com/apis/credentials). Restrinja cada chave a APIs específicas e URLs de referrer para limitar o impacto caso ela seja exposta.
+</Tip>
+
+## Tokens Bearer OAuth 2.0
+
+Quando sua aplicação precisa acessar ou modificar **dados pertencentes ao usuário** — como arquivos no Google Drive, mensagens do Gmail ou eventos do Calendar — você deve usar OAuth 2.0. Depois que o usuário conclui o fluxo de consentimento OAuth, sua aplicação recebe um token de acesso que você inclui no header `Authorization` de cada requisição.
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Tokens de acesso expiram após **3600 segundos (1 hora)** por padrão. Sua aplicação deve armazenar o refresh token que acompanha e usá-lo para obter um novo token de acesso sem solicitar novamente ao usuário. Consulte [Renovação de Token](#token-refresh) abaixo para detalhes.
+
+**Exemplo com curl:**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## Credenciais de Conta de Serviço
+
+Contas de serviço são contas Google especiais que pertencem a uma aplicação em vez de a um usuário individual. Elas são projetadas para cenários **servidor-a-servidor** — por exemplo, um job de backend que lê do Google Sheets em um agendamento sem qualquer interação do usuário.
+
+Para autenticar como uma conta de serviço:
+
+1. No [Console do Google Cloud](https://console.cloud.google.com/iam-admin/serviceaccounts), crie uma conta de serviço e baixe seu arquivo JSON de chave.
+2. Conceda à conta de serviço as funções (roles) do IAM de que ela precisa (por exemplo, `roles/drive.reader`).
+3. Use uma biblioteca de cliente do Google ou um JWT assinado para trocar a chave por um token de acesso de curta duração.
+
+**Exemplo: trocar uma chave de conta de serviço por um token de acesso usando curl**
+
+```bash
+# 1. Install the google-auth-library or use the oauth2 token endpoint directly.
+# Below shows the two-legged JWT flow at its simplest using Python's google-auth library.
+# Install: pip install google-auth requests
+
+python3 - <<'EOF'
+from google.oauth2 import service_account
+import google.auth.transport.requests
+
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+credentials = service_account.Credentials.from_service_account_file(
+    "service-account-key.json", scopes=SCOPES
+)
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
+print("Access token:", credentials.token)
+EOF
+```
+
+Depois de obter o token de acesso, passe-o como um token Bearer exatamente como faria com OAuth 2.0:
+
+```bash
+curl -H "Authorization: Bearer ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+<Warning>
+  Armazene seu arquivo JSON de chave da conta de serviço com segurança e nunca o commite no controle de versão. Rotacione as chaves imediatamente se suspeitar que foram expostas.
+</Warning>
+
+## Escopos
+
+Os escopos do OAuth 2.0 definem exatamente quais permissões um token de acesso concede. Você solicita escopos durante a etapa de autorização, e o usuário os vê listados na tela de consentimento do Google. Solicite apenas os escopos de que sua aplicação realmente precisa — solicitar escopos amplos demais mina a confiança do usuário e pode ser rejeitado durante a verificação do app.
+
+| Escopo | Acesso concedido |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | Acesso somente leitura a todos os arquivos no Google Drive do usuário. |
+| `https://www.googleapis.com/auth/drive` | Acesso total de leitura e escrita ao Google Drive do usuário. |
+| `https://www.googleapis.com/auth/gmail.readonly` | Acesso somente leitura às mensagens e configurações do Gmail do usuário. |
+| `https://www.googleapis.com/auth/calendar` | Acesso total de leitura e escrita ao Google Calendar do usuário. |
+| `openid` | Autentica o usuário e recupera um ID de usuário estável via OpenID Connect. |
+| `email` | Acessa o endereço de e-mail principal da conta Google do usuário. |
+| `profile` | Acessa as informações básicas de perfil do usuário (nome, foto, locale). |
+
+## Renovação de Token
+
+Quando um token de acesso expira, troque seu refresh token por um novo enviando uma requisição `POST` ao endpoint de token do Google:
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+Uma resposta bem-sucedida contém o novo token de acesso junto com sua expiração:
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| Campo | Descrição |
+|-------|-------------|
+| `access_token` | O novo token Bearer a ser usado em requisições subsequentes à API. |
+| `expires_in` | Segundos até o token expirar (tipicamente `3600`). |
+| `token_type` | Sempre `"Bearer"`. |
+
+Armazene o novo `access_token` e substitua o anterior na sua aplicação. O próprio refresh token permanece válido até que o usuário revogue o acesso ou ele seja invalidado pelo Google.
+
+<Warning>
+  Nunca incorpore seu `client_secret` do OAuth em código do lado do cliente (bundles de JavaScript, apps móveis ou repositórios públicos). Se exposto, um atacante pode se passar pela sua aplicação, sequestrar fluxos OAuth e acessar dados de usuários em seu nome. Sempre realize a troca de token em um servidor de backend seguro.
+</Warning>

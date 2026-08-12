@@ -1,0 +1,126 @@
+---
+title: "Programmable Search API：查询并获取结果"
+sidebarTitle: "Search API"
+description: "通过 GET /customsearch/v1 查询 Google Programmable Search Engine，接收包含标题、URL 和摘要的结构化 JSON 结果。"
+---
+
+Google Programmable Search API 让你将自定义的网络搜索嵌入到应用程序中。通过在 [Programmable Search Engine 控制面板](https://programmablesearchengine.google.com/) 中创建搜索引擎，你可以定义引擎覆盖哪些站点或整个网络。然后，你只需通过简单的 `GET` 请求查询该引擎，即可接收结构化的 JSON 结果——标题、URL 和摘要——你可以按自己喜欢的方式渲染它们。
+
+## 端点
+
+```http
+GET https://www.googleapis.com/customsearch/v1
+```
+
+身份验证通过将 API 密钥作为 `key` 查询参数传递来处理。此端点无需 OAuth 令牌。
+
+## 查询参数
+
+<ParamField query="q" type="string" required>
+  搜索查询字符串。请对空格和特殊字符进行 URL 编码（例如 `climate+change` 或 `climate%20change`）。
+</ParamField>
+
+<ParamField query="key" type="string" required>
+  你的项目的 API 密钥。在 [Google Cloud Console](https://console.cloud.google.com/apis/credentials) 中生成一个。
+</ParamField>
+
+<ParamField query="cx" type="string" required>
+  你的 Programmable Search Engine 的唯一标识符。可以在你搜索引擎的设置页面的 "Search engine ID" 下找到。
+</ParamField>
+
+<ParamField query="num" type="integer">
+  每页返回的结果数。可接受的值为 `1` 到 `10`。默认值为 `10`。
+</ParamField>
+
+<ParamField query="start" type="integer">
+  返回第一个结果的索引，用于分页。默认值为 `1`。最大值为 `91`（返回结果 91–100）。详情参见 [分页](#pagination)。
+</ParamField>
+
+<ParamField query="lr" type="string">
+  将结果限制为以特定语言编写的文档。传入以 `lang_` 为前缀的语言代码，例如 `lang_en` 表示英语，`lang_fr` 表示法语。
+</ParamField>
+
+<ParamField query="safe" type="string">
+  启用 SafeSearch 过滤。传入 `active` 以过滤露骨内容，或传入 `off` 以禁用过滤。默认值为 `off`。
+</ParamField>
+
+## 示例请求
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=5"
+```
+
+## 示例响应
+
+```json
+{
+  "kind": "customsearch#search",
+  "searchInformation": {
+    "totalResults": "12400000",
+    "searchTime": 0.248
+  },
+  "items": [
+    {
+      "title": "Climate Change Overview",
+      "link": "https://example.com/climate",
+      "snippet": "An overview of current climate change research and its global implications for ecosystems and economies."
+    },
+    {
+      "title": "What Is Climate Change? — NASA",
+      "link": "https://climate.nasa.gov/what-is-climate-change/",
+      "snippet": "NASA's guide to the science, causes, and projected impacts of climate change."
+    }
+  ]
+}
+```
+
+## 响应字段
+
+<ResponseField name="kind" type="string">
+  标识返回资源的类型。对于搜索响应，其值始终为 `"customsearch#search"`。
+</ResponseField>
+
+<ResponseField name="searchInformation.totalResults" type="string">
+  与查询匹配的估算总结果数，以字符串形式返回。这是一个近似值，不同请求之间可能会有所不同。
+</ResponseField>
+
+<ResponseField name="searchInformation.searchTime" type="number">
+  Google 处理该查询所花费的时间，以秒为单位。
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  搜索结果对象的数组。如果没有找到结果，此数组不存在。
+</ResponseField>
+
+<ResponseField name="items[].title" type="string">
+  网页在搜索结果中显示的标题。
+</ResponseField>
+
+<ResponseField name="items[].link" type="string">
+  结果页面的完整 URL。
+</ResponseField>
+
+<ResponseField name="items[].snippet" type="string">
+  页面内容的简短摘录，展示查询词在上下文中的呈现方式。
+</ResponseField>
+
+## 分页
+
+Programmable Search API 每次请求最多返回 **10 条结果**，每个查询最多支持 **100 条结果**（结果 1–100）。要翻页浏览结果，将 `start` 按 `num` 的值递增：
+
+| 页 | `start` | `num` |
+|------|---------|-------|
+| 1 | 1 | 10 |
+| 2 | 11 | 10 |
+| 3 | 21 | 10 |
+| … | … | … |
+| 10 | 91 | 10 |
+
+```bash
+# Fetch the second page of results
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=10&start=11"
+```
+
+<Note>
+  位置 100 之后的结果无法通过 API 访问。如果你的用例需要更深层的分页，可考虑用额外的词语或过滤条件精化查询，以便在前 100 条内呈现最相关的结果。
+</Note>

@@ -1,0 +1,109 @@
+---
+title: "REST API Google: przegląd i przewodnik startowy"
+sidebarTitle: "Przegląd"
+description: "Wprowadzenie do REST API Google: adresy bazowe, wersjonowanie, format żądań i odpowiedzi, limity szybkości oraz obsługa błędów dla wszystkich usług."
+---
+
+Google udostępnia szeroki zestaw REST API, które napędzają wszystko — od wyszukiwarki i produktywności po infrastrukturę chmurową i uczenie maszynowe. Niezależnie od tego, czy budujesz aplikację webową, klienta mobilnego czy usługę backendową, te API dają Ci programistyczny dostęp do platformy Google za pomocą standardowych żądań HTTP i JSON. Ten przewodnik omawia podstawowe koncepcje, które musisz znać przed wykonaniem pierwszego wywołania.
+
+## Adres bazowy
+
+Wszystkie REST API Google są udostępniane pod wspólnym adresem bazowym:
+
+```text
+https://www.googleapis.com
+```
+
+Niektóre API mają dedykowane nazwy hostów (np. `https://people.googleapis.com`), ale większość stosuje wzorzec `https://www.googleapis.com/{api}/{version}/{resource}`.
+
+## Wersjonowanie API
+
+Interfejsy API Google używają **wersjonowania w ścieżce**. Segment wersji pojawia się bezpośrednio po nazwie API w ścieżce URL, na przykład:
+
+| API | Prefiks endpointu z wersją |
+|-----|-----------------------------|
+| Custom Search | `https://www.googleapis.com/customsearch/v1` |
+| Drive | `https://www.googleapis.com/drive/v3` |
+| OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |
+
+Gdy Google wydaje nową główną wersję, poprzednia pozostaje dostępna pod swoją oryginalną ścieżką aż do ogłoszenia oficjalnego terminu wycofania. W przypadku nowych integracji zawsze celuj w najnowszą stabilną wersję.
+
+## Format żądania
+
+Każde wywołanie API musi spełniać następujące konwencje:
+
+- **Metoda** — użyj czasownika HTTP odpowiedniego do operacji (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`).
+- **Typ zawartości** — dołącz `Content-Type: application/json` w żądaniach z ciałem.
+- **Autoryzacja** — przekaż poświadczenia w nagłówku `Authorization` jako token Bearer lub przez parametr zapytania `key` w żądaniach uwierzytelnianych kluczem API:
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+```
+
+- **Ciało** — ciała żądań muszą być prawidłowym JSON-em. Wartości logiczne powinny być `true`/`false` (nie ciągami), a znaczniki czasu powinny być w formacie RFC 3339.
+
+## Format odpowiedzi
+
+Pomyślne odpowiedzi zwracają kody stanu HTTP `2xx` oraz ciało JSON. Większość endpointów kolekcji używa standardowej koperty:
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "items": [
+    { "id": "1BxiM...", "name": "Report.pdf" }
+  ]
+}
+```
+
+- **`kind`** — ciąg znaków z przestrzenią nazw identyfikujący typ zasobu (np. `customsearch#search`, `drive#file`).
+- **`items`** — tablica obiektów zasobów zwracana przez operacje listujące.
+- **`nextPageToken`** — obecne, gdy istnieją kolejne strony wyników; przekaż je jako `pageToken` w następnym żądaniu.
+
+## Limity szybkości
+
+Limity szybkości różnią się w zależności od API i są egzekwowane per projekt i per użytkownik. Po przekroczeniu limitu API zwraca HTTP `429 Too Many Requests`. Powinieneś zaimplementować w kliencie wykładnicze wycofywanie i logikę ponawiania.
+
+<Tip>
+  Zobacz [przewodnik rozwiązywania problemów](/help/troubleshooting), aby poznać rekomendowane strategie ponawiania i wskazówki dotyczące występowania o zwiększenie limitów dla obciążeń o dużym wolumenie.
+</Tip>
+
+## Odpowiedzi błędów
+
+Wszystkie błędy API mają spójną strukturę JSON, dzięki czemu ich parsowanie i obsługa programowa są proste:
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+| Pole | Opis |
+|-------|-------------|
+| `error.code` | Kod stanu HTTP błędu. |
+| `error.message` | Czytelny dla człowieka opis tego, co poszło nie tak. |
+| `error.status` | Czytelny maszynowo ciąg kodu błędu. |
+
+Typowe wartości statusu obejmują `PERMISSION_DENIED`, `NOT_FOUND`, `INVALID_ARGUMENT`, `UNAUTHENTICATED` i `RESOURCE_EXHAUSTED`.
+
+## Poznaj API
+
+<CardGroup cols={2}>
+  <Card title="Uwierzytelnianie" icon="key" href="/api/authentication">
+    Dowiedz się, jak uwierzytelniać się za pomocą kluczy API, tokenów OAuth 2.0 i kont usługi.
+  </Card>
+  <Card title="Search API" icon="magnifying-glass" href="/api/search">
+    Odpytuj swój Programmable Search Engine i pobieraj ustrukturyzowane wyniki z sieci.
+  </Card>
+  <Card title="Accounts API" icon="user" href="/api/accounts">
+    Pobieraj profil, adres e-mail i dane tożsamości uwierzytelnionego użytkownika.
+  </Card>
+  <Card title="Webhooki" icon="webhook" href="/api/webhooks">
+    Subskrybuj powiadomienia push o zmianach zasobów w czasie rzeczywistym.
+  </Card>
+</CardGroup>

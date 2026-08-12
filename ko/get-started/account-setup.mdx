@@ -1,0 +1,58 @@
+---
+title: "Google 계정 설정: API 활성화 및 자격 증명 발급"
+sidebarTitle: "계정 설정"
+description: "Google 계정을 만들고, Cloud Console 프로젝트를 설정하고, 원하는 API를 활성화하고, 애플리케이션을 인증하기 위한 자격 증명을 생성하세요."
+---
+
+Google의 개발자 API를 사용하기 전에, Google 계정과 리소스를 담을 Cloud 프로젝트, 그리고 애플리케이션이 인증에 사용할 자격 증명 세트가 필요합니다. 이 가이드는 첫 API 호출을 준비할 수 있도록 각 단계를 안내합니다.
+
+## 설정 단계
+
+<Steps>
+  <Step title="Google 계정 만들기">
+    아직 Google 계정이 없다면 [accounts.google.com/signup](https://accounts.google.com/signup)으로 이동해 등록 양식을 완료하세요. Google 계정은 Cloud Console, Gmail, Drive 및 모든 개발자 API를 포함해 모든 Google 서비스에 대한 접근을 제공합니다.
+  </Step>
+  <Step title="Google Cloud Console로 이동">
+    [Google Cloud Console](https://console.cloud.google.com)로 이동해 Google 계정으로 로그인하세요. Console은 Google Cloud 프로젝트를 관리하고, API를 활성화하고, 자격 증명을 만들기 위한 중앙 허브입니다.
+  </Step>
+  <Step title="프로젝트 만들기">
+    1. Console 페이지 상단의 프로젝트 선택기를 클릭하세요.
+    2. **새 프로젝트**를 클릭하세요.
+    3. 서술적인 **프로젝트 이름**(예: `my-search-app`)을 입력하세요.
+    4. 요청되면 **결제 계정**을 선택한 다음 **만들기**를 클릭하세요.
+
+    생성하는 모든 API와 자격 증명은 이 프로젝트로 범위가 지정되므로, 각 애플리케이션에 대해 사용량과 결제를 별도로 쉽게 관리할 수 있습니다.
+  </Step>
+  <Step title="API 활성화">
+    1. 왼쪽 탐색에서 **APIs & Services → Library**로 이동하세요.
+    2. 사용하려는 API(예: **Custom Search API**, **Maps JavaScript API**, **Gmail API**)를 검색하세요.
+    3. API 이름을 클릭한 다음 **Enable**을 클릭하세요.
+
+    애플리케이션이 필요로 하는 모든 Google API에 대해 이 단계를 반복하세요. 활성화된 API만 자격 증명으로부터 요청을 받을 수 있습니다.
+  </Step>
+  <Step title="자격 증명 만들기 (API 키)">
+    1. **APIs & Services → Credentials**로 이동하세요.
+    2. **Create Credentials**를 클릭하고 **API key**를 선택하세요.
+    3. Google이 즉시 새 API 키를 생성합니다. **Copy**를 클릭해 클립보드로 복사하세요.
+    4. 선택적으로 **Edit API key**를 클릭해 키를 특정 API 또는 HTTP 리퍼러와 IP 주소로 제한하세요 — 프로덕션 용도에는 강력히 권장됩니다.
+
+    API 키를 환경 변수나 시크릿 매니저 같은 안전한 위치에 보관하세요.
+  </Step>
+</Steps>
+
+<Note>
+  **API 키를 비밀로 유지하세요.** API 키를 절대 소스 관리 시스템에 커밋하거나 클라이언트 측 코드에 노출하지 마세요. 키가 노출되면 Cloud Console의 **APIs & Services → Credentials**로 이동해 영향을 받은 키를 삭제하고 즉시 새 키를 생성하세요.
+</Note>
+
+## 다음 단계
+
+이제 계정과 자격 증명이 설정되었으므로 구축을 시작할 준비가 되었습니다.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    첫 API 호출을 하고 몇 분 안에 실시간 검색 결과를 확인하세요
+  </Card>
+  <Card title="Authentication" icon="lock" href="/api/authentication">
+    API 키, OAuth 2.0, 서비스 계정에 대해 알아보세요
+  </Card>
+</CardGroup>

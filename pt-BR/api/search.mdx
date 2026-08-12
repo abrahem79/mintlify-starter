@@ -1,0 +1,126 @@
+---
+title: "API Programmable Search: Consulte e Recupere Resultados"
+sidebarTitle: "API de Pesquisa"
+description: "Consulte um Google Programmable Search Engine via GET /customsearch/v1 e receba resultados JSON estruturados, incluindo títulos, URLs e snippets."
+---
+
+A API Google Programmable Search permite incorporar pesquisa web personalizada em sua aplicação. Criando um mecanismo de pesquisa no [painel de controle do Programmable Search Engine](https://programmablesearchengine.google.com/), você define quais sites — ou a web inteira — seu mecanismo cobre. Você então consulta esse mecanismo por meio de uma simples requisição `GET` e recebe resultados JSON estruturados — títulos, URLs e snippets — que você pode renderizar da forma que preferir.
+
+## Endpoint
+
+```http
+GET https://www.googleapis.com/customsearch/v1
+```
+
+A autenticação é feita por uma chave de API passada como o parâmetro de query `key`. Nenhum token OAuth é necessário para esse endpoint.
+
+## Parâmetros de Query
+
+<ParamField query="q" type="string" required>
+  A string da consulta de pesquisa. Codifique espaços e caracteres especiais na URL (por exemplo, `climate+change` ou `climate%20change`).
+</ParamField>
+
+<ParamField query="key" type="string" required>
+  A chave de API do seu projeto. Gere uma no [Console do Google Cloud](https://console.cloud.google.com/apis/credentials).
+</ParamField>
+
+<ParamField query="cx" type="string" required>
+  O identificador único do seu Programmable Search Engine. Encontre isso na página de configuração do seu mecanismo em "Search engine ID".
+</ParamField>
+
+<ParamField query="num" type="integer">
+  O número de resultados a retornar por página. Os valores aceitos são de `1` a `10`. O padrão é `10`.
+</ParamField>
+
+<ParamField query="start" type="integer">
+  O índice do primeiro resultado a retornar, usado para paginação. O padrão é `1`. O valor máximo é `91` (resultando em resultados 91–100). Veja [Paginação](#pagination) para detalhes.
+</ParamField>
+
+<ParamField query="lr" type="string">
+  Restringe os resultados a documentos escritos em um idioma específico. Passe um código de idioma prefixado com `lang_`, por exemplo `lang_en` para inglês ou `lang_fr` para francês.
+</ParamField>
+
+<ParamField query="safe" type="string">
+  Habilita a filtragem SafeSearch. Passe `active` para filtrar conteúdo explícito, ou `off` para desabilitar a filtragem. O padrão é `off`.
+</ParamField>
+
+## Exemplo de Requisição
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=5"
+```
+
+## Exemplo de Resposta
+
+```json
+{
+  "kind": "customsearch#search",
+  "searchInformation": {
+    "totalResults": "12400000",
+    "searchTime": 0.248
+  },
+  "items": [
+    {
+      "title": "Climate Change Overview",
+      "link": "https://example.com/climate",
+      "snippet": "An overview of current climate change research and its global implications for ecosystems and economies."
+    },
+    {
+      "title": "What Is Climate Change? — NASA",
+      "link": "https://climate.nasa.gov/what-is-climate-change/",
+      "snippet": "NASA's guide to the science, causes, and projected impacts of climate change."
+    }
+  ]
+}
+```
+
+## Campos da Resposta
+
+<ResponseField name="kind" type="string">
+  Identifica o tipo de recurso retornado. Para respostas de pesquisa, é sempre `"customsearch#search"`.
+</ResponseField>
+
+<ResponseField name="searchInformation.totalResults" type="string">
+  O número total estimado de resultados que correspondem à consulta, retornado como uma string. Isso é uma aproximação e pode variar entre requisições.
+</ResponseField>
+
+<ResponseField name="searchInformation.searchTime" type="number">
+  O tempo que o Google levou para processar a consulta, em segundos.
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  Um array de objetos de resultado de pesquisa. Esse array está ausente se nenhum resultado for encontrado.
+</ResponseField>
+
+<ResponseField name="items[].title" type="string">
+  O título da página web como aparece nos resultados da pesquisa.
+</ResponseField>
+
+<ResponseField name="items[].link" type="string">
+  A URL completa da página do resultado.
+</ResponseField>
+
+<ResponseField name="items[].snippet" type="string">
+  Um trecho curto do conteúdo da página que mostra como os termos da consulta aparecem em contexto.
+</ResponseField>
+
+## Paginação
+
+A API Programmable Search retorna no máximo **10 resultados por requisição** e suporta até **100 resultados no total** por consulta (resultados 1–100). Para paginar pelos resultados, incremente `start` pelo valor de `num`:
+
+| Página | `start` | `num` |
+|------|---------|-------|
+| 1 | 1 | 10 |
+| 2 | 11 | 10 |
+| 3 | 21 | 10 |
+| … | … | … |
+| 10 | 91 | 10 |
+
+```bash
+# Fetch the second page of results
+curl "https://www.googleapis.com/customsearch/v1?q=climate+change&key=YOUR_API_KEY&cx=YOUR_CX&num=10&start=11"
+```
+
+<Note>
+  Resultados além da posição 100 não são acessíveis pela API. Se seu caso de uso exigir paginação mais profunda, considere refinar a consulta com termos ou filtros adicionais para trazer os resultados mais relevantes dentro dos primeiros 100.
+</Note>

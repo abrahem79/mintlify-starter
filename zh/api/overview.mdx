@@ -1,0 +1,109 @@
+---
+title: "Google REST API：概览与入门指南"
+sidebarTitle: "概览"
+description: "介绍 Google 的 REST API：所有服务的基础 URL、版本控制、请求和响应格式、速率限制以及错误处理。"
+---
+
+Google 提供了一整套广泛的 REST API，涵盖从搜索和生产力到云基础设施和机器学习的方方面面。无论你是在构建网页应用、移动客户端还是后端服务，这些 API 都可让你通过标准 HTTP 请求和 JSON 以编程方式访问 Google 的平台。本指南涵盖你在发起第一次调用之前需要了解的基础概念。
+
+## 基础 URL
+
+所有 Google REST API 都由一个共同的基础 URL 提供服务：
+
+```text
+https://www.googleapis.com
+```
+
+某些 API 有专用主机名（例如 `https://people.googleapis.com`），但大多数遵循 `https://www.googleapis.com/{api}/{version}/{resource}` 的模式。
+
+## API 版本控制
+
+Google API 使用**基于路径的版本控制**。版本段紧接着 URL 路径中 API 名称之后出现，例如：
+
+| API | 带版本的端点前缀 |
+|-----|-----------------------------|
+| Custom Search | `https://www.googleapis.com/customsearch/v1` |
+| Drive | `https://www.googleapis.com/drive/v3` |
+| OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |
+
+当 Google 发布新的主版本时，先前版本仍在其原始路径上可用，直到宣布正式的弃用截止日期。对于新集成，请始终使用最新的稳定版本。
+
+## 请求格式
+
+每个 API 调用都必须遵循以下约定：
+
+- **方法** —— 使用与操作相符的 HTTP 动词（`GET`、`POST`、`PUT`、`PATCH`、`DELETE`）。
+- **内容类型** —— 在携带请求体的请求上包含 `Content-Type: application/json`。
+- **授权** —— 在 `Authorization` 头中作为 Bearer 令牌传递凭据，或通过 `key` 查询参数用于 API 密钥认证的请求：
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+```
+
+- **请求体** —— 请求体必须是有效的 JSON。布尔值应为 `true`/`false`（而非字符串），时间戳应遵循 RFC 3339 格式。
+
+## 响应格式
+
+成功的响应返回 HTTP `2xx` 状态码和 JSON 响应体。大多数集合端点遵循标准封装：
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "items": [
+    { "id": "1BxiM...", "name": "Report.pdf" }
+  ]
+}
+```
+
+- **`kind`** —— 标识资源类型的命名空间字符串（例如 `customsearch#search`、`drive#file`）。
+- **`items`** —— 列表操作返回的资源对象数组。
+- **`nextPageToken`** —— 当存在更多结果分页时提供；在下一个请求中作为 `pageToken` 传递。
+
+## 速率限制
+
+速率限制因 API 而异，并按项目和用户强制执行。当你超出限制时，API 会返回 HTTP `429 Too Many Requests`。你应在客户端中实现指数退避和重试逻辑。
+
+<Tip>
+  请参阅[故障排查指南](/help/troubleshooting)，了解推荐的重试策略以及针对大流量工作负载申请配额提升的指导。
+</Tip>
+
+## 错误响应
+
+所有 API 错误都遵循一致的 JSON 结构，便于以编程方式解析和处理：
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+| 字段 | 描述 |
+|-------|-------------|
+| `error.code` | 错误对应的 HTTP 状态码。 |
+| `error.message` | 对出错原因的可读描述。 |
+| `error.status` | 机器可读的错误代码字符串。 |
+
+常见的 status 值包括 `PERMISSION_DENIED`、`NOT_FOUND`、`INVALID_ARGUMENT`、`UNAUTHENTICATED` 和 `RESOURCE_EXHAUSTED`。
+
+## 探索 API
+
+<CardGroup cols={2}>
+  <Card title="身份验证" icon="key" href="/api/authentication">
+    了解如何使用 API 密钥、OAuth 2.0 令牌和服务账户进行身份验证。
+  </Card>
+  <Card title="搜索 API" icon="magnifying-glass" href="/api/search">
+    查询你的可编程搜索引擎并检索结构化的网页结果。
+  </Card>
+  <Card title="账户 API" icon="user" href="/api/accounts">
+    检索已认证用户的个人资料、邮箱和身份数据。
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api/webhooks">
+    订阅推送通知，实时接收资源变更事件。
+  </Card>
+</CardGroup>

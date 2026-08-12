@@ -1,0 +1,153 @@
+---
+title: "Google API の Webhook: プッシュ通知の購読"
+sidebarTitle: "Webhooks"
+description: "ファイルやリソースが作成、更新、削除されたときにリアルタイムで Webhook コールバックを受け取るために、Google Drive のプッシュ通知チャネルを登録します。"
+---
+
+リソースが変更されたかどうかを繰り返しポーリングする代わりに、Google のプッシュ通知システムを使って、変更が発生した瞬間に Google からあなたのサーバーを呼び出させることができます。制御下にある HTTPS エンドポイントを指す **watch チャネル**を登録すると、監視対象のリソースが作成、更新、削除されるたびに、Google がそのエンドポイントに `POST` リクエストを送ります。プッシュ通知は、Google Drive、Gmail、Calendar、その他いくつかの API で利用できます。
+
+<Warning>
+  Webhook エンドポイントは、有効な証明書を持つ HTTPS で提供される**必要があります**。Google はプレーンな HTTP URL には通知を配信しません。さらに、エンドポイントは **10 秒以内**に HTTP `200 OK` で応答する必要があります — タイムアウトした応答は失敗として扱われ、そのチャネルへの通知配信が停止する原因になる場合があります。
+</Warning>
+
+---
+
+## プッシュ通知の仕組み
+
+フローは 4 つのステップで動作します:
+
+1. **登録** — アプリケーションが監視対象リソースの `watch` メソッドを呼び出し、エンドポイント URL と一意のチャネル ID を提供します。
+2. **同期** — Google が初期通知(`X-Goog-Resource-State: sync`)でチャネルを確認します。
+3. **受信** — リソースが変更されるたびに、Google がエンドポイントに `POST` リクエストを送信します。
+4. **更新または停止** — チャネルには有効期限があります。有効期限前に再登録するか、不要になったら明示的に停止する必要があります。
+
+---
+
+## Watch チャネルを登録する
+
+以下の例は、Google Drive 内のすべてのファイルに対する watch を登録します。他の API も、異なるエンドポイントパスで同じパターンに従います。
+
+**エンドポイント**
+
+```http
+POST https://www.googleapis.com/drive/v3/files/watch
+```
+
+### リクエストボディパラメーター
+
+<ParamField body="id" type="string" required>
+  このチャネルを識別するために生成する UUID などの一意の文字列。Google はすべての通知でこの値をエコーバックするので、正しいハンドラーにルーティングできます。
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  通知の配信メカニズム。HTTPS プッシュ配信の場合は `"web_hook"` を指定する必要があります。
+</ParamField>
+
+<ParamField body="address" type="string" required>
+  Webhook エンドポイントの完全修飾 HTTPS URL。Google はこの URL に通知を `POST` します。
+</ParamField>
+
+<ParamField body="expiration" type="integer">
+  チャネルの有効期限を指定する Unix タイムスタンプ(**ミリ秒**単位)。省略すると、Google はデフォルトの有効期限(通常は最大 7 日)を適用します。通知の欠落を避けるため、この時間より前にチャネルを再登録する必要があります。
+</ParamField>
+
+### リクエスト例
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1893456000000
+  }'
+```
+
+### レスポンス例
+
+```json
+{
+  "kind": "api#channel",
+  "id": "my-channel-01",
+  "resourceId": "o3hgv1538sdjfh",
+  "resourceUri": "https://www.googleapis.com/drive/v3/files?...",
+  "expiration": "1893456000000"
+}
+```
+
+`resourceId` の値は保存しておいてください — 後でチャネルを停止する際に必要になります。
+
+---
+
+## 受信リクエストのヘッダー
+
+Google がエンドポイントに通知を配信するとき、`POST` リクエストには以下のカスタムヘッダーが含まれます:
+
+| ヘッダー | 説明 |
+|--------|-------------|
+| `X-Goog-Channel-ID` | 登録時に指定したチャネル `id`。どの watch が通知をトリガーしたかを識別するために使用します。 |
+| `X-Goog-Resource-State` | 発生した変更のタイプ。よくある値: `sync`(初回確認)、`add`、`update`、`remove`、`trash`、`untrash`、`change`。 |
+| `X-Goog-Changed` | 変更されたプロパティのカンマ区切りリスト(例: `content,properties`)。`update` 通知に付与されます。 |
+| `X-Goog-Resource-ID` | 監視対象リソースに対する Google 内部の識別子。 |
+| `X-Goog-Resource-URI` | 変更されたリソースの API URL。 |
+| `X-Goog-Message-Number` | チャネル上の各メッセージに対して単調増加する整数。sync メッセージは常に `1` です。 |
+
+<Note>
+  通知ボディは意図的に**空**です — Google は何かが変更されたことを伝えますが、何が変わったかは伝えません。`X-Goog-Resource-URI` ヘッダーを使ってフォローアップ API リクエストを行い、更新されたリソースを取得してください。
+</Note>
+
+---
+
+## チャネルを停止する
+
+通知の受信を停止し、有効期限前にチャネルを解放するには、stop エンドポイントに `POST` リクエストを送信します:
+
+```http
+POST https://www.googleapis.com/drive/v3/channels/stop
+```
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/channels/stop" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-01",
+    "resourceId": "o3hgv1538sdjfh"
+  }'
+```
+
+成功レスポンスは HTTP `204 No Content` を空のボディとともに返します。チャネルの停止後、Google はそのチャネルに対する通知配信を直ちに停止します。
+
+---
+
+## チャネルの有効期限と更新
+
+すべての watch チャネルには有効期限があります — 指定した `expiration` タイムスタンプ、または Google 自身の最大値(API により異なる)のいずれかで期限切れになります。チャネルが期限切れになると、Google は通知の送信を停止し、新しいチャネルを登録するまで変更を見逃すことになります。
+
+**推奨される更新戦略:**
+
+1. 各チャネルを登録した際に返される `expiration` の値を保存します。
+2. 有効期限の**少なくとも 24 時間前**にチャネルを再登録するジョブをスケジュールします。
+3. 新しいチャネルの登録に成功したら、古いチャネルを停止します。
+
+```bash
+# 新しいチャネル ID と更新された有効期限で再登録
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files/watch" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "my-channel-02",
+    "type": "web_hook",
+    "address": "https://yourdomain.com/webhook",
+    "expiration": 1925000000000
+  }'
+```
+
+<Tip>
+  一意のチャネル ID を生成するには、UUID ジェネレーター(macOS/Linux の `uuidgen` など)を使用してください。以前のチャネルが停止する前に ID を再利用すると、競合や重複通知の原因になる可能性があります。
+</Tip>

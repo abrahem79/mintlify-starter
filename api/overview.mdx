@@ -1,7 +1,7 @@
 ---
-title: "Google REST API: Overview and Getting Started"
+title: "Google REST APIs: Overview and Getting Started Guide"
 sidebarTitle: "Overview"
-description: "Introduction to Google's REST APIs. Learn about base URLs, versioning, request format, response structure, and error handling."
+description: "Introduction to Google's REST APIs: base URLs, versioning, request and response format, rate limits, and error handling for all services."
 ---
 
 Google exposes a broad suite of REST APIs that power everything from search and productivity to cloud infrastructure and machine learning. Whether you're building a web app, a mobile client, or a backend service, these APIs give you programmatic access to Google's platform using standard HTTP requests and JSON. This guide covers the foundational concepts you need before making your first call.
@@ -10,7 +10,7 @@ Google exposes a broad suite of REST APIs that power everything from search and 
 
 All Google REST APIs are served from a common base URL:
 
-```
+```text
 https://www.googleapis.com
 ```
 
@@ -21,7 +21,7 @@ Some APIs have dedicated hostnames (for example, `https://people.googleapis.com`
 Google APIs use **path-based versioning**. The version segment appears immediately after the API name in the URL path, for example:
 
 | API | Versioned endpoint prefix |
-|-----|--------------------------|
+|-----|-----------------------------|
 | Custom Search | `https://www.googleapis.com/customsearch/v1` |
 | Drive | `https://www.googleapis.com/drive/v3` |
 | OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |

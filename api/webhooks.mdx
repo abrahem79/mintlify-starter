@@ -1,7 +1,7 @@
 ---
 title: "Google API Webhooks: Subscribe to Push Notifications"
 sidebarTitle: "Webhooks"
-description: "Use Google's push notification (webhook) system to receive real-time updates when resources change in Drive, Gmail, or Calendar."
+description: "Register Google Drive push notification channels to receive real-time webhook callbacks when files or resources are created, updated, or deleted."
 ---
 
 Instead of repeatedly polling the API to check whether a resource has changed, you can use Google's push notification system to have Google call your server the moment a change occurs. You register a **watch channel** that points to an HTTPS endpoint you control; Google then sends `POST` requests to that endpoint whenever the watched resource is created, updated, or deleted. Push notifications are available for Google Drive, Gmail, Calendar, and several other APIs.
@@ -29,7 +29,7 @@ The example below registers a watch on all files in Google Drive. Other APIs fol
 
 **Endpoint**
 
-```
+```http
 POST https://www.googleapis.com/drive/v3/files/watch
 ```
 
@@ -105,7 +105,7 @@ When Google delivers a notification to your endpoint, the `POST` request include
 
 To stop receiving notifications and release the channel before it expires, send a `POST` request to the stop endpoint:
 
-```
+```http
 POST https://www.googleapis.com/drive/v3/channels/stop
 ```
 

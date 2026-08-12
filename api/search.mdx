@@ -1,14 +1,14 @@
 ---
 title: "Programmable Search API: Query and Retrieve Results"
 sidebarTitle: "Search API"
-description: "Use the Google Programmable Search API to query a custom search engine and retrieve structured web results. Accepts GET requests with key and cx parameters."
+description: "Query a Google Programmable Search Engine via GET /customsearch/v1 and receive structured JSON results including titles, URLs, and snippets."
 ---
 
 The Google Programmable Search API lets you embed custom web search into your application. By creating a search engine in the [Programmable Search Engine control panel](https://programmablesearchengine.google.com/), you define which sites or the entire web your engine covers. You then query that engine via a simple `GET` request and receive structured JSON results — titles, URLs, and snippets — that you can render however you like.
 
 ## Endpoint
 
-```
+```http
 GET https://www.googleapis.com/customsearch/v1
 ```
 

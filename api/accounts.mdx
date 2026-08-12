@@ -1,7 +1,7 @@
 ---
 title: "User Account API: Retrieve Profile and Identity Data"
 sidebarTitle: "Accounts API"
-description: "Use the Google People API and OAuth 2.0 to retrieve the authenticated user's profile, email, and account information."
+description: "Retrieve the authenticated user's profile, email, name, and photo via GET /oauth2/v2/userinfo or the People API using an OAuth 2.0 Bearer token."
 ---
 
 Google provides two complementary endpoints for reading the authenticated user's identity and profile data. The OAuth 2.0 userinfo endpoint gives you a lightweight summary — email, display name, profile picture, and locale — and is ideal for sign-in flows. The People API offers a richer, more structured view of the user's contact record and is suitable when you need granular field control. Both endpoints require a valid OAuth 2.0 access token with the appropriate scopes.
@@ -18,7 +18,7 @@ Retrieve a compact profile for the currently authenticated user.
 
 **Endpoint**
 
-```
+```http
 GET https://www.googleapis.com/oauth2/v2/userinfo
 ```
 
@@ -59,6 +59,14 @@ curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   The user's full display name as it appears on their Google account.
 </ResponseField>
 
+<ResponseField name="given_name" type="string">
+  The user's first (given) name. Requires the `profile` scope.
+</ResponseField>
+
+<ResponseField name="family_name" type="string">
+  The user's last (family) name. Requires the `profile` scope.
+</ResponseField>
+
 <ResponseField name="picture" type="string">
   A URL pointing to the user's profile photo hosted on Google's servers. The image is publicly accessible but may change if the user updates their photo.
 </ResponseField>
@@ -75,7 +83,7 @@ The People API returns richer structured data and lets you request exactly the f
 
 **Endpoint**
 
-```
+```http
 GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
 ```
 

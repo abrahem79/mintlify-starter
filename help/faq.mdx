@@ -1,0 +1,45 @@
+---
+title: "Frequently Asked Questions About Google Services"
+sidebarTitle: "FAQ"
+description: "Answers to the most common questions about Google accounts, search, Workspace, APIs, billing, and data privacy."
+---
+
+Whether you're a new Google user or a seasoned developer working with Google APIs, you're likely to run into questions about how accounts, storage, billing, and access controls work. This page collects answers to the most frequently asked questions across Google's consumer products, Workspace apps, and developer platform — so you can get quick answers without digging through multiple help centers.
+
+<AccordionGroup>
+  <Accordion title="How do I reset my Google password?">
+    You can reset your Google password from the account recovery page at [accounts.google.com/signin/recovery](https://accounts.google.com/signin/recovery). Enter the email address associated with your account and follow the prompts — Google will send a verification code to your recovery email or phone number. Once verified, you'll be able to create a new password. If you've lost access to all recovery options, Google provides an identity verification process where you'll be asked questions to confirm your identity based on your account history.
+  </Accordion>
+
+  <Accordion title="Why is my API key not working?">
+    The most common reasons an API key stops working are that the key has been restricted to specific IP addresses or referrers that don't match your current environment, the key doesn't have the necessary API enabled in your Google Cloud project, or the key has been deleted or regenerated. Open the [Google Cloud Console](https://console.cloud.google.com), navigate to **APIs & Services → Credentials**, and verify your key's restrictions and status. Also confirm that the target API (e.g., Maps JavaScript API, Sheets API) is enabled under **APIs & Services → Enabled APIs & services**.
+  </Accordion>
+
+  <Accordion title="What counts toward my Google storage quota?">
+    Your 15 GB of free Google storage is shared across Gmail (emails and attachments), Google Drive (uploaded files), and Google Photos (backed-up images and videos). Google Docs, Sheets, Slides, Forms, and Drawings that are created natively in Google's formats do **not** count toward your quota. However, files uploaded to Drive in other formats — such as `.docx`, `.xlsx`, or `.pdf` — do consume storage. You can check your current usage and breakdown at [one.google.com/storage](https://one.google.com/storage).
+  </Accordion>
+
+  <Accordion title="How do I delete my Google account?">
+    You can permanently delete your Google Account from the **Data & privacy** section of your account settings. Go to [myaccount.google.com](https://myaccount.google.com), click **Data & privacy**, scroll to **More options**, and click **Delete your Google Account**. Google will ask you to download a copy of your data first using Google Takeout. Note that deletion is permanent — your Gmail, Drive files, and all associated data will be lost and cannot be recovered after the grace period expires.
+  </Accordion>
+
+  <Accordion title="Can I use Google APIs for free?">
+    Many Google APIs offer a free tier with generous usage limits — for example, the Maps JavaScript API includes $200/month in free credits, and Google Sheets API calls are free up to usage limits set per project. However, high-volume usage, certain premium APIs (like Google Maps Routes Preferred), and enterprise-grade features require a billing account to be set up in Google Cloud. You can review the pricing for any specific API at [cloud.google.com/pricing](https://cloud.google.com/pricing) or within the individual API's documentation page.
+  </Accordion>
+
+  <Accordion title="How do I transfer ownership of a Google Doc?">
+    To transfer ownership of a Google Doc, Sheet, or Slide, open the file and click **Share** in the top-right corner. Find the person you want to transfer ownership to (they must already have access), click the dropdown next to their name, and select **Transfer ownership**. The recipient will receive an email notification and must accept the transfer. Note that you can only transfer ownership to another user within the same Google Workspace organization or, for personal accounts, to another Google Account holder.
+  </Accordion>
+
+  <Accordion title="How do I report a spam or phishing email in Gmail?">
+    To report a spam email in Gmail, open the message, click the **three-dot menu** (⋮) in the top-right of the email, and select **Report spam** or **Report phishing**. Reporting phishing sends the email to Google for review and helps protect other users from similar attacks. Gmail will also automatically move the email out of your inbox. If you receive phishing emails that impersonate a company or institution, you can additionally report them to the [Google Safe Browsing team](https://safebrowsing.google.com/safebrowsing/report_phish/).
+  </Accordion>
+
+  <Accordion title="What are the rate limits for Google Search API?">
+    The Google Custom Search JSON API allows up to **100 search queries per day** for free, with additional queries available at $5 per 1,000 queries (up to 10,000 per day). This applies to the Programmable Search Engine API — if you're using the Google Search Console API or other search-related APIs, the limits differ and are documented separately. You can monitor your usage and configure request quotas in the [Google Cloud Console](https://console.cloud.google.com) under **APIs & Services → Quotas**. For very high-volume search needs, Google offers enterprise-level options through Google Cloud.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Can't find the answer you're looking for? Visit the [Google Help Center](https://support.google.com) for product-specific support documentation, or contact Google Support directly from your Google Account under **Support** in the navigation menu.
+</Note>

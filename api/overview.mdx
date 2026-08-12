@@ -1,0 +1,109 @@
+---
+title: "Google REST API: Overview and Getting Started"
+sidebarTitle: "Overview"
+description: "Introduction to Google's REST APIs. Learn about base URLs, versioning, request format, response structure, and error handling."
+---
+
+Google exposes a broad suite of REST APIs that power everything from search and productivity to cloud infrastructure and machine learning. Whether you're building a web app, a mobile client, or a backend service, these APIs give you programmatic access to Google's platform using standard HTTP requests and JSON. This guide covers the foundational concepts you need before making your first call.
+
+## Base URL
+
+All Google REST APIs are served from a common base URL:
+
+```
+https://www.googleapis.com
+```
+
+Some APIs have dedicated hostnames (for example, `https://people.googleapis.com`), but the majority follow the pattern `https://www.googleapis.com/{api}/{version}/{resource}`.
+
+## API Versioning
+
+Google APIs use **path-based versioning**. The version segment appears immediately after the API name in the URL path, for example:
+
+| API | Versioned endpoint prefix |
+|-----|--------------------------|
+| Custom Search | `https://www.googleapis.com/customsearch/v1` |
+| Drive | `https://www.googleapis.com/drive/v3` |
+| OAuth userinfo | `https://www.googleapis.com/oauth2/v2` |
+
+When Google releases a new major version, the previous version remains available at its original path until an official deprecation deadline is announced. Always target the latest stable version for new integrations.
+
+## Request Format
+
+Every API call must follow these conventions:
+
+- **Method** — use the HTTP verb appropriate to the operation (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`).
+- **Content type** — include `Content-Type: application/json` on requests that carry a body.
+- **Authorization** — pass credentials in the `Authorization` header as a Bearer token, or via the `key` query parameter for API-key-authenticated requests:
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+```
+
+- **Body** — request bodies must be valid JSON. Boolean values should be `true`/`false` (not strings), and timestamps should follow RFC 3339 format.
+
+## Response Format
+
+Successful responses return HTTP `2xx` status codes and a JSON body. Most collection endpoints follow a standard envelope:
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "items": [
+    { "id": "1BxiM...", "name": "Report.pdf" }
+  ]
+}
+```
+
+- **`kind`** — a namespaced string identifying the resource type (e.g. `customsearch#search`, `drive#file`).
+- **`items`** — an array of resource objects returned by list operations.
+- **`nextPageToken`** — present when more pages of results exist; pass it as `pageToken` on the next request.
+
+## Rate Limits
+
+Rate limits vary by API and are enforced per project and per user. When you exceed a limit, the API returns HTTP `429 Too Many Requests`. You should implement exponential back-off and retry logic in your client.
+
+<Tip>
+  See the [troubleshooting guide](/help/troubleshooting) for recommended retry strategies and guidance on requesting quota increases for high-volume workloads.
+</Tip>
+
+## Error Responses
+
+All API errors follow a consistent JSON structure, making it straightforward to parse and handle them programmatically:
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "status": "PERMISSION_DENIED"
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `error.code` | The HTTP status code for the error. |
+| `error.message` | A human-readable description of what went wrong. |
+| `error.status` | A machine-readable error code string. |
+
+Common status values include `PERMISSION_DENIED`, `NOT_FOUND`, `INVALID_ARGUMENT`, `UNAUTHENTICATED`, and `RESOURCE_EXHAUSTED`.
+
+## Explore the API
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/api/authentication">
+    Learn how to authenticate with API keys, OAuth 2.0 tokens, and service accounts.
+  </Card>
+  <Card title="Search API" icon="magnifying-glass" href="/api/search">
+    Query your Programmable Search Engine and retrieve structured web results.
+  </Card>
+  <Card title="Accounts API" icon="user" href="/api/accounts">
+    Retrieve the authenticated user's profile, email, and identity data.
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api/webhooks">
+    Subscribe to push notifications for real-time resource change events.
+  </Card>
+</CardGroup>

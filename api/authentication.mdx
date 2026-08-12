@@ -1,0 +1,98 @@
+---
+title: "Authenticate Requests to the Google API"
+sidebarTitle: "Authentication"
+description: "Use API keys, OAuth 2.0 Bearer tokens, or service account credentials to authenticate calls to Google's REST APIs."
+---
+
+Every request you make to a Google REST API must be authenticated. Google supports three primary authentication mechanisms: API keys for accessing public data, OAuth 2.0 Bearer tokens for acting on behalf of a user, and service account credentials for server-to-server integrations. Choosing the right mechanism depends on what data you need to access and whether a human user is involved in the flow.
+
+## API Keys
+
+API keys are the simplest authentication method. They identify your project to Google but do not carry any user context, so they are only suitable for APIs that access **publicly available data** (such as the Programmable Search API).
+
+Pass your API key as a `key` query parameter on every request:
+
+```
+GET https://www.googleapis.com/customsearch/v1?q=example&key=YOUR_API_KEY&cx=YOUR_CX
+```
+
+**Example with curl:**
+
+```bash
+curl "https://www.googleapis.com/customsearch/v1?q=openai&key=YOUR_API_KEY&cx=YOUR_CX_ID"
+```
+
+<Tip>
+  Generate and manage your API keys in the [Google Cloud Console](https://console.cloud.google.com/apis/credentials). Restrict each key to specific APIs and referrer URLs to limit its blast radius if it's ever exposed.
+</Tip>
+
+## OAuth 2.0 Bearer Tokens
+
+When your application needs to access or modify **user-owned data** — such as files in Google Drive, Gmail messages, or Calendar events — you must use OAuth 2.0. After the user completes the OAuth consent flow, your application receives an access token that you include in the `Authorization` header of every request.
+
+```
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Access tokens expire after **3600 seconds (1 hour)** by default. Your application should store the accompanying refresh token and use it to obtain a new access token without prompting the user again. See [Token Refresh](#token-refresh) below for details.
+
+**Example with curl:**
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+## Service Account Credentials
+
+Service accounts are special Google accounts that belong to an application rather than an individual user. They are designed for **server-to-server** scenarios — for example, a backend job that reads from Google Sheets on a schedule without any user interaction.
+
+With a service account you generate a JSON key file in the Cloud Console, then use a client library or JWT-based flow to exchange the key for a short-lived access token. Because service account setup involves several steps including key generation, IAM role assignment, and optional domain-wide delegation, see the [integrations guide](/guides/integrations) for complete setup instructions.
+
+## Scopes
+
+OAuth 2.0 scopes define exactly what permissions an access token grants. You request scopes during the authorization step, and the user sees them listed on Google's consent screen. Request only the scopes your application actually needs — requesting overly broad scopes erodes user trust and may be rejected during app verification.
+
+| Scope | Access granted |
+|-------|----------------|
+| `https://www.googleapis.com/auth/drive.readonly` | Read-only access to all files in the user's Google Drive. |
+| `https://www.googleapis.com/auth/drive` | Full read and write access to the user's Google Drive. |
+| `https://www.googleapis.com/auth/gmail.readonly` | Read-only access to the user's Gmail messages and settings. |
+| `https://www.googleapis.com/auth/calendar` | Full read and write access to the user's Google Calendar. |
+| `openid` | Authenticate the user and retrieve a stable user ID via OpenID Connect. |
+| `email` | Access the user's primary Google account email address. |
+| `profile` | Access the user's basic profile information (name, photo, locale). |
+
+## Token Refresh
+
+When an access token expires, exchange your refresh token for a new one by sending a `POST` request to the Google token endpoint:
+
+```bash
+curl -X POST https://oauth2.googleapis.com/token \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "refresh_token=REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+A successful response contains the new access token along with its expiry:
+
+```json
+{
+  "access_token": "ya29.A0ARrdaM...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `access_token` | The new Bearer token to use in subsequent API requests. |
+| `expires_in` | Seconds until the token expires (typically `3600`). |
+| `token_type` | Always `"Bearer"`. |
+
+Store the new `access_token` and replace the previous one in your application. The refresh token itself remains valid until the user revokes access or it is otherwise invalidated by Google.
+
+<Warning>
+  Never embed your OAuth `client_secret` in client-side code (JavaScript bundles, mobile apps, or public repositories). If exposed, an attacker can impersonate your application, hijack OAuth flows, and access user data on your behalf. Always perform token exchange on a secure backend server.
+</Warning>

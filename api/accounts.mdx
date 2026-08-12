@@ -1,0 +1,122 @@
+---
+title: "User Account API: Retrieve Profile and Identity Data"
+sidebarTitle: "Accounts API"
+description: "Use the Google People API and OAuth 2.0 to retrieve the authenticated user's profile, email, and account information."
+---
+
+Google provides two complementary endpoints for reading the authenticated user's identity and profile data. The OAuth 2.0 userinfo endpoint gives you a lightweight summary — email, display name, profile picture, and locale — and is ideal for sign-in flows. The People API offers a richer, more structured view of the user's contact record and is suitable when you need granular field control. Both endpoints require a valid OAuth 2.0 access token with the appropriate scopes.
+
+<Note>
+  Both endpoints described on this page require a valid OAuth 2.0 Bearer token. API keys are **not** accepted — these resources are tied to an authenticated user identity. See the [Authentication guide](/api/authentication) to set up your OAuth flow.
+</Note>
+
+---
+
+## Get Current User Profile
+
+Retrieve a compact profile for the currently authenticated user.
+
+**Endpoint**
+
+```
+GET https://www.googleapis.com/oauth2/v2/userinfo
+```
+
+**Required scope:** `openid email profile`
+
+### Example Request
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/oauth2/v2/userinfo"
+```
+
+### Example Response
+
+```json
+{
+  "id": "116195079999551234567",
+  "email": "alex@example.com",
+  "name": "Alex Johnson",
+  "given_name": "Alex",
+  "family_name": "Johnson",
+  "picture": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+  "locale": "en"
+}
+```
+
+### Response Fields
+
+<ResponseField name="id" type="string">
+  The user's unique, stable Google account ID. This value does not change even if the user updates their email address or name.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  The user's primary Google account email address. Requires the `email` scope.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The user's full display name as it appears on their Google account.
+</ResponseField>
+
+<ResponseField name="picture" type="string">
+  A URL pointing to the user's profile photo hosted on Google's servers. The image is publicly accessible but may change if the user updates their photo.
+</ResponseField>
+
+<ResponseField name="locale" type="string">
+  The BCP 47 language tag representing the user's preferred language (e.g. `"en"`, `"fr"`, `"ja"`). Requires the `profile` scope.
+</ResponseField>
+
+---
+
+## Get User Info via the People API
+
+The People API returns richer structured data and lets you request exactly the fields you need using the `personFields` parameter.
+
+**Endpoint**
+
+```
+GET https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses
+```
+
+**Required scope:** `https://www.googleapis.com/auth/contacts.readonly`
+
+### Example Request
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses"
+```
+
+### Example Response
+
+```json
+{
+  "resourceName": "people/116195079999551234567",
+  "etag": "%EgoBAgkLDg8REhMaAQ==",
+  "names": [
+    {
+      "displayName": "Alex Johnson",
+      "givenName": "Alex",
+      "familyName": "Johnson",
+      "metadata": {
+        "primary": true,
+        "source": { "type": "PROFILE" }
+      }
+    }
+  ],
+  "emailAddresses": [
+    {
+      "value": "alex@example.com",
+      "metadata": {
+        "primary": true,
+        "verified": true
+      }
+    }
+  ]
+}
+```
+
+<Tip>
+  You can request additional `personFields` such as `phoneNumbers`, `addresses`, `birthdays`, and `photos` by appending them as a comma-separated list: `?personFields=names,emailAddresses,phoneNumbers`.
+</Tip>

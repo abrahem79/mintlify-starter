@@ -1,17 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
+  "projectType": "saas",
+  "projectName": "Google",
+  "projectDescription": "Google is a suite of cloud-based productivity, search, and developer services that help individuals and organizations find information, collaborate, and build applications.",
   "theme": "almond",
-  "name": "Google",
-  "colors": {
-    "primary": "#ef7025",
-    "light": "#eec9bc",
-    "dark": "#4fa1ab"
-  },
-  "favicon": "/favicon.svg",
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
+  "primaryColor": "#ef7025",
+  "lightColor": "#eec9bc",
+  "darkColor": "#4fa1ab",
   "navigation": {
     "tabs": [
       {
@@ -81,23 +75,19 @@
       }
     ]
   },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:support@google.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Sign In",
-      "href": "https://accounts.google.com"
-    }
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/google",
-      "github": "https://github.com/google"
-    }
-  }
+  "keyFeatures": [
+    "Universal search across web and internal content",
+    "Cloud-based productivity and collaboration tools",
+    "Developer APIs for search and data access",
+    "Account and identity management",
+    "Webhook and integration support",
+    "Granular permissions and access controls"
+  ],
+  "publicApiSurface": [
+    "GET /search — full-text search query",
+    "GET /accounts/me — retrieve current user profile",
+    "POST /webhooks — register a webhook endpoint",
+    "DELETE /webhooks/{id} — remove a webhook",
+    "GET /api/authentication — obtain access tokens"
+  ]
 }

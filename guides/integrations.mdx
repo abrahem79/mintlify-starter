@@ -1,0 +1,82 @@
+---
+title: "Integrate Google Services into Your Application"
+sidebarTitle: "Integrations"
+description: "Connect Google APIs to your app using OAuth 2.0, API keys, and service accounts. Step-by-step setup for common integration patterns."
+---
+
+Google exposes most of its core services — Drive, Gmail, Sheets, Calendar, Maps, and more — through REST APIs that any application can call. Before you write your first API request, you need to decide how your app will authenticate: using a simple API key for public data, OAuth 2.0 for actions on behalf of a signed-in user, or a service account for automated server-to-server workflows. This guide explains each option and walks you through the setup steps for each.
+
+## Choose Your Auth Method
+
+The right authentication method depends on what your integration does and whose data it accesses.
+
+| Auth Method | Typical Use Case | When to Use | User Consent Required |
+|---|---|---|---|
+| **API Key** | Reading public data (e.g., Maps, YouTube metadata) | Your app accesses non-sensitive, publicly available resources | No |
+| **OAuth 2.0** | Acting on behalf of a signed-in Google user | Your app reads or writes a user's Drive files, Gmail, Calendar, etc. | Yes — user must grant permission |
+| **Service Account** | Server-to-server automation with no human user involved | Backend jobs, data pipelines, accessing resources your organization owns | No |
+
+## OAuth 2.0 Flow
+
+OAuth 2.0 is the standard for letting users grant your application limited access to their Google data without sharing their password. Follow these steps to implement the Authorization Code flow.
+
+<Steps>
+  <Step title="Create an OAuth client ID in Cloud Console">
+    Open the [Google Cloud Console](https://console.cloud.google.com), navigate to **APIs & Services → Credentials**, and click **Create Credentials → OAuth client ID**. Choose **Web application** (or the platform that matches your app) and add your authorized redirect URIs.
+  </Step>
+  <Step title="Configure the consent screen">
+    Go to **APIs & Services → OAuth consent screen**. Fill in your app name, support email, and the scopes your app will request. Scopes define exactly which Google data your app can access — request only the minimum your app needs.
+  </Step>
+  <Step title="Redirect users to the Google authorization URL">
+    When a user wants to connect their Google account, redirect them to Google's authorization endpoint with your `client_id`, requested `scope`, `redirect_uri`, and `response_type=code`. Google will display the consent screen you configured.
+  </Step>
+  <Step title="Exchange the authorization code for tokens">
+    After the user approves, Google redirects back to your `redirect_uri` with a short-lived `code` parameter. Make a server-side POST request to `https://oauth2.googleapis.com/token` with the code, your `client_id`, `client_secret`, and `redirect_uri` to receive an `access_token` and (if you requested `offline` access) a `refresh_token`.
+  </Step>
+  <Step title="Call the API with a Bearer token">
+    Include the `access_token` in the `Authorization` header of every API request. Access tokens expire after one hour — use the `refresh_token` to obtain a new one automatically without prompting the user again.
+  </Step>
+</Steps>
+
+## Service Accounts
+
+A service account is a special Google account that belongs to your application rather than an individual user. It authenticates with a private key, making it ideal for backend services, scheduled jobs, and any workflow where there is no interactive user.
+
+1. In the Cloud Console, go to **IAM & Admin → Service Accounts** and click **Create Service Account**.
+2. Give the account a descriptive name and, optionally, grant it an IAM role that reflects the minimum permissions it needs.
+3. Open the service account, go to the **Keys** tab, click **Add Key → Create new key**, and select **JSON**. Download the key file immediately — you cannot download it again.
+4. Store the JSON key securely (see the [Security guide](/guides/security) for best practices) and load it in your server-side code using the appropriate Google client library.
+
+To let a service account access a specific Google Drive folder or Sheets file, share that resource with the service account's email address (visible in the Cloud Console) exactly as you would share with a human user.
+
+## Calling APIs
+
+Once you have an access token, attach it as a `Bearer` token in the `Authorization` header of your HTTP request. Here is an example that lists files in a user's Google Drive:
+
+```bash
+curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files"
+```
+
+Replace `YOUR_ACCESS_TOKEN` with the token you received from the OAuth flow or from signing a JWT with your service account key. The response is a JSON object containing the list of files the authenticated principal has access to.
+
+<Note>
+For the full reference on token scopes, refresh flows, and handling token revocation, see the [Authentication API reference](/api/authentication).
+</Note>
+
+## Popular Integrations
+
+<CardGroup cols={2}>
+  <Card title="Google Drive API" icon="hard-drive">
+    Upload, download, organize, and share files and folders in Google Drive. Supports resumable uploads, file metadata queries, and sharing permission management.
+  </Card>
+  <Card title="Gmail API" icon="envelope">
+    Read, send, and manage email messages and threads programmatically. Ideal for building email automation, support ticket ingestion, or custom inbox clients.
+  </Card>
+  <Card title="Google Sheets API" icon="table">
+    Read and write spreadsheet data, format cells, and manage named ranges. Commonly used for lightweight data storage, reporting dashboards, and form-to-sheet pipelines.
+  </Card>
+  <Card title="Google Calendar API" icon="calendar">
+    Create, update, and delete calendar events and manage attendees. Use it to sync scheduling systems, send meeting invites, or build availability tools.
+  </Card>
+</CardGroup>

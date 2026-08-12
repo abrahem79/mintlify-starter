@@ -1,0 +1,133 @@
+---
+title: "Manage App Permissions and Third-Party Access"
+sidebarTitle: "Permissions"
+description: "Review and revoke third-party app access, manage Google Workspace sharing policies, and control API scopes for connected applications."
+---
+
+When you sign in to third-party apps and services using your Google Account — or authorize them to access your data — those apps receive permission tokens that grant them access to specific parts of your account. Over time, you may accumulate dozens of connected apps, many of which you no longer use. Regularly reviewing and revoking unnecessary permissions is one of the most effective ways to protect your account security and privacy.
+
+## View Connected Apps
+
+You can see every app that currently has access to your Google Account from the **Security** section of your account dashboard.
+
+<Steps>
+  <Step title="Open your Google Account">
+    Navigate to [myaccount.google.com](https://myaccount.google.com) and sign in.
+  </Step>
+  <Step title="Go to Security">
+    Click **Security** in the left sidebar.
+  </Step>
+  <Step title="Open Third-party apps with account access">
+    Scroll down to the **Your connections to third-party apps & services** section and click **See all connections**.
+  </Step>
+  <Step title="Review the list">
+    You'll see all apps that have been granted access, along with the date of last access and the permissions each app holds.
+  </Step>
+</Steps>
+
+<Note>
+  Apps that you signed into using "Sign in with Google" appear here alongside apps that were granted API access programmatically. Both types can be reviewed and revoked from the same page.
+</Note>
+
+## Revoke Access
+
+If you no longer use an app, or if you don't recognize a connected app, you should revoke its access immediately.
+
+<Steps>
+  <Step title="Navigate to connected apps">
+    From [myaccount.google.com](https://myaccount.google.com), go to **Security** → **See all connections** under Third-party apps.
+  </Step>
+  <Step title="Select the app to remove">
+    Click on the app whose access you want to revoke.
+  </Step>
+  <Step title="Review the permissions">
+    Read the list of scopes the app was granted. This shows exactly what data the app can access.
+  </Step>
+  <Step title="Click Delete all connections">
+    Click **Delete all connections you have with [App Name]** and confirm when prompted.
+  </Step>
+  <Step title="Verify removal">
+    The app will no longer appear in your connected apps list and will lose the ability to access your account with the revoked token.
+  </Step>
+</Steps>
+
+<Warning>
+  Revoking access immediately invalidates the app's access token — the app can no longer read or write your Google data. However, any data the app already downloaded or stored in its own systems is not automatically deleted. Check the app's own privacy settings or contact the developer to request data deletion.
+</Warning>
+
+## OAuth Scopes
+
+OAuth scopes define precisely what an app is allowed to do with your Google Account. When an app requests access, it specifies a list of scope strings that map to particular capabilities. You should always review the requested scopes before granting access to any third-party application.
+
+Scope strings follow this format:
+
+```text
+https://www.googleapis.com/auth/[service].[permission-level]
+```
+
+For example:
+
+```text
+https://www.googleapis.com/auth/drive.readonly
+```
+
+This scope allows the app to read files in your Google Drive but not create, modify, or delete them.
+
+### Common OAuth Scopes
+
+| Scope | Access Level | What the App Can Do |
+|---|---|---|
+| `https://www.googleapis.com/auth/drive.readonly` | Read-only | View and download files in Drive |
+| `https://www.googleapis.com/auth/drive` | Full access | Create, edit, and delete any file in Drive |
+| `https://www.googleapis.com/auth/gmail.readonly` | Read-only | Read all Gmail messages and settings |
+| `https://www.googleapis.com/auth/gmail.send` | Send only | Send email on your behalf |
+| `https://www.googleapis.com/auth/gmail.modify` | Read/write | Read, send, delete, and manage email |
+| `https://www.googleapis.com/auth/calendar.readonly` | Read-only | View your calendar events |
+| `https://www.googleapis.com/auth/calendar` | Full access | Create, edit, and delete calendar events |
+| `https://www.googleapis.com/auth/userinfo.email` | Profile | Access your email address |
+| `https://www.googleapis.com/auth/userinfo.profile` | Profile | Access your basic profile information |
+| `openid` | Identity | Verify your identity via OpenID Connect |
+
+<Warning>
+  Avoid granting broad scopes — such as `https://www.googleapis.com/auth/drive` or `https://www.googleapis.com/auth/gmail.modify` — unless you fully trust the application and have a clear need for that level of access. Always prefer the most restrictive scope that satisfies the app's functionality. An app that only needs to read files from Drive should never request full Drive write access.
+</Warning>
+
+<Tip>
+  When building your own applications with Google APIs, follow the principle of least privilege: request only the scopes your app genuinely needs. This builds user trust and reduces security risk if your app's credentials are ever compromised.
+</Tip>
+
+## Workspace Admin Permissions
+
+If you manage a Google Workspace organization, you have additional controls to govern which third-party apps your users can connect to their work accounts. These settings are managed from the **Google Admin Console**.
+
+<Steps>
+  <Step title="Open the Admin Console">
+    Sign in to [admin.google.com](https://admin.google.com) with your Workspace admin credentials.
+  </Step>
+  <Step title="Go to Security → API Controls">
+    Navigate to **Security** → **Access and data control** → **API controls**.
+  </Step>
+  <Step title="Manage domain-wide app access">
+    Click **Manage Third-Party App Access** to see all OAuth apps that users in your organization have connected.
+  </Step>
+  <Step title="Configure app trust settings">
+    For each app, you can set its trust level:
+    - **Trusted** — users can grant any requested scope
+    - **Limited** — users can only grant access to Google services marked as unrestricted
+    - **Blocked** — no users in the organization can connect this app
+  </Step>
+  <Step title="Set organization-wide defaults">
+    Under **App access control**, configure whether users are allowed to grant access to untrusted apps by default.
+  </Step>
+</Steps>
+
+| Admin Control | Description |
+|---|---|
+| **Trust level per app** | Granularly allow or block individual OAuth apps for your org |
+| **Domain-wide delegation** | Grant service accounts org-wide access to act on behalf of users |
+| **App access control default** | Set org-wide policy for untrusted third-party apps |
+| **Audit logs** | Review which users authorized which apps and when |
+
+<Note>
+  Domain-wide delegation (DWD) grants a service account the ability to impersonate any user in your organization. Only use DWD when absolutely necessary, and regularly audit which service accounts have been granted this level of access.
+</Note>

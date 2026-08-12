@@ -1,0 +1,66 @@
+---
+title: "How Google Search Works: Indexing and Ranking Explained"
+sidebarTitle: "Search"
+description: "Learn how Google indexes, ranks, and surfaces content. Understand search operators, Custom Search, and how to integrate search into your app."
+---
+
+Google Search processes hundreds of billions of pages and answers trillions of queries every year, making it the world's most widely used information retrieval system. Whether you're refining your own search technique, optimising content so Google surfaces it correctly, or embedding search capabilities directly into your product, understanding how Search works under the hood gives you a meaningful advantage.
+
+## How Search Works
+
+Google Search operates in three broad stages that run continuously in the background.
+
+**Crawling** — Google's automated crawlers (collectively known as Googlebot) follow links across the web to discover new and updated pages. You can guide crawlers using a `robots.txt` file and `<meta name="robots">` tags to control what gets fetched.
+
+**Indexing** — Once a page is crawled, Google analyses its content — text, images, structured data, and more — and stores a representation of it in the Search index. Well-structured pages with clear headings, descriptive metadata, and valid schema markup are easier to index accurately.
+
+**Ranking** — When a user submits a query, Google's ranking systems evaluate hundreds of signals (relevance, page quality, context, freshness, and others) to order results. No single factor determines rank; the algorithm weighs signals holistically to surface the most useful result for that query.
+
+<Note>
+  Google does not guarantee indexing for every page. Use Google Search Console to monitor coverage, identify crawl errors, and request (re)indexing for important URLs.
+</Note>
+
+## Search Operators
+
+Search operators are special commands you type directly into the Google Search box to filter and narrow results. They're useful for research, competitive analysis, auditing your own site's presence, and debugging indexing issues.
+
+| Operator | Syntax | What it does |
+|---|---|---|
+| `site:` | `site:example.com` | Restricts results to pages on a specific domain or subdomain. |
+| `filetype:` | `filetype:pdf` | Returns results of a specific file type (pdf, docx, xlsx, etc.). |
+| `intitle:` | `intitle:keyword` | Matches pages that contain the keyword in their HTML `<title>` tag. |
+| Exact phrase | `"machine learning"` | Returns only results containing that exact sequence of words. |
+| Exclude term | `-keyword` | Removes results that contain the specified word or phrase. |
+
+You can combine operators in a single query. For example, `site:docs.example.com filetype:pdf -intitle:archive` finds PDF files on your docs subdomain that don't have "archive" in their title.
+
+<Tip>
+  Prefix an operator with `OR` (uppercase) to match either of two conditions — for example, `site:example.com OR site:example.io` returns results from both domains in one query.
+</Tip>
+
+## Custom Search Engine (CSE)
+
+A Custom Search Engine lets you create a scoped, branded search experience that queries a specific set of sites or pages rather than the entire web. This is useful for adding a search bar to your documentation, help centre, or e-commerce catalogue.
+
+**To create a Custom Search Engine:**
+
+1. Go to the [Programmable Search Engine Control Panel](https://programmablesearchengine.google.com/controlpanel/all).
+2. Click **Add** and enter the sites or URL patterns you want to search.
+3. Give your engine a name and save it — Google generates a unique **Search Engine ID** (`cx` parameter) that identifies your engine.
+4. Customise the look and feel under **Look and feel**, then copy the embed snippet into your page.
+
+<Note>
+  CSE results respect the same indexing rules as regular Google Search. If a page isn't indexed, it won't appear in your CSE results either.
+</Note>
+
+## Programmable Search API
+
+The Programmable Search JSON API gives you programmatic access to your Custom Search Engine results, so you can retrieve, format, and display search results entirely within your own application — without embedding Google's UI.
+
+Key capabilities include:
+
+- Query your CSE and receive structured JSON responses containing titles, URLs, snippets, and rich metadata.
+- Apply `dateRestrict`, `sort`, and `filter` parameters to refine results at request time.
+- Use the `searchType=image` parameter to search for images within your defined scope.
+
+For full request/response schemas, authentication requirements, and code samples, see the [Search API reference](/api/search).
